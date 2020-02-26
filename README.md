@@ -7,11 +7,13 @@ TissUUmaps is a lightweight viewer that uses basic web tools to visualize gene e
 
 You can easily use it locally, or remotely creating a server.
 
-TissUUmaps tries to keep it minimal so the setup doesn't become complicated. You can use more advanced libraries if you want but we try to make it simple, just HTML, JavaScript and CSS
+TissUUmaps tries to keep it minimal so the setup doesn't become complicated. You can use more advanced libraries if you want but we try to make it simple, just HTML, JavaScript and CSS.
+
+Images are display with OpenSeadragon, point data is displayed by D3, and everything else is done by TissUUmaps.
 
 ## How to start
 
-Since we don't want to use external servers to serve our images, let's convert them to an open pyramidal format where we can see individual tiles and OpenSeadragon can easily load the correct tile for you, the user's view. It is called Deep Zoom Image. OpenSeadragon can import other formats, for more information go here [Supported Tile Sources](https://openseadragon.github.io/)
+Since we don't want to use external servers to serve our images, let's convert them to an open pyramidal format where we can see individual tiles and OpenSeadragon can easily load the correct tile for you. It is called Deep Zoom Image. OpenSeadragon can import other formats, for more information go here [Supported Tile Sources](https://openseadragon.github.io/)
 
 ![TissUUmaps workflow](https://github.com/wahlby-lab/TissUUmaps/blob/master/misc/design/banner2.png)
 
@@ -43,7 +45,7 @@ In the HTML file [example.html](https://github.com/wahlby-lab/TissUUmaps/blob/ma
 ```
 ## All set!
 
-Once you have your pyramidal image and your HTML set then you can open it in any browser and see TissUUmaps displaying your slide. You can use the right panel to load data point and explore them.
+Once you have your pyramidal image and your HTML set then you can open it in any browser and see TissUUmaps displaying your slide. You can use the right panel to load point data and explore.
 
 ## Example
 
