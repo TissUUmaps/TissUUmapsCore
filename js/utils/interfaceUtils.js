@@ -68,6 +68,24 @@ interfaceUtils.cleanSelect=function(domid){
     }
 }
 
+interfaceUtils.makeInvisible=function(domid){
+    var elem= document.getElementById(domid);
+    if(elem){
+        elem.style.visibility="hidden";
+    }else{
+        console.log("Element with id "+domid+" doesn't exist");
+    }
+}
+
+interfaceUtils.makeVisible=function(domid){
+    var elem= document.getElementById(domid);
+    if(elem){
+        elem.style.visibility="visible";
+    }else{
+        console.log("Element with id "+domid+" doesn't exist");
+    }
+}
+
 interfaceUtils.disableElement=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
