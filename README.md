@@ -1,4 +1,4 @@
-TissUUmaps
+TissUUmaps - UU is for Uppsala University ;) 
 ==========
 
 ![TissUUmaps banner](https://github.com/wahlby-lab/TissUUmaps/blob/master/misc/design/logo-github-2443-473.png)
