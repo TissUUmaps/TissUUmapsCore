@@ -33,8 +33,12 @@ dataUtils.processISSRawData = function () {
     var op = tmapp["object_prefix"];
 
     var progressParent=interfaceUtils.getElementById("ISS_csv_progress_parent");
-    progressParent.style.visibility="hidden";
-    progressParent.style.display="none";
+    if(progressParent == null){
+        console.log("No progress bar present.")
+    }else{
+        progressParent.style.visibility="hidden";
+        progressParent.style.display="none";
+    }
     
     var ISSBarcodeInputNode = document.getElementById("ISS_barcode_header");
     var barcodeSelector = ISSBarcodeInputNode.options[ISSBarcodeInputNode.selectedIndex].value;
