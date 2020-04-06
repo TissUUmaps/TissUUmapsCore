@@ -10,7 +10,7 @@
  * @classdesc The root namespace for tmapp.
  */
 tmapp = {
-    _url_suffix: "https://tissuumaps.research.it.uu.se/",
+    _url_suffix: "",
     _scrollDelay: 900,
     fixed_file: ""
 }
