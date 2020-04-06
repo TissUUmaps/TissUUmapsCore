@@ -11,6 +11,7 @@ interfaceUtils.listen= function(domid,event,handler,debug){
         }
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -25,6 +26,7 @@ interfaceUtils.addElementsToSelect=function(domid,elemlist){
         });
     }else{
         console.log("Select with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -39,6 +41,7 @@ interfaceUtils.addObjectsToSelect=function(domid,objlist){
         });
     }else{
         console.log("Select with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -56,6 +59,7 @@ interfaceUtils.addSingleElementToSelect=function(domid,element,options){
         select.appendChild(opt);        
     }else{
         console.log("Select with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -65,6 +69,7 @@ interfaceUtils.cleanSelect=function(domid){
         select.innerHTML = "";
     }else{
         console.log("Select with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -74,6 +79,7 @@ interfaceUtils.makeInvisible=function(domid){
         elem.style.visibility="hidden";
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -83,6 +89,7 @@ interfaceUtils.makeVisible=function(domid){
         elem.style.visibility="visible";
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -92,6 +99,7 @@ interfaceUtils.disableElement=function(domid){
         elem.disabled="true";
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -101,6 +109,7 @@ interfaceUtils.enableElement=function(domid){
         elem.removeAttribute("disabled");
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -112,6 +121,7 @@ interfaceUtils.isEnabled=function(domid){
         }else{ return true; }
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -127,6 +137,7 @@ interfaceUtils.getSelectedIndexValue=function(domid){
         return obj;
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 
 }
@@ -137,6 +148,7 @@ interfaceUtils.getElementsByClassName=function(classname){
         return elems;
     }else{
         console.log("No elements of class "+classname+" doesn't exist");
+        return null;
     }
 }
 
@@ -146,6 +158,7 @@ interfaceUtils.getElementsByTagName=function(tagname){
         return elems;
     }else{
         console.log("No elements of class "+classname+" doesn't exist");
+        return null;
     }
 }
 
@@ -155,6 +168,7 @@ interfaceUtils.getElementById=function(domid){
         return elem;
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -164,6 +178,7 @@ interfaceUtils.getValueFromDOM=function(domid){
         return elem.value;
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -173,6 +188,7 @@ interfaceUtils.getInnerHTMLFromDOM=function(domid){
         return elem.innerHTML;
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -187,6 +203,7 @@ interfaceUtils.removeOptionFromSelect=function(domid,key){
         select.remove(remove);
     }else{
         console.log("Select with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -206,9 +223,6 @@ interfaceUtils.openDZI=function(dzi,viewer){
         tmcpoints.url_prefix=possibleurlprefix;
     }
     tmcpoints[viewer+"_viewer"].open(tmcpoints.url_prefix + dzi);
-    /*if(viewer=="moving"){
-
-    }*/
     
 }
 
@@ -219,6 +233,7 @@ interfaceUtils.isChecked=function(domid){
         return checked;
     }else{
         console.log("Check with id "+domid+" doesn't exist");
+        return null;
     }
 }
 
@@ -231,6 +246,7 @@ interfaceUtils.checkSelectNotZero=function(domid){
         return true;
     }else{
         console.log("Element with id "+domid+" doesn't exist");
+        return null;
     }
 
 }
