@@ -62,10 +62,14 @@ Here you can find several videos explaining how to use TissUUmaps
 <table>
     <tr>
         <td>
-            <img src="https://tissuumaps.research.it.uu.se/media/images/geneexp.png" href="https://tissuumaps.research.it.uu.se/howto.html#section-geneexp"/>
+            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-geneexp">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/geneexp.png" />
+            </a>
         </td>        
         <td>
-            <img src="https://tissuumaps.research.it.uu.se/media/images/regions.png" href="https://tissuumaps.research.it.uu.se/howto.html#section-regions"/>
+            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-regions">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/regions.png">
+            </a>
         </td>
     </tr>
 </table>
