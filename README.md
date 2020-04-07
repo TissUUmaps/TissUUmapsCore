@@ -60,12 +60,12 @@ One example is a slide of breast cancer tissue and another example is one with a
     <tr>
         <td>
             <a href="https://tissuumaps.research.it.uu.se/examples.html#section-breastcancer">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Exmaple1.png" />
+            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Example1.png" />
             </a>
         </td>        
         <td>
             <a href="https://tissuumaps.research.it.uu.se/examples.html#section-mousebrain">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Exmaple2.png">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Example2.png">
             </a>
         </td>
     </tr>
