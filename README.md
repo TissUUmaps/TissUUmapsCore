@@ -49,5 +49,15 @@ Once you have your pyramidal image and your HTML set then you can open it in any
 
 ## Example
 
+We have designed two examples for setting up your own TissUUmaps
+
+Each example will have it’s own video with tips and considerations. We have also prepared a video commenting general aspects of the design of TissUUmaps.
+
+One example is a slide of breast cancer tissue and another example is one with a coronal section of a mouse brain.
+
+## How to use TissUUmaps
+
+Here you can find several videos explaining how to use TissUUmaps
+
 
 
