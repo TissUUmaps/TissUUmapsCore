@@ -55,6 +55,22 @@ Each example will have it’s own video with tips and considerations. We have al
 
 One example is a slide of breast cancer tissue and another example is one with a coronal section of a mouse brain.
 
+
+<table>
+    <tr>
+        <td>
+            <a href="https://tissuumaps.research.it.uu.se/examples.html#section-breastcancer">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Exmaple1.png" />
+            </a>
+        </td>        
+        <td>
+            <a href="https://tissuumaps.research.it.uu.se/examples.html#section-mousebrain">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Exmaple2.png">
+            </a>
+        </td>
+    </tr>
+</table>
+
 ## How to use TissUUmaps
 
 Here you can find several videos explaining how to use TissUUmaps
