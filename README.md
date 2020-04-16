@@ -21,7 +21,7 @@ This image sumarizes the process of converting a whole slide image into a DZI. A
 
 [VIPS](https://libvips.github.io/libvips/) is a super powerful image processing library. It offers a specific command to convert an image to DZI. For example:
 
-`vips dzsave slide.ndpi  --tile-size=254 --overlap=1 --depth onetile --suffix .jpg[Q=90] mySlide`
+`vips dzsave slide.ndpi  --tile-size=254 --overlap=1 --depth onepixel --suffix .jpg[Q=90] mySlide`
 
 **Info:**
 More on VIPS dzsave [here](https://libvips.github.io/libvips/API/current/Making-image-pyramids.md.html)
