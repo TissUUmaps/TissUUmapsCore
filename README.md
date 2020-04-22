@@ -49,23 +49,18 @@ Once you have your pyramidal image and your HTML set then you can open it in any
 
 ## Example
 
-We have designed two examples for setting up your own TissUUmaps
-
-Each example will have it’s own video with tips and considerations. We have also prepared a video commenting general aspects of the design of TissUUmaps.
-
-One example is a slide of breast cancer tissue and another example is one with a coronal section of a mouse brain.
-
+We have designed an example for setting up your own TissUUmaps. The videos also comment on the general aspects of the design of TissUUmaps.
 
 <table>
     <tr>
-        <td>
-            <a href="https://tissuumaps.research.it.uu.se/examples.html#section-breastcancer">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Example1.png" />
+        <td width="50%">
+            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-whatis">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/DataInTissUUmaps.png" />
             </a>
         </td>        
-        <td>
-            <a href="https://tissuumaps.research.it.uu.se/examples.html#section-mousebrain">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/Demo-Example2.png">
+        <td width="50%">
+             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-setup">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/SetupTM-BCS.png" />
             </a>
         </td>
     </tr>
@@ -78,15 +73,25 @@ Here you can find several videos explaining how to use TissUUmaps
 <table>
     <tr>
         <td>
-            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-geneexp">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/geneexp.png" />
-            </a>
+             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-using">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/ViewingGeneExpressionData.png">
+           </a>
         </td>        
         <td>
-            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-regions">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/regions.png">
-            </a>
+             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-using">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/UsingRegionsExploreData.png">
+           </a>
         </td>
     </tr>
+     <tr>
+        <td>
+           <a href="https://tissuumaps.research.it.uu.se/howto.html#section-setup">
+            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/SetupTM-BCS.png">
+           </a>
+        </td>        
+        <td width="50%">
+        </td>
+    </tr>
+    
 </table>
 
