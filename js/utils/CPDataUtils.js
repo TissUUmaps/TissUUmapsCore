@@ -128,6 +128,9 @@ CPDataUtils.readCSV = function (thecsv) {
     );
 }
 
+/** 
+ * Remove the cp data from the view
+ */
 CPDataUtils.removeCPdata=function(){
     var cpop = "CP";//tmapp["object_prefix"];
     for(d3nodename in overlayUtils._d3nodes){
@@ -156,7 +159,8 @@ CPDataUtils.randomSamplesFromList = function (amount, list) {
     return list.slice(0,amount);
 }
 
-
+/** 
+* Find all CP elements in a box  */
 CPDataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
     var cpop = "CP";
 
