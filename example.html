@@ -550,14 +550,14 @@
 <script src="js/utils/regionUtils.js"></script>
 <script src="js/utils/overlayUtils.js"></script>
 <script src="js/utils/geometryUtils.js"></script>
-<script src="js/appbase.js"></script>
+<script src="js/tmapp.js"></script>
 <script>
 
     document.getElementById("project_title").innerText = "Project title";
     // ----------
     $(document).ready(function () {
         tmapp.fixed_file = "location/of/your.dzi";
-	//tmapp.layers =[{name:"Layer name",tileSource:"location/of/your.dzi"}];
+	    //tmapp.layers =[{name:"Layer name",tileSource:"location/of/your.dzi"}];
         tmapp.registerActions();
         tmapp.init();
     });
