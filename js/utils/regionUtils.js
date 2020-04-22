@@ -1,36 +1,37 @@
 /**
  * @namespace regionUtils
  * @classdesc Region utilities, everything to do with 
- * regions or their calculations goes here */
+ * regions or their calculations goes here  
+ * @property {Bool}     regionUtils._isNewRegion - if _isNewRegion is true then a new region will start 
+ * @property {Bool}     regionUtils._currentlyDrawing - Boolean to specify if a region is currently being drawn
+ * @property {Number}   regionUtils._currentRegionId - Keep then number of drawn regions and also let them be the id, 
+ * @property {Object[]} regionUtils._currentPoints - Array of points for the current region, 
+ * @property {String}   regionUtils._colorInactiveHandle - String for a color "#cccccc", 
+ * @property {String}   regionUtils._colorActiveHandle - Color of the point in the region, 
+ * @property {Number}   regionUtils._scaleHandle - Scale of the point in regions, 
+ * @property {Number}   regionUtils._polygonStrokeWidth - Width of the stroke of the polygon, 
+ * @property {Number}   regionUtils._handleRadius - Radius of the point of the region, 
+ * @property {Number}   regionUtils._epsilonDistance - Distance at which a click from the first point will consider to close the region, 
+ * @property {Object}   regionUtils._regions - Object that contains the regions in the viewer, 
+ * @property {String}   regionUtils._drawingclass - String that accompanies the classes of the polygons in the interface"drawPoly", 
+*/
 regionUtils = {
-	/** if _isNewRegion is true then a new region will start */
 	_isNewRegion: true,
-	/** _currentlyDrawing:false, */
 	_currentlyDrawing: false,
-	/** _currentRegionId: keep then number of drawn regions and also let them be the id, */
 	_currentRegionId: 0,
-	/** _currentPoints: array of points for the current region, */
 	_currentPoints: null,
-	/** _colorInactiveHandle:"#cccccc", */
 	_colorInactiveHandle: "#cccccc",
-	/** _colorActiveHandle: Color of the point in the region, */
 	_colorActiveHandle: "#ffff00",
-	/** _scaleHandle: scale of the point in regions, */
 	_scaleHandle: 0.0025,
-	/** _polygonStrokeWidth: width of the stroke of the polygon, */
 	_polygonStrokeWidth: 0.0006,
-	/** _handleRadius:Radius of the point of the region, */
 	_handleRadius: 0.1,
-	/** _epsilonDistance: distance at which a click from the first point will consider to be closing the region, */
 	_epsilonDistance: 0.004,
-	/** _regions: object that contains the regions in the viewer, */
 	_regions: {},
-	/** _drawingclass:"drawPoly", */
 	_drawingclass: "drawPoly"
 }
 
 /** 
- *  regionUtils */
+ *  Reset the drawing of the regions */
 regionUtils.resetManager = function () {
 	var drawingclass = regionUtils._drawingclass;
 	d3.select("." + drawingclass).remove();
@@ -38,11 +39,10 @@ regionUtils.resetManager = function () {
 	regionUtils._currentPoints = null;
 }
 /** 
- *  regionUtils */
+ *  When a region is being drawn, this function takes care of the creation of the region */
 regionUtils.manager = function (event) {
 	//console.log(event);
 	var drawingclass = regionUtils._drawingclass;
-	//console.log(event);
 	//if we come here is because overlayUtils.drawRegions mode is on
 	// No matter what we have to get the normal coordinates so
 	//I am going to have to do a hack to get the right OSD viewer
@@ -113,7 +113,7 @@ regionUtils.manager = function (event) {
 
 }
 /** 
- *  regionUtils */
+ *  Close a polygon, adding a region to the viewer and an interface to it in the side panel */
 regionUtils.closePolygon = function () {
 	var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
 	var drawingclass = regionUtils._drawingclass;
@@ -129,8 +129,10 @@ regionUtils.closePolygon = function () {
 	regionUtils.addRegion(regionUtils._currentPoints, regionid, hexcolor);
 	regionUtils._currentPoints = null;
 }
+
 /** 
- *  regionUtils */
+ * @param {Object} JSON formatted region to import
+ *  When regions are imported, create all objects for it from a region object */
 regionUtils.createImportedRegion = function (region) {
 	var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
 	regionsobj = d3.select(canvas);
@@ -156,12 +158,15 @@ regionUtils.createImportedRegion = function (region) {
 
 }
 /** 
- *  regionUtils */
+ * @param {Number[]} p1 Array with x and y coords
+ * @param {Number[]} p2 Array with x and y coords
+ *  Distance between two points represented as arrays [x1,y1] and [x2,y2] */
 regionUtils.distance = function (p1, p2) {
 	return Math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
 }
 /** 
- *  regionUtils */
+ *  @param {Number[]} points Array of 2D points in normalized coordinates
+ *  Create a region object and store it in the regionUtils._regions container */
 regionUtils.addRegion = function (points, regionid, color) {
 	var op = tmapp["object_prefix"];
 	var imageWidth = OSDViewerUtils.getImageWidth();
@@ -186,7 +191,8 @@ regionUtils.addRegion = function (points, regionid, color) {
 	regionUtils.regionUI(regionid);
 }
 /** 
- *  regionUtils */
+ *  @param {String} regionid Region identifier to be searched in regionUtils._regions
+ *  Create the whole UI for a region in the side panel */
 regionUtils.regionUI = function (regionid) {
 
 	var op = tmapp["object_prefix"];
@@ -225,14 +231,14 @@ regionUtils.regionUI = function (regionid) {
 
 	//button to set new features of region
 	var regionsetbutton = HTMLElementUtils.createButton({ id: regionid + "set_btn", innerText: "Set", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
-	regionsetbutton.addEventListener('click', function () { regionUtils.changeRegionUI($(this)); });
+	regionsetbutton.addEventListener('click', function () { interfaceUtils.changeRegionUI($(this)); });
 
 	//button to fill polygon
 	var regionsfillbutton = HTMLElementUtils.createButton({ id: regionid + "fill_btn", innerText: "Fill", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
-	regionsfillbutton.addEventListener('click', function () { regionUtils.fillRegionUI($(this)); });
+	regionsfillbutton.addEventListener('click', function () { interfaceUtils.fillRegionUI($(this)); });
 
 	var regionanalyzebutton = HTMLElementUtils.createButton({ id: regionid + "analyze_btn", innerText: "Analyze", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid, class:" btn btn-primary btn-sm form-control"} });
-	regionanalyzebutton.addEventListener('click', function () { regionUtils.analyzeRegion($(this)); });
+	regionanalyzebutton.addEventListener('click', function () { interfaceUtils.analyzeRegionUI($(this)); });
 	
 	form.appendChild(regionsetbutton);
 	form.appendChild(regionanalyzebutton);
@@ -259,24 +265,27 @@ regionUtils.regionUI = function (regionid) {
 
 	if (rClass) regionText = regionText + " (" + rClass + ")";
 
-	//console.log(rName+rClass+regionText);
-
 	rpanelheading.innerHTML = regionText;
 }
+
 /** 
- *  regionUtils */
-regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, regionid, options) {
-	
+ *  @param {Object} quadtree d3.quadtree where the points are stored
+ *  @param {Number} x0 X coordinate of one point in a bounding box
+ *  @param {Number} y0 Y coordinate of one point in a bounding box
+ *  @param {Number} x3 X coordinate of diagonal point in a bounding box
+ *  @param {Number} y3 Y coordinate of diagonal point in a bounding box
+ *  @param {Object} options Tell the function 
+ *  Search for points inside a particular region */
+regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, regionid, options) {	
 	if (options.globalCoords) {
 		var pointInRegion = geometryUtils.globalPointInRegion;
 		var xselector = "global_X_pos";
 		var yselector = "global_Y_pos";
-	} else {
+	}else{
 		var pointInRegion = geometryUtils.viewerPointInRegion;
 		var xselector = "viewer_X_pos";
 		var yselector = "viewer_Y_pos";
 	}
-
 	var countsInsideRegion = 0;
 	var pointsInside=[];
 	quadtree.visit(function (node, x1, y1, x2, y2) {
@@ -302,28 +311,20 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
 	}
 	return pointsInside;
 }
-/** 
- *  regionUtils */
-regionUtils.changeRegionUI = function (callingbutton) {
-	var regionid = callingbutton[0].getAttribute("parentRegion");
-	regionUtils.changeRegion(regionid);
 
-}
-
+/** Fill all regions  */
 regionUtils.fillAllRegions=function(){
-	for(var property in regionUtils._regions){
-		if (regionUtils._regions.hasOwnProperty(property)) {
-			regionUtils.fillRegion(property);
+	for(var region in regionUtils._regions){
+		if (regionUtils._regions.hasOwnProperty(region)) {
+			regionUtils.fillRegion(region);
 		}
 	}
 }
 
-regionUtils.fillRegionUI = function (callingbutton) {
-	var regionid = callingbutton[0].getAttribute("parentRegion");
-	regionUtils.fillRegion(regionid);
 
-}
-
+/** 
+ * @param {String} regionid String id of region to fill
+ * Given a region id, fill this region in the interface */
 regionUtils.fillRegion = function (regionid) {
 	if(regionUtils._regions[regionid].filled === 'undefined'){
 		regionUtils._regions[regionid].filled=true;
@@ -344,7 +345,8 @@ regionUtils.fillRegion = function (regionid) {
 
 }
 /** 
- *  regionUtils */
+ * 	@param {String} regionid Region identifier
+ *  Change the region properties like color, class name or region name */
 regionUtils.changeRegion = function (regionid) {
 	var op = tmapp["object_prefix"];
 	var newregioncolor = document.getElementById(regionid + "color_input").value;
@@ -371,8 +373,10 @@ regionUtils.changeRegion = function (regionid) {
 	document.getElementById(regionid + "poly").setAttribute("style", newStyle);
 
 }
+
 /** 
- *  regionUtils */
+ * 	@param {String} regionid Region identifier
+ *  Change the panel to match the region properties */
 regionUtils.loadTextRegionUI = function (regionid) {
 	var op = tmapp["object_prefix"];
 	var rPanel = document.getElementById(op + regionid + "panel");
@@ -400,13 +404,8 @@ regionUtils.loadTextRegionUI = function (regionid) {
 }
 /** 
  *  regionUtils */
-regionUtils.analyzeRegion = function (callingbutton) {
+regionUtils.analyzeRegion = function (regionid) {
 	var op = tmapp["object_prefix"];
-
-	if (!dataUtils[op + "_barcodeGarden"]) {
-		alert("Load markers first");
-		return;
-	}
 
 	function compare(a, b) {
 		if (a.count > b.count)
@@ -424,24 +423,18 @@ regionUtils.analyzeRegion = function (callingbutton) {
 		}
 		return copy;
 	}
-
-	var regionid = callingbutton[0].getAttribute("parentRegion");
+	
 	regionUtils._regions[regionid].associatedPoints=[];
-	//var regiondomid=callingbutton[0].getAttribute("parentRegion")+"poly";
+	
 	console.log("analyzing "+regionid);
 	var allkeys=Object.keys(dataUtils[op + "_barcodeGarden"]);
 	for (var codeIndex in allkeys) {
 		var code = allkeys[codeIndex];
-		//console.log(code);
 		var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils[op + "_barcodeGarden"][code],
-			regionUtils._regions[regionid]._gxmin,
-			regionUtils._regions[regionid]._gymin,
-			regionUtils._regions[regionid]._gxmax,
-			regionUtils._regions[regionid]._gymax,
-			regionid,
-			{"globalCoords":true});
+		regionUtils._regions[regionid]._gxmin,regionUtils._regions[regionid]._gymin,
+		regionUtils._regions[regionid]._gxmax,regionUtils._regions[regionid]._gymax,
+			regionid, {"globalCoords":true});
 		if(pointsInside.length>0){
-			//console.log(codeIndex,"has points",pointsInside);
 			pointsInside.forEach(function(p){
 				var pin=clone(p);
 				pin.regionid=regionid;
@@ -450,7 +443,6 @@ regionUtils.analyzeRegion = function (callingbutton) {
 		}
 	}
 	regionUtils._regions[regionid].barcodeHistogram.sort(compare);
-	//alert("Region "+regionUtils._regions[regionid].regionName+" analyzed");
 
 	var rPanel = document.getElementById(op + regionid + "panel");
 	var rpanelbody = HTMLElementUtils.getFirstChildByClass(rPanel, "panel-body");
@@ -463,7 +455,6 @@ regionUtils.analyzeRegion = function (callingbutton) {
 		var innerHTML = "<strong>" + histogram[i].gene_name + "," + histogram[i].barcode + ",</strong>" + histogram[i].count;
 		ul.appendChild(HTMLElementUtils.createElement({ type: "li", "innerHTML": innerHTML }))
 	}
-	//div.setAttribute("style","overflow-y:scroll");
 	rpanelbody.appendChild(div);
 
 }
@@ -493,7 +484,6 @@ regionUtils.importRegionsFromJSON = function () {
 	var regionsPanel = document.getElementById("markers-regions-panel");
 	regionsPanel.innerText = "";
 	regionUtils._regions = {};
-	//regionsPanel.innerHTML="";
 	regionUtils.JSONToRegions();
 
 }
@@ -503,6 +493,8 @@ regionUtils.pointsInRegionsToCSV=function(){
 	for (r in regionUtils._regions){
 		var regionPoints=regionUtils._regions[r].associatedPoints;
 		regionUtils._regions[r].associatedPoints.forEach(function(p){
+			p.regionName=regionUtils._regions[r].regionName
+			p.regionClass=regionUtils._regions[r].regionClass
 			alldata.push(p);
 		});
 		//console.log(alldata);	
