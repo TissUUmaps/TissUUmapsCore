@@ -1,6 +1,16 @@
 /**
- * @memberof tmapp 
-  Work with anything that has to do with the overlay */
+ * @file overlayUtils.js Interface to ask information to OSD
+ * @author Leslie Solorzano
+ * @see {@link overlayUtils}
+ */
+
+/**
+ * @namespace overlayUtils
+ * @property {Bool}   overlayUtils._drawRegions - If false then disable the drawing of regions
+ * @property {Object} overlayUtils._d3nodes - Main group or container of all d3 svg groups of overlays corresponding to the 3 main marker data groups
+ * @property {Number} overlayUtils._percentageForSubsample - Take this percentage of each barcode when downsamplir for lower resolutions
+ * @property {Number}  overlayUtils._zoomForSubsample - When the zoom is bigger than this, display all the checked genes 
+ */
 overlayUtils = {
     _drawRegions: false,
     _d3nodes: {},
@@ -8,12 +18,19 @@ overlayUtils = {
     _zoomForSubsample:5.15
 }
 
+/** 
+ * @param {Number} item Index of an OSD tile source
+ * Set the opacity of a tile source */
 overlayUtils.setItemOpacity= function(item){
     var op = tmapp["object_prefix"];
     var opa=Math.abs(1.0-tmapp[op + "_viewer"].world.getItemAt(item).opacity);	
     tmapp[op + "_viewer"].world.getItemAt(item).setOpacity(opa);
 }
 
+/**
+ * @param {String} colortype A string from [hex,hsl,rgb]
+ * Get a random color in the desired format
+ */
 overlayUtils.randomColor = function (colortype) {
     if (!colortype) {
         colortype = "hex";
@@ -49,6 +66,10 @@ overlayUtils.randomColor = function (colortype) {
     }
 }
 
+/**
+ * Main function to update the view if there has been a reason for it. 
+ * It computes all the elements that have to be drawn.
+ */
 overlayUtils.modifyDisplayIfAny = function () {
     //get four corners of view
     var op = tmapp["object_prefix"];
@@ -90,15 +111,13 @@ overlayUtils.modifyDisplayIfAny = function () {
                 markerUtils.drawAllFromList(drawThese);
 
             } else {
-
-                //console.log("percentage bigger than " + overlayUtils._percentageForSubsample);
                 //if the percentage of image I see is bigger than a threshold then use the predownsampled markers
                 if (dataUtils._subsampledBarcodes[barcode]) {
                     markerUtils.drawAllFromList(dataUtils._subsampledBarcodes[barcode]);
                 } else {
                     markerUtils.drawAllFromBarcode(barcode);
                 }
-            }//markerUtils.drawAllFromList(dataUtils.subsampledBarcodes[barcode]);
+            }
         } 
     }
 
@@ -111,13 +130,14 @@ overlayUtils.modifyDisplayIfAny = function () {
         } else {
             console.log("subsample");
             //I create the subsampled one already when I read de CP csv, in CPDataUtils[cpop + "_subsampled_data"]     
-            markerUtils.drawCPdata({searchInTree:false});
-            
+            markerUtils.drawCPdata({searchInTree:false});            
         }
-
     }
 }
 
+/**
+ * Save the current SVG overlay to open in a vector graphics editor for a figure for example
+ */
 overlayUtils.saveSVG=function(){
     var svg = d3.select("svg");
     var svgData = svg._groups[0][0].outerHTML;

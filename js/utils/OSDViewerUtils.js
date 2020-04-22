@@ -6,7 +6,6 @@
 
 /**
  * @namespace OSDViewerUtils
- * @classdesc Interface to ask information to OSD, like image info or viewport info
  */
 OSDViewerUtils={
   _currentZoom:0,
