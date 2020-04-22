@@ -1,5 +1,15 @@
+/**
+* @file HTMLElementUtils.js Wrappers to common dom element creation 
+* with options to make the creation of an HTML element shorter
+* @author Leslie Solorzano
+* @see {@link HTMLElementUtils}
+*/
+/**
+* @namespace HTMLElementUtils
+*/
 HTMLElementUtils = {}
 
+/** Create a checkbox input  */
 HTMLElementUtils.inputTypeCheckbox = function (params) {
     if (!params) {
         var checkbox = document.createElement("input");
@@ -24,6 +34,7 @@ HTMLElementUtils.inputTypeCheckbox = function (params) {
     return checkbox;
 }
 
+/** Create a color input  */
 HTMLElementUtils.inputTypeColor = function (params) {
     if (!params) {
         var color = document.createElement("input");
@@ -42,6 +53,7 @@ HTMLElementUtils.inputTypeColor = function (params) {
     return color;
 }
 
+/** Create a text input  */
 HTMLElementUtils.inputTypeText = function (params) {
     if (!params) {
         var text = document.createElement("input");
@@ -61,6 +73,7 @@ HTMLElementUtils.inputTypeText = function (params) {
     return text;
 }
 
+/** Create a drop down select  */
 HTMLElementUtils.selectTypeDropDown = function (params) {
     if (!params) {
         return document.createElement("select");
@@ -79,6 +92,7 @@ HTMLElementUtils.selectTypeDropDown = function (params) {
     return select;
 }
 
+/** Create an HTML element with the common tags (e.g a,p,h1) */
 HTMLElementUtils.createElement = function (params) {
     if (!params) {
         return null;
@@ -101,6 +115,7 @@ HTMLElementUtils.createElement = function (params) {
     return element;
 }
 
+/** Create a booststrap panel */
 HTMLElementUtils.createPanel = function (params) {
     if (!params) {
         var panelClass = "panel-default";
@@ -124,6 +139,7 @@ HTMLElementUtils.createPanel = function (params) {
     return panel;
 }
 
+/** Create a booststrap row */
 HTMLElementUtils.createRow = function (params) {
     if (!params) {
         var row = HTMLElementUtils.createElement({ type: "div" });
@@ -147,6 +163,7 @@ HTMLElementUtils.createRow = function (params) {
 
 }
 
+/** Create a booststrap column */
 HTMLElementUtils.createColumn = function (params) {
     if (!params) {
         var width = 2;
@@ -172,6 +189,8 @@ HTMLElementUtils.createColumn = function (params) {
     return column;
 }
 
+
+/** Create a button */
 HTMLElementUtils.createButton = function (params) {
     if (!params) {
         var button = document.createElement("button");
@@ -194,6 +213,7 @@ HTMLElementUtils.createButton = function (params) {
     return button;
 }
 
+/** Create a table */
 HTMLElementUtils.createTable = function (params) {
     if (!params) {
         return document.createElement("table");
@@ -211,6 +231,7 @@ HTMLElementUtils.createTable = function (params) {
 
 }
 
+/** Create a form */
 HTMLElementUtils.createForm = function (params) {
     if (!params) {
         var form = document.createElement("form");
@@ -225,6 +246,7 @@ HTMLElementUtils.createForm = function (params) {
     return form;
 }
 
+/** Create a color in YCbCr space to divide between the possible 4 letters */
 HTMLElementUtils.barcodeHTMLColor = function (barcode) {
     //A Red, T Green, C Bluemagenta, G yellow
     var maincolor = barcode.charAt(0).toLowerCase();
@@ -269,6 +291,8 @@ HTMLElementUtils.barcodeHTMLColor = function (barcode) {
 
 }
 
+/** 
+* getFirstChildByClass  */
 HTMLElementUtils.getFirstChildByClass = function (e, c) {
     var thisChild = null;
     e.childNodes.forEach(function (child) {
