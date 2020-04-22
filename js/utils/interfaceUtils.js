@@ -1,5 +1,20 @@
+/**
+* @file interfaceUtils.js adding and managing elements in the interface
+* @author Leslie Solorzano
+* @see {@link interfaceUtils}
+*/
+/**
+* @namespace interfaceUtils
+*/
 interfaceUtils={}
 
+
+/** 
+* @param {String} domid The id of the element to listen to
+* @param {String} event The event to listen for
+* @param {String} handler Function to answer with
+* @param {Bool} debug If true will print to console
+* Listen to an event of an element, if the element doesnçt exist get a warning. */
 interfaceUtils.listen= function(domid,event,handler,debug){
     var dbg=debug || false;
     //console.log(dbg)
@@ -15,6 +30,39 @@ interfaceUtils.listen= function(domid,event,handler,debug){
     }
 }
 
+
+/** Get the region to be filled  */
+interfaceUtils.analyzeRegionUI = function (callingbutton) {
+	var op = tmapp["object_prefix"];
+
+	if (!dataUtils[op + "_barcodeGarden"]) {
+		alert("Load markers first");
+		return;
+    }
+    
+    var regionid = callingbutton[0].getAttribute("parentRegion");
+    regionUtils.analyzeRegion(regionid);
+}
+
+
+/** Get the region to be filled  */
+interfaceUtils.fillRegionUI = function (callingbutton) {
+	var regionid = callingbutton[0].getAttribute("parentRegion");
+	regionUtils.fillRegion(regionid);
+}
+
+/** 
+ * @param {HTMLelement} callingbutton Button element containing parent region information 
+ *  Get the info of the region that has to be changed */
+interfaceUtils.changeRegionUI = function (callingbutton) {
+	var regionid = callingbutton[0].getAttribute("parentRegion");
+	regionUtils.changeRegion(regionid);
+}
+
+/** 
+* @param {String} domid The id of the select element
+* @param {String[]} Array of strings containing elements to add to the select
+* Add options to a select element */
 interfaceUtils.addElementsToSelect=function(domid,elemlist){
     var select= document.getElementById(domid);
     if(select){
@@ -30,6 +78,10 @@ interfaceUtils.addElementsToSelect=function(domid,elemlist){
     }
 }
 
+/** 
+* @param {String} domid The id of the select element
+* @param {Object[]} Array of objects containing elements to add to the select
+* Add options to a select element using Objects with the keys: "value* and "innerHTML" */
 interfaceUtils.addObjectsToSelect=function(domid,objlist){
     var select= document.getElementById(domid);
     if(select){
@@ -45,9 +97,6 @@ interfaceUtils.addObjectsToSelect=function(domid,objlist){
     }
 }
 
-/**
- * domid string, element string, options, object with HTML options for opt
- */
 interfaceUtils.addSingleElementToSelect=function(domid,element,options){
     if(!options) options={};
     var select= document.getElementById(domid);
@@ -63,6 +112,10 @@ interfaceUtils.addSingleElementToSelect=function(domid,element,options){
     }
 }
 
+
+/** 
+* @param {String} domid The id of the select element
+* Erase all options in a select element */
 interfaceUtils.cleanSelect=function(domid){
     var select= document.getElementById(domid);
     if(select){       
@@ -73,6 +126,9 @@ interfaceUtils.cleanSelect=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* Make an element invisible */
 interfaceUtils.makeInvisible=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -83,6 +139,9 @@ interfaceUtils.makeInvisible=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* Make an element visible */
 interfaceUtils.makeVisible=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -93,6 +152,9 @@ interfaceUtils.makeVisible=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* Disable an element */
 interfaceUtils.disableElement=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -103,6 +165,10 @@ interfaceUtils.disableElement=function(domid){
     }
 }
 
+
+/** 
+* @param {String} domid The id of the element
+* Enable an element */
 interfaceUtils.enableElement=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -113,6 +179,10 @@ interfaceUtils.enableElement=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* @return {Bool | null}
+* Ask if an element is enabled */
 interfaceUtils.isEnabled=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -125,9 +195,10 @@ interfaceUtils.isEnabled=function(domid){
     }
 }
 
-/**
- * Returns an object containing key and value of selection
- */
+/** 
+* @param {String} domid The id of the element
+* @return {Object | null} Object with a "key" and a "value"
+* Get the selected option in a sleect element */
 interfaceUtils.getSelectedIndexValue=function(domid){
     var selector= document.getElementById(domid);
     if(selector){
@@ -142,6 +213,10 @@ interfaceUtils.getSelectedIndexValue=function(domid){
 
 }
 
+/** 
+* @param {String} classname The class of the elements
+* @return {HTMLelements[] | null} array of HTMl elements
+* Call the main dom.getElementsByClassName function with a warning if no elements exist */
 interfaceUtils.getElementsByClassName=function(classname){
     var elems= document.getElementsByClassName(classname);
     if(elems){
@@ -152,6 +227,11 @@ interfaceUtils.getElementsByClassName=function(classname){
     }
 }
 
+
+/** 
+* @param {String} classname The class of the elements
+* @return {HTMLelements[] | null} array of HTMl elements
+* Call the main dom.getElementsByTagName function with a warning if no elements exist */
 interfaceUtils.getElementsByTagName=function(tagname){
     var elems= document.getElementsByTagName(tagname);
     if(elems){
@@ -162,6 +242,11 @@ interfaceUtils.getElementsByTagName=function(tagname){
     }
 }
 
+
+/** 
+* @param {String} domid The id of the element
+* @return {HTMLelement | null} HTMl element
+* Get the an element and warn if none exists */
 interfaceUtils.getElementById=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -172,6 +257,10 @@ interfaceUtils.getElementById=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* @return {String | null} HTMl element
+* Get the value of a dom element and warn if element does not exist*/
 interfaceUtils.getValueFromDOM=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -182,6 +271,11 @@ interfaceUtils.getValueFromDOM=function(domid){
     }
 }
 
+
+/** 
+* @param {String} domid The id of the element
+* @return {String | null} innerHTMl
+* Get the innerHTML of a dom element and warn if element does not exist*/
 interfaceUtils.getInnerHTMLFromDOM=function(domid){
     var elem= document.getElementById(domid);
     if(elem){
@@ -217,6 +311,15 @@ interfaceUtils.emptyViewers = function (options) {
     });  
 }
 
+
+/** 
+* @param {String} dzi Path and name of the DZI file
+* @param {String} viewer String that identifies a viewer and its 
+* associated components. For a single viewer the default is "ISS", 
+* resulting in "ISS_viewer" as an identifier
+* Open a DZI in a specific viewer. If a main location for images 
+* is specified previously using the "url_prefix" variable, 
+* it will be added to the dzi string */
 interfaceUtils.openDZI=function(dzi,viewer){
     var possibleurlprefix=interfaceUtils.getValueFromDOM("url_prefix");
     if(possibleurlprefix){
@@ -336,8 +439,8 @@ interfaceUtils.hideTabsExcept = function (a) {
         var ulsas = uls[i].getElementsByTagName("a");
         for (var j = 0; j < ulsas.length; j++) {
             ana=ulsas[j].href.split("#")[1];
-            console.log(ana)
-            console.log("!ana.includes(elid)", !ana.includes(elid))
+            //console.log(ana)
+            //console.log("!ana.includes(elid)", !ana.includes(elid))
             if(!ana.includes(elid)){
                 //only turn non elids
                 as.push(ana)
