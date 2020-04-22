@@ -6,7 +6,7 @@
 
 /**
 * @namespace dataUtils
-* @property {Object} dataUtils._CSVStructure - Expected csv structure
+* @property {Object} dataUtils._expectedCSV - Expected csv structure
 * @property {Object} dataUtils._subsampledBarcodes - Containing the subsamples barcode trees to display
 * @property {Array}  dataUtils._barcodesByAmount - Sorted list of arrays of the data
 * @property {Number} dataUtils._maximumAmountInLowerRes - Maximum amount of points to display in low res
@@ -112,6 +112,9 @@ dataUtils.processISSRawData = function () {
     delete dataUtils[op + "_rawdata"];
 }
 
+
+/** 
+* Show the menu do select the CSV headers that contain the information to display*/
 dataUtils.showMenuCSV = function(){
     var op = tmapp["object_prefix"];
     var csvheaders = Object.keys(dataUtils[op + "_rawdata"][0]);
