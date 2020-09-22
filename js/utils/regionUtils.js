@@ -240,9 +240,15 @@ regionUtils.regionUI = function (regionid) {
 	var regionanalyzebutton = HTMLElementUtils.createButton({ id: regionid + "analyze_btn", innerText: "Analyze", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid, class:" btn btn-primary btn-sm form-control"} });
 	regionanalyzebutton.addEventListener('click', function () { interfaceUtils.analyzeRegionUI($(this)); });
 	
+	//button to remove region
+	var regionsdeletebutton = HTMLElementUtils.createButton({ id: regionid + "delete_btn", innerText: "Delete region", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
+	regionsdeletebutton.addEventListener('click', function () { interfaceUtils.deleteRegionUI($(this)); });
+
+	
 	form.appendChild(regionsetbutton);
 	form.appendChild(regionanalyzebutton);
 	form.appendChild(regionsfillbutton);
+	form.appendChild(regionsdeletebutton);
 	
 	rpanelbody.appendChild(form);
 
@@ -343,6 +349,17 @@ regionUtils.fillRegion = function (regionid) {
 	}
 	document.getElementById(regionid + "poly").setAttribute("style", newStyle);
 
+}
+/** 
+ * @param {String} regionid String id of region to delete
+ * Given a region id, deletes this region in the interface */
+regionUtils.deleteRegion = function (regionid) {
+	var regionPoly = document.getElementById(regionid + "poly")
+	regionPoly.parentElement.removeChild(regionPoly);
+	delete regionUtils._regions[regionid];
+	var op = tmapp["object_prefix"];
+	var rPanel = document.getElementById(op + regionid + "panel");
+	rPanel.parentElement.removeChild(rPanel);
 }
 /** 
  * 	@param {String} regionid Region identifier

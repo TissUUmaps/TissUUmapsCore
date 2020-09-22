@@ -31,7 +31,7 @@ interfaceUtils.listen= function(domid,event,handler,debug){
 }
 
 
-/** Get the region to be filled  */
+/** Get the region to be analyzed  */
 interfaceUtils.analyzeRegionUI = function (callingbutton) {
 	var op = tmapp["object_prefix"];
 
@@ -49,6 +49,12 @@ interfaceUtils.analyzeRegionUI = function (callingbutton) {
 interfaceUtils.fillRegionUI = function (callingbutton) {
 	var regionid = callingbutton[0].getAttribute("parentRegion");
 	regionUtils.fillRegion(regionid);
+}
+
+/** Delete a RegionUI  */
+interfaceUtils.deleteRegionUI = function(callingbutton) {
+    var regionid = callingbutton[0].getAttribute("parentRegion");
+    regionUtils.deleteRegion(regionid);
 }
 
 /** 
