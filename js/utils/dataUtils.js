@@ -215,7 +215,9 @@ dataUtils.XHRCSV = function (thecsv) {
             dataUtils[op + "_rawdata"] = d3.csvParse(xhr.responseText);
             dataUtils.showMenuCSV();
             
-        }        
+        }else{
+            console.log("dataUtils.XHRCSV responded with "+xhr.status);
+        }     
     };
     
     xhr.onprogress = function (pe) {
