@@ -1,17 +1,31 @@
 /**
  * @namespace markerUtils
  * @classdesc Work with anything that has to do with markers, take options from the interface
-  about markers, and create markers */
+  about markers, and create markers  
+   * @property {Bool}     markerUtils._drawPaths -draw D3 symbols (true)  or a D3 rect (false)
+   * @property {Number}     markerUtils._globalMarkerSize - 
+   * @property {Number}   markerUtils._uniqueColor - Keep then number of drawn regions and also let them be the id, 
+   * @property {String} markerUtils._uniqueColorSelector - 
+   * @property {Number}   markerUtils._startCullingAt - 
+   * @property {Obj}   markerUtils._checkBoxes - 
+   * @property {Array(String)}   markerUtils._d3Symbols -  
+   * @property {Array(String)}   markerUtils._d3SymbolStrings - 
+   * * @property {Object}   load colors per key if known previously 
+   * 
+*/
+
 markerUtils = {
     /*  drawSymbol=function(overlay,type,x,y,size,barcode) */
     //type must be like d3.symbolVoss
     _drawPaths: true,
     _globalMarkerSize: 1,
+    _uniqueColor:false, //if this and selector are true, it will try to find a color unique to each spot
+    _uniqueColorSelector:null, //is a string of the type "[float,float,float]" that gets converted to a string "rgb(uint8,uint8,uint8)"
     _startCullingAt: 9000,
     _checkBoxes: {},
     _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye],
-    _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye"]
-
+    _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye"],
+    _colorsperkey:null
 }
 
 /** 
@@ -181,6 +195,15 @@ markerUtils.drawAllFromNonDownsampledBarcode = function (barcode) {
     var symbolIndex = document.getElementById(barcode + "-shape-" + op).value;
 
     dataUtils.findBarcodesInRawData(barcode).forEach(function (b) {
+        if(markerUtils._uniqueColor && markerUtils._uniqueColorSelector){
+            var colarr=b[markerUtils._uniqueColorSelector].replace("[","")
+            colarr=colarr.replace("]","")
+            var nums=Array.from(colarr.split(','), Number)
+            nums[0]=parseInt(nums[0]*255)
+            nums[1]=parseInt(nums[1]*255)
+            nums[2]=parseInt(nums[2]*255)
+            color="rgb("+nums.join(",")+")";
+        }
         markerUtils.drawSymbol(d3nodeName, markerUtils._d3Symbols[symbolIndex],
             (b.viewer_X_pos), (b.viewer_Y_pos),
             calculatedSize, color, b.letters,
@@ -248,6 +271,15 @@ markerUtils.drawAllFromBarcode = function (barcode) {
     var symbolIndex = document.getElementById(barcode + "-shape-" + op).value;
 
     dataUtils._subsampledBarcodes[barcode].forEach(function (b) {
+        if(markerUtils._uniqueColor && markerUtils._uniqueColorSelector){
+            var colarr=b[markerUtils._uniqueColorSelector].replace("[","")
+            colarr=colarr.replace("]","")
+            var nums=Array.from(colarr.split(','), Number)
+            nums[0]=parseInt(nums[0]*255)
+            nums[1]=parseInt(nums[1]*255)
+            nums[2]=parseInt(nums[2]*255)
+            color="rgb("+nums.join(",")+")";
+        }
         markerUtils.drawSymbol(d3nodeName, markerUtils._d3Symbols[symbolIndex],
             (b.viewer_X_pos), (b.viewer_Y_pos),
             calculatedSize, color, b.letters,
@@ -317,6 +349,15 @@ markerUtils.drawAllFromList = function (list) {
     var symbolIndex = document.getElementById(key + "-shape-" + op).value;
 
     for (var i in list) {
+        if(markerUtils._uniqueColor && markerUtils._uniqueColorSelector){
+            var colarr=list[i][markerUtils._uniqueColorSelector].replace("[","")
+            colarr=colarr.replace("]","")
+            var nums=Array.from(colarr.split(','), Number)
+            nums[0]=parseInt(nums[0]*255)
+            nums[1]=parseInt(nums[1]*255)
+            nums[2]=parseInt(nums[2]*255)
+            color="rgb("+nums.join(",")+")";
+        }
         markerUtils.drawSymbol(d3nodeName, markerUtils._d3Symbols[symbolIndex],
             (list[i].viewer_X_pos), (list[i].viewer_Y_pos),
             calculatedSize, color, key,
@@ -388,6 +429,11 @@ markerUtils.markerUI = function (barObject,options) {
     var thecolor="#5fb5f6"
     if(options.randomColorForMarker){
         thecolor=overlayUtils.randomColor("hex");
+    }
+    else if(markerUtils._colorsperkey){
+        thecolor=markerUtils._colorsperkey[barObject.key];
+        //if it ends up undefined give a random color anyways
+        if(!thecolor) thecolor=HTMLElementUtils.barcodeHTMLColor(barObject.key);
     }else{
         thecolor=HTMLElementUtils.barcodeHTMLColor(barObject.key);
     }
@@ -529,8 +575,7 @@ markerUtils.showAllRows = function () {
 /** Draw all downsampled barcodes at the same time */
 markerUtils.drawAllMarkers = function () {
     var op = tmapp["object_prefix"];
-    document.getElementById(op + '_drawall_btn').setAttribute("class", "btn btn-primary");
-
+    interfaceUtils.setAttributeForElement(op + '_drawall_btn',"class", "btn btn-primary");
     if (document.getElementById("_globalmarkersize_text")) {
         if (document.getElementById("_globalmarkersize_text").value) {
             markerUtils._globalMarkerSize = Number(document.getElementById("_globalmarkersize_text").value);
@@ -631,10 +676,6 @@ markerUtils.drawBarcodeByView = function (barcode) {
     if (xmin < 0) { xmin = 0; }; if (xmax > 1.0) { xmax = 1.0; };
     if (ymin < 0) { ymin = 0; }; if (ymax > imageHeight / imageWidth) { ymax = imageHeight / imageWidth; };
 
-    //console.log(xmin, ymin, xmax, ymax);
-
-    //console.log((xmax - xmin) * (ymax - ymin));
-
     var total = imageWidth * imageHeight;
 
     xmin *= imageWidth; xmax *= imageWidth; ymin *= imageWidth; ymax *= imageWidth;
@@ -644,7 +685,6 @@ markerUtils.drawBarcodeByView = function (barcode) {
     
     var markersInViewportBounds = []
     if (percentage < overlayUtils._percentageForSubsample) {
-        //console.log("percentage less than " + overlayUtils._percentageForSubsample);
         markersInViewportBounds = markerUtils.arrayOfMarkersInBox(
             dataUtils[op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
         );
