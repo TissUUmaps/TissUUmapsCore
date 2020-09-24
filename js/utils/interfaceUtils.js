@@ -248,7 +248,38 @@ interfaceUtils.getElementsByTagName=function(tagname){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* @param {String} choice thing to change
+* @param {String} value to change it to
+* @return {HTMLelement | null} HTMl element
+* Get the an element and warn if none exists */
+interfaceUtils.setValueForElement=function(domid,choice, value){
+    var elem= document.getElementById(domid);
+    if(elem){
+        elem[choice]=value
+    }else{
+        console.log("Element with id "+domid+" doesn't exist");
+        return null;
+    }
+}
 
+
+/** 
+* @param {String} domid The id of the element
+* @param {String} attr thing to change
+* @param {String} value to change it to
+* @return {HTMLelement | null} HTMl element
+* Get the an element and warn if none exists */
+interfaceUtils.setAttributeForElement=function(domid,attr, value){
+    var elem= document.getElementById(domid);
+    if(elem){
+        elem.setAttribute(attr, value);
+    }else{
+        console.log("Element with id "+domid+" doesn't exist");
+        return null;
+    }
+}
 /** 
 * @param {String} domid The id of the element
 * @return {HTMLelement | null} HTMl element
