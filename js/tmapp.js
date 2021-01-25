@@ -77,7 +77,7 @@ tmapp.init = function () {
 	     });
 	    _button.addEventListener("click",function(ev){
 		 var layer=ev.srcElement.attributes.layer;
-	        overlayUtils.setItemOpacity(layer); 
+	        overlayUtils.setItemOpacity(layer.value); 
 	    });
 	});
     }
