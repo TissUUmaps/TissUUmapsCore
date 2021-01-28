@@ -43,6 +43,11 @@ In the HTML file [example.html](https://github.com/wahlby-lab/TissUUmaps/blob/ma
     });
 </script>
 ```
+
+## Your own local web!
+
+For safety reasons, your browser and your computer need to know where data comes from. For this purpose, you need to set up your own local web server. There are many different choices. We can recommend for example, the web server addon from Chrome, or if you have Apache you can use it, or node.js. More info on how to allow your browser to use local files in our TissUUmaps website [https://tissuumaps.research.it.uu.se/howto.html#section-setup](https://tissuumaps.research.it.uu.se/howto.html#section-setup) and in the videos below.
+
 ## All set!
 
 Once you have your pyramidal image and your HTML set then you can open it in any browser and see TissUUmaps displaying your slide. You can use the right panel to load point data and explore.
