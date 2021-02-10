@@ -4,12 +4,13 @@
 * @see {@link glUtils}
 */
 glUtils = {
-    _program: null,
-    _buffer: null
+    _programs: {},
+    _buffers: {},
+    _numPoints: 50000,
 }
 
 
-glUtils._vertSource = `
+glUtils._markersVS = `
     attribute vec4 a_position;
     attribute vec4 a_color;
 
@@ -19,11 +20,12 @@ glUtils._vertSource = `
     {
         v_color = a_color;
         gl_Position = a_position;
+        gl_PointSize = 2.0;
     }
 `;
 
 
-glUtils._fragSource = `
+glUtils._markersFS = `
     precision mediump float;
 
     varying vec4 v_color;
@@ -36,28 +38,29 @@ glUtils._fragSource = `
 
 
 glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
-    var vertShader = gl.createShader(gl.VERTEX_SHADER);
+    const vertShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertShader, vertSource);
     gl.compileShader(vertShader);
     if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
-        console.log('Could not compile vertex shader: ' + gl.getShaderInfoLog(vertShader));
-        gl.deleteShader(vertShader);
+        console.log("Could not compile vertex shader: " + gl.getShaderInfoLog(vertShader));
     }
 
-    var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+    const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragShader, fragSource);
     gl.compileShader(fragShader);
     if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
-        console.log('Could not compile fragment shader: ' + gl.getShaderInfoLog(fragShader));
-        gl.deleteShader(fragShader);
+        console.log("Could not compile fragment shader: " + gl.getShaderInfoLog(fragShader));
     }
 
-    var program = gl.createProgram();
+    const program = gl.createProgram();
     gl.attachShader(program, vertShader);
     gl.attachShader(program, fragShader);
+    gl.deleteShader(vertShader);  // Flag shaders for automatic deletion after
+    gl.deleteShader(fragShader);  // their program object is destroyed
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.log('Unable to link shader program: ' + gl.getProgramInfoLog(program));
+        console.log("Unable to link shader program: " + gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
         return null;
     }
 
@@ -66,11 +69,36 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 
 
 glUtils._createTriangleBuffer = function(gl) {
-    var positions = [-0.5, -0.5, 0.5, -0.5, 0.0, 0.5];
-    var colors = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
-    var bytedata = new Float32Array(positions.concat(colors));
+    const positions = [-0.5, -0.5, 0.5, -0.5, 0.0, 0.5];
+    const colors = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+    const bytedata = new Float32Array(positions.concat(colors));
 
-    var buffer = gl.createBuffer();
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    return buffer;
+}
+
+
+glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
+    const positions = [];
+    for (let i = 0; i < numPoints; ++i) {
+        positions[2 * i + 0] = Math.random() * 2.0 - 1.0;
+        positions[2 * i + 1] = Math.random() * 2.0 - 1.0;
+    }
+
+    const colors = [];
+    for (let i = 0; i < numPoints; ++i) {
+        colors[3 * i + 0] = Math.random(); 
+        colors[3 * i + 1] = Math.random();
+        colors[3 * i + 2] = Math.random();
+    }
+
+    const bytedata = new Float32Array(positions.concat(colors));
+
+    const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
 
@@ -79,39 +107,54 @@ glUtils._createTriangleBuffer = function(gl) {
 
 
 glUtils.draw = function() {
-    console.log("Draw!");
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
 
-    var canvas = document.getElementById("gl_canvas");
-    var gl = canvas.getContext("webgl");
-
-    gl.clearColor(0.2, 0.2, 0.2, 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    var program = glUtils._program;
-    var buffer = glUtils._buffer;
+    const program = this._programs["markers"];
+    const buffer = this._buffers["markers"];
 
     gl.useProgram(program);
-    var POSITION = gl.getAttribLocation(program, 'a_position');
-    var COLOR = gl.getAttribLocation(program, 'a_color');
+    const POSITION = gl.getAttribLocation(program, "a_position");
+    const COLOR = gl.getAttribLocation(program, "a_color");
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(COLOR);
-    gl.vertexAttribPointer(COLOR, 3, gl.FLOAT, false, 0, 24);  // HACK
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.vertexAttribPointer(COLOR, 3, gl.FLOAT, false, 0, this._numPoints * 8);  // FIXME
+    gl.drawArrays(gl.POINTS, 0, this._numPoints);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.useProgram(null);
+}
+
+
+glUtils.resize = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
+
+    const op = tmapp["object_prefix"];
+    const newSize = tmapp[op + "_viewer"].viewport.containerSize;
+    gl.canvas.width = newSize.x;
+    gl.canvas.height = newSize.y;
+}
+
+
+glUtils.resizeAndDraw = function() {
+    glUtils.resize();
+    glUtils.draw();
 }
 
 
 glUtils.init = function() {
-    console.log("Init!");
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
 
-    var canvas = document.getElementById("gl_canvas");
-    var gl = canvas.getContext("webgl");
-
-    var vertSource = glUtils._vertSource;
-    var fragSource = glUtils._fragSource;
-    glUtils._program = glUtils._loadShaderProgram(gl, vertSource, fragSource);
-
-    glUtils._buffer = glUtils._createTriangleBuffer(gl); 
+    this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
+    this._buffers["markers"] = this._createDummyMarkerBuffer(gl, this._numPoints);
 }

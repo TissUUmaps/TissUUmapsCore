@@ -563,7 +563,8 @@
         tmapp.registerActions();
         tmapp.init();
         glUtils.init();
-        glUtils.draw();
+        glUtils.resizeAndDraw();
+        tmapp["ISS_viewer"].addHandler('resize', glUtils.resizeAndDraw);
     });
 
 </script>
