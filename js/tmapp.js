@@ -105,8 +105,6 @@ tmapp.init = function () {
                 //call region creator and drawer
                 regionUtils.manager(event);
             }
-            // XXX Make WebGL canvas update
-            glUtils.draw();
         } else { //if it is not quick then its panning
             scroll_handler();
         }
@@ -128,8 +126,6 @@ tmapp.init = function () {
             overlayUtils.modifyDisplayIfAny();
 
         }, tmapp._scrollDelay);
-        // XXX Make WebGL canvas update
-        glUtils.draw();
     }
 
 

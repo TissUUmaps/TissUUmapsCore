@@ -6,11 +6,16 @@
 glUtils = {
     _programs: {},
     _buffers: {},
-    _numPoints: 50000,
+    _numPoints: 100000,
+    _imageSize: [1, 1],
+    _viewportRect: [0, 0, 1, 1],
 }
 
 
 glUtils._markersVS = `
+    uniform vec2 u_imageSize;
+    uniform vec4 u_viewportRect;
+
     attribute vec4 a_position;
     attribute vec4 a_color;
 
@@ -18,9 +23,14 @@ glUtils._markersVS = `
 
     void main()
     {
+        vec2 imagePos = (a_position.xy * 0.5 + 0.5) * u_imageSize;
+        vec2 viewportPos = imagePos - u_viewportRect.xy;
+        vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
+        ndcPos.y = -ndcPos.y;
+
         v_color = a_color;
-        gl_Position = a_position;
-        gl_PointSize = 2.0;
+        gl_Position = vec4(ndcPos, 0.0, 1.0);
+        gl_PointSize = max(2.0, 1.0 / u_viewportRect.w);
     }
 `;
 
@@ -110,15 +120,22 @@ glUtils.draw = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl");
 
+    const bounds = tmapp["ISS_viewer"].viewport.getBounds();
+    glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
+    const homeBounds = tmapp["ISS_viewer"].world.getHomeBounds();
+    glUtils._imageSize = [homeBounds.width, homeBounds.height];
+
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const program = this._programs["markers"];
-    const buffer = this._buffers["markers"];
+    const program = glUtils._programs["markers"];
+    const buffer = glUtils._buffers["markers"];
 
     gl.useProgram(program);
     const POSITION = gl.getAttribLocation(program, "a_position");
     const COLOR = gl.getAttribLocation(program, "a_color");
+    gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
+    gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -126,8 +143,8 @@ glUtils.draw = function() {
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(COLOR);
-    gl.vertexAttribPointer(COLOR, 3, gl.FLOAT, false, 0, this._numPoints * 8);  // FIXME
-    gl.drawArrays(gl.POINTS, 0, this._numPoints);
+    gl.vertexAttribPointer(COLOR, 3, gl.FLOAT, false, 0, glUtils._numPoints * 8);  // FIXME
+    gl.drawArrays(gl.POINTS, 0, glUtils._numPoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.useProgram(null);

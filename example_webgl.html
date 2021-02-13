@@ -562,9 +562,12 @@
 	    tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
         tmapp.registerActions();
         tmapp.init();
+
         glUtils.init();
-        glUtils.resizeAndDraw();
+        glUtils.resize();
         tmapp["ISS_viewer"].addHandler('resize', glUtils.resizeAndDraw);
+        tmapp["ISS_viewer"].addHandler('open', glUtils.draw);
+        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.draw);
     });
 
 </script>
