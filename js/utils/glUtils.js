@@ -9,6 +9,7 @@ glUtils = {
     _numPoints: 100000,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
+    _redrawFlag: false,
 }
 
 
@@ -116,6 +117,22 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 }
 
 
+// This function is a workaround for making the area of the OSD navigator show
+// through the WebGL canvas
+glUtils.clearNavigatorArea = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
+
+    const navigator = tmapp["ISS_viewer"].navigator;
+    const navigatorSize = navigator.viewport.containerSize;
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(0, 0, navigatorSize.x + 4, navigatorSize.y + 9);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.disable(gl.SCISSOR_TEST);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+}
+
+
 glUtils.draw = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl");
@@ -148,6 +165,10 @@ glUtils.draw = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.useProgram(null);
+
+    // Clear the redraw flag to avoid markers appearing on top of the OSD
+    // navigator after exiting and entering the OSD canvas
+    glUtils._redrawFlag = false;
 }
 
 
@@ -165,6 +186,19 @@ glUtils.resize = function() {
 glUtils.resizeAndDraw = function() {
     glUtils.resize();
     glUtils.draw();
+}
+
+
+glUtils.redraw = function() {
+    if (glUtils._redrawFlag == false) return;
+    glUtils.draw();
+}
+
+
+glUtils.postRedraw = function() {
+    glUtils._redrawFlag = true;
+    // We want markers to be redrawn after the OSD navigator has faded out
+    window.setTimeout(glUtils.redraw, 3000);
 }
 
 

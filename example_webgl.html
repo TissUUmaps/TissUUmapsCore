@@ -566,8 +566,14 @@
         glUtils.init();
         glUtils.resize();
         tmapp["ISS_viewer"].addHandler('resize', glUtils.resizeAndDraw);
+        tmapp["ISS_viewer"].addHandler('resize', glUtils.clearNavigatorArea);
         tmapp["ISS_viewer"].addHandler('open', glUtils.draw);
+        tmapp["ISS_viewer"].addHandler('open', glUtils.clearNavigatorArea);
+        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.draw);
+        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.clearNavigatorArea);
         tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.draw);
+        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.clearNavigatorArea);
+        tmapp["ISS_viewer"].addHandler('container-exit', glUtils.postRedraw);
     });
 
 </script>
