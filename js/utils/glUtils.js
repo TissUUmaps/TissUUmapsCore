@@ -24,7 +24,7 @@ glUtils._markersVS = `
 
     void main()
     {
-        vec2 imagePos = (a_position.xy * 0.5 + 0.5) * u_imageSize;
+        vec2 imagePos = a_position.xy * u_imageSize;
         vec2 viewportPos = imagePos - u_viewportRect.xy;
         vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
         ndcPos.y = -ndcPos.y;
@@ -97,8 +97,8 @@ glUtils._createTriangleBuffer = function(gl) {
 glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
     const positions = [];
     for (let i = 0; i < numPoints; ++i) {
-        positions[2 * i + 0] = Math.random() * 2.0 - 1.0;
-        positions[2 * i + 1] = Math.random() * 2.0 - 1.0;
+        positions[2 * i + 0] = Math.random();
+        positions[2 * i + 1] = Math.random();
     }
 
     const colors = [];
@@ -113,8 +113,42 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     return buffer;
+}
+
+
+// Overwrite dummy data in vertex buffer with markers loaded from CSV file
+glUtils.loadMarkers = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
+
+    const markerData = dataUtils["ISS_processeddata"];
+    const numPoints = markerData.length;
+    const imageWidth = OSDViewerUtils.getImageWidth();
+    const imageHeight = OSDViewerUtils.getImageHeight();
+
+    const positions = [];
+    for (let i = 0; i < numPoints; ++i) {
+        positions[2 * i + 0] = markerData[i].global_X_pos / imageWidth;
+        positions[2 * i + 1] = markerData[i].global_Y_pos / imageHeight;
+    }
+
+    const colors = [];
+    for (let i = 0; i < numPoints; ++i) {
+        colors[3 * i + 0] = Math.random(); 
+        colors[3 * i + 1] = Math.random();
+        colors[3 * i + 2] = Math.random();
+    }
+
+    const bytedata = new Float32Array(positions.concat(colors));
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["markers"]);
+    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    glUtils._numPoints = numPoints;
 }
 
 

@@ -110,6 +110,8 @@ dataUtils.processISSRawData = function () {
     dataUtils.makeQuadTrees();
     
     delete dataUtils[op + "_rawdata"];
+
+    glUtils.loadMarkers();  // FIXME
 }
 
 
