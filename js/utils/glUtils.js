@@ -31,7 +31,7 @@ glUtils._markersVS = `
 
         v_color = a_color;
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(2.0, 1.0 / u_viewportRect.w);
+        gl_PointSize = max(3.0, 2.0 / u_viewportRect.w);
     }
 `;
 
@@ -137,9 +137,14 @@ glUtils.loadMarkers = function() {
 
     const colors = [];
     for (let i = 0; i < numPoints; ++i) {
-        colors[3 * i + 0] = Math.random(); 
-        colors[3 * i + 1] = Math.random();
-        colors[3 * i + 2] = Math.random();
+        // Get color value from initial HTML color assigned to barcode. We
+        // probably want to store these colors in a LUT texture instead, to
+        // make it possible to change colors from the GUI
+        const seed = markerData[i].letters;
+        const hexColor = HTMLElementUtils.barcodeHTMLColor(seed);
+        colors[3 * i + 0] = Number("0x" + hexColor.substring(1,3)) / 255.0; 
+        colors[3 * i + 1] = Number("0x" + hexColor.substring(3,5)) / 255.0;
+        colors[3 * i + 2] = Number("0x" + hexColor.substring(5,7)) / 255.0;
     }
 
     const bytedata = new Float32Array(positions.concat(colors));
