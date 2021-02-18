@@ -9,6 +9,7 @@ glUtils = {
     _numPoints: 100000,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
+    _markerScale: 1.0,
     _redrawFlag: false,
 }
 
@@ -16,6 +17,7 @@ glUtils = {
 glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
+    uniform float u_markerScale;
 
     attribute vec4 a_position;
     attribute vec4 a_color;
@@ -31,7 +33,7 @@ glUtils._markersVS = `
 
         v_color = a_color;
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(3.0, 2.0 / u_viewportRect.w);
+        gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
     }
 `;
 
@@ -193,6 +195,7 @@ glUtils.draw = function() {
     const COLOR = gl.getAttribLocation(program, "a_color");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -242,10 +245,22 @@ glUtils.postRedraw = function() {
 }
 
 
+glUtils.updateMarkerScale = function() {
+    const globalMarkerSize = Number(document.getElementById("ISS_globalmarkersize_text").value);
+    // Clamp the scale factor to avoid giant markers and slow rendering if the
+    // user inputs a very large value (say 10000 or something)
+    glUtils._markerScale = Math.max(0.01, Math.min(5.0, globalMarkerSize / 100.0));
+}
+
+
 glUtils.init = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl");
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
     this._buffers["markers"] = this._createDummyMarkerBuffer(gl, this._numPoints);
+
+    glUtils.updateMarkerScale();
+    document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.updateMarkerScale);
+    document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.draw);
 }
