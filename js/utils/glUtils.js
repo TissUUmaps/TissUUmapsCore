@@ -36,6 +36,9 @@ glUtils._markersVS = `
         v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
+
+        // Discard point here in vertex shader if marker is hidden
+        if (v_color.a == 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 0.0);
     }
 `;
 
@@ -47,7 +50,7 @@ glUtils._markersFS = `
 
     void main()
     {
-        if (length(gl_PointCoord.xy - 0.5) > 0.5 || v_color.a == 0.0) discard;
+        if (length(gl_PointCoord.xy - 0.5) > 0.5) discard;
         gl_FragColor = v_color;
     }
 `;
