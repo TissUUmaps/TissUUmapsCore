@@ -6,10 +6,12 @@
 glUtils = {
     _programs: {},
     _buffers: {},
-    _numPoints: 100000,
+    _textures: {},
+    _numPoints: 1,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
     _markerScale: 1.0,
+    _barcodeToLUTIndex: {},
     _redrawFlag: false,
 }
 
@@ -18,9 +20,9 @@ glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
     uniform float u_markerScale;
+    uniform sampler2D u_colorLUT;
 
     attribute vec4 a_position;
-    attribute vec4 a_color;
 
     varying vec4 v_color;
 
@@ -31,7 +33,7 @@ glUtils._markersVS = `
         vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
         ndcPos.y = -ndcPos.y;
 
-        v_color = a_color;
+        v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
     }
@@ -45,7 +47,7 @@ glUtils._markersFS = `
 
     void main()
     {
-        if (length(gl_PointCoord.xy - 0.5) > 0.5) discard;
+        if (length(gl_PointCoord.xy - 0.5) > 0.5 || v_color.a == 0.0) discard;
         gl_FragColor = v_color;
     }
 `;
@@ -82,35 +84,16 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 }
 
 
-glUtils._createTriangleBuffer = function(gl) {
-    const positions = [-0.5, -0.5, 0.5, -0.5, 0.0, 0.5];
-    const colors = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
-    const bytedata = new Float32Array(positions.concat(colors));
-
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
-    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    return buffer;
-}
-
-
 glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
     const positions = [];
     for (let i = 0; i < numPoints; ++i) {
-        positions[2 * i + 0] = Math.random();
-        positions[2 * i + 1] = Math.random();
+        positions[4 * i + 0] = Math.random();  // X-coord
+        positions[4 * i + 1] = Math.random();  // Y-coord
+        positions[4 * i + 2] = Math.random();  // LUT-coord
+        positions[4 * i + 3] = 0.0;  // Reserved for future use
     }
 
-    const colors = [];
-    for (let i = 0; i < numPoints; ++i) {
-        colors[3 * i + 0] = Math.random(); 
-        colors[3 * i + 1] = Math.random();
-        colors[3 * i + 2] = Math.random();
-    }
-
-    const bytedata = new Float32Array(positions.concat(colors));
+    const bytedata = new Float32Array(positions);
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
@@ -119,6 +102,7 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 
     return buffer;
 }
+
 
 
 // Overwrite dummy data in vertex buffer with markers loaded from CSV file
@@ -131,31 +115,88 @@ glUtils.loadMarkers = function() {
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
+    // If new marker data was loaded, we need to assign each barcode an index
+    // that we can use with the LUT textures for color, visibility, etc.
+    glUtils._updateBarcodeToLUTIndexDict(markerData);
+
     const positions = [];
     for (let i = 0; i < numPoints; ++i) {
-        positions[2 * i + 0] = markerData[i].global_X_pos / imageWidth;
-        positions[2 * i + 1] = markerData[i].global_Y_pos / imageHeight;
+        positions[4 * i + 0] = markerData[i].global_X_pos / imageWidth;
+        positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
+        positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] / 255.0;
+        positions[4 * i + 3] = 0.0;  // Reserved for future use
     }
 
-    const colors = [];
-    for (let i = 0; i < numPoints; ++i) {
-        // Get color value from initial HTML color assigned to barcode. We
-        // probably want to store these colors in a LUT texture instead, to
-        // make it possible to change colors from the GUI
-        const seed = markerData[i].letters;
-        const hexColor = HTMLElementUtils.barcodeHTMLColor(seed);
-        colors[3 * i + 0] = Number("0x" + hexColor.substring(1,3)) / 255.0; 
-        colors[3 * i + 1] = Number("0x" + hexColor.substring(3,5)) / 255.0;
-        colors[3 * i + 2] = Number("0x" + hexColor.substring(5,7)) / 255.0;
-    }
-
-    const bytedata = new Float32Array(positions.concat(colors));
+    const bytedata = new Float32Array(positions);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["markers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     glUtils._numPoints = numPoints;
+    glUtils.updateLUTTextures();
+}
+
+
+glUtils._updateBarcodeToLUTIndexDict = function(markerData) {
+    const barcodeToLUTIndex = {};
+    const numPoints = markerData.length;
+    for (let i = 0, index = 0; i < numPoints; ++i) {
+        const barcode = markerData[i].letters;
+        if (!(barcode in barcodeToLUTIndex)) {
+            barcodeToLUTIndex[barcode] = index++;
+        }
+    }
+    glUtils._barcodeToLUTIndex = barcodeToLUTIndex;
+}
+
+
+glUtils._createColorLUTTexture = function(gl) {
+    const randomColors = [];
+    for (let i = 0; i < 256; ++i) {
+        randomColors[4 * i + 0] = Math.random() * 255.999; 
+        randomColors[4 * i + 1] = Math.random() * 255.999;
+        randomColors[4 * i + 2] = Math.random() * 255.999;
+        randomColors[4 * i + 3] = 255.0;
+    }
+
+    const bytedata = new Uint8Array(randomColors);
+
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); 
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                  gl.UNSIGNED_BYTE, bytedata);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    return texture;
+}
+
+
+glUtils._updateColorLUTTexture = function(gl, texture) {
+    const allMarkersCheckbox = document.getElementById("AllMarkers-checkbox-ISS");
+    const showAll = allMarkersCheckbox && allMarkersCheckbox.checked;
+
+    const colors = new Array(256 * 4);
+    for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex)) {
+        // Get color value from HTML color assigned to barcode
+        const hexColor = HTMLElementUtils.barcodeHTMLColor(barcode);
+        const visible = showAll || markerUtils._checkBoxes[barcode].checked;
+        colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
+        colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
+        colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
+        colors[4 * index + 3] = Number(visible) * 255;
+    }
+
+    const bytedata = new Uint8Array(colors);
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                  gl.UNSIGNED_BYTE, bytedata);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 
@@ -189,21 +230,22 @@ glUtils.draw = function() {
 
     const program = glUtils._programs["markers"];
     const buffer = glUtils._buffers["markers"];
+    const colorLUT = glUtils._textures["colorLUT"];
 
     gl.useProgram(program);
     const POSITION = gl.getAttribLocation(program, "a_position");
-    const COLOR = gl.getAttribLocation(program, "a_color");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, colorLUT);
+    gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(POSITION);
-    gl.vertexAttribPointer(POSITION, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(COLOR);
-    gl.vertexAttribPointer(COLOR, 3, gl.FLOAT, false, 0, glUtils._numPoints * 8);  // FIXME
+    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.drawArrays(gl.POINTS, 0, glUtils._numPoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -253,14 +295,28 @@ glUtils.updateMarkerScale = function() {
 }
 
 
+glUtils.updateLUTTextures = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl");
+
+    console.log("Update LUTs");
+    glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
+}
+
+
 glUtils.init = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl");
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
     this._buffers["markers"] = this._createDummyMarkerBuffer(gl, this._numPoints);
+    this._textures["colorLUT"] = this._createColorLUTTexture(gl);
 
     glUtils.updateMarkerScale();
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.updateMarkerScale);
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.draw);
+    document.getElementById("ISS_markers").addEventListener("click", glUtils.updateLUTTextures);
+    document.getElementById("ISS_markers").addEventListener("click", glUtils.draw);
+
+    tmapp["hideSVGMarkers"] = true;
 }

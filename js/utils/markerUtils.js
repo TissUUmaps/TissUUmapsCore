@@ -370,6 +370,8 @@ markerUtils.drawAllFromList = function (list) {
  * Checkbox to know if barcode from it should be drawn or removed 
  * @param {htmlnode} barcodeBox Checkbox to know if barcode from it should be drawn or removed  */
 markerUtils.markerBoxToggle = function (barcodeBox) {
+    if (tmapp["hideSVGMarkers"]) return;  // We are using WebGL instead for the drawing
+
     if (barcodeBox.is(':checked')) {
         //console.log(barcodeBox[0].attributes.barcode.value, "checked");
         //get the correct overlay, fixed or moving
