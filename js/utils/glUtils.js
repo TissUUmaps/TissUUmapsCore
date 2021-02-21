@@ -13,6 +13,7 @@ glUtils = {
     _markerScale: 1.0,
     _barcodeToLUTIndex: {},
     _redrawFlag: false,
+    _options: {antialias: false},
 }
 
 
@@ -25,6 +26,10 @@ glUtils._markersVS = `
     attribute vec4 a_position;
 
     varying vec4 v_color;
+    varying vec2 v_shapeOrigin;
+    varying float v_shapeColorBias;
+
+    #define SHAPE_GRID_SIZE 4.0
 
     void main()
     {
@@ -37,7 +42,12 @@ glUtils._markersVS = `
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
 
+        v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
+        v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
+        v_shapeColorBias = max(0.0, 1.0 - gl_PointSize * 0.2);
+
         // Discard point here in vertex shader if marker is hidden
+        v_color.a = v_color.a > 0.0 ? 1.0 : 0.0;
         if (v_color.a == 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 0.0);
     }
 `;
@@ -46,12 +56,26 @@ glUtils._markersVS = `
 glUtils._markersFS = `
     precision mediump float;
 
+    uniform sampler2D u_shapeAtlas;
+
     varying vec4 v_color;
+    varying vec2 v_shapeOrigin;
+    varying float v_shapeColorBias;
+
+    #define UV_SCALE 0.7
+    #define SHAPE_GRID_SIZE 4.0
 
     void main()
     {
-        if (length(gl_PointCoord.xy - 0.5) > 0.5) discard;
-        gl_FragColor = v_color;
+        vec2 uv = (gl_PointCoord.xy - 0.5) * UV_SCALE + 0.5;
+        uv = (uv + v_shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
+
+        vec4 shapeColor = texture2D(u_shapeAtlas, uv, -0.5);
+        shapeColor = clamp(shapeColor + v_shapeColorBias, 0.0, 1.0);
+        shapeColor.rgb *= shapeColor.a;
+
+        gl_FragColor = shapeColor * v_color;
+        if (gl_FragColor.a < 0.1) discard;
     }
 `;
 
@@ -111,7 +135,7 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 // Overwrite dummy data in vertex buffer with markers loaded from CSV file
 glUtils.loadMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     const markerData = dataUtils["ISS_processeddata"];
     const numPoints = markerData.length;
@@ -157,10 +181,10 @@ glUtils._updateBarcodeToLUTIndexDict = function(markerData) {
 glUtils._createColorLUTTexture = function(gl) {
     const randomColors = [];
     for (let i = 0; i < 256; ++i) {
-        randomColors[4 * i + 0] = Math.random() * 255.999; 
-        randomColors[4 * i + 1] = Math.random() * 255.999;
-        randomColors[4 * i + 2] = Math.random() * 255.999;
-        randomColors[4 * i + 3] = 255.0;
+        randomColors[4 * i + 0] = Math.random() * 256.0; 
+        randomColors[4 * i + 1] = Math.random() * 256.0;
+        randomColors[4 * i + 2] = Math.random() * 256.0;
+        randomColors[4 * i + 3] = Math.floor(Math.random() * 7) + 1;
     }
 
     const bytedata = new Uint8Array(randomColors);
@@ -185,13 +209,14 @@ glUtils._updateColorLUTTexture = function(gl, texture) {
 
     const colors = new Array(256 * 4);
     for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex)) {
-        // Get color value from HTML color assigned to barcode
-        const hexColor = HTMLElementUtils.barcodeHTMLColor(barcode);
+        // Get color, shape, etc. from HTML input elements for barcode
+        const hexColor = document.getElementById(barcode + "-color-ISS").value;
+        const shape = document.getElementById(barcode + "-shape-ISS").value;
         const visible = showAll || markerUtils._checkBoxes[barcode].checked;
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
-        colors[4 * index + 3] = Number(visible) * 255;
+        colors[4 * index + 3] = Number(visible) * (Number(shape) + 1);
     }
 
     const bytedata = new Uint8Array(colors);
@@ -203,11 +228,29 @@ glUtils._updateColorLUTTexture = function(gl, texture) {
 }
 
 
+glUtils._loadTextureFromImageURL = function(gl, src) {
+    const texture = gl.createTexture();
+    const image = new Image();
+    image.onload = function() {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); 
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);  // Requires power-of-two size images
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    };
+    image.src = src;
+    return texture;
+}
+
+
 // This function is a workaround for making the area of the OSD navigator show
 // through the WebGL canvas
 glUtils.clearNavigatorArea = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     const navigator = tmapp["ISS_viewer"].navigator;
     const navigatorSize = navigator.viewport.containerSize;
@@ -221,7 +264,7 @@ glUtils.clearNavigatorArea = function() {
 
 glUtils.draw = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     const bounds = tmapp["ISS_viewer"].viewport.getBounds();
     glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
@@ -234,8 +277,12 @@ glUtils.draw = function() {
     const program = glUtils._programs["markers"];
     const buffer = glUtils._buffers["markers"];
     const colorLUT = glUtils._textures["colorLUT"];
+    const shapeAtlas = glUtils._textures["shapeAtlas"];
 
     gl.useProgram(program);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
@@ -243,6 +290,9 @@ glUtils.draw = function() {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, colorLUT);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, shapeAtlas);
+    gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 1);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -252,6 +302,8 @@ glUtils.draw = function() {
     gl.drawArrays(gl.POINTS, 0, glUtils._numPoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.disable(gl.BLEND);
     gl.useProgram(null);
 
     // Clear the redraw flag to avoid markers appearing on top of the OSD
@@ -262,7 +314,7 @@ glUtils.draw = function() {
 
 glUtils.resize = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     const op = tmapp["object_prefix"];
     const newSize = tmapp[op + "_viewer"].viewport.containerSize;
@@ -300,7 +352,7 @@ glUtils.updateMarkerScale = function() {
 
 glUtils.updateLUTTextures = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     console.log("Update LUTs");
     glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
@@ -309,17 +361,18 @@ glUtils.updateLUTTextures = function() {
 
 glUtils.init = function() {
     const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl", glUtils._options);
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
     this._buffers["markers"] = this._createDummyMarkerBuffer(gl, this._numPoints);
     this._textures["colorLUT"] = this._createColorLUTTexture(gl);
+    this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, "markershapes.png");
 
     glUtils.updateMarkerScale();
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.updateMarkerScale);
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.draw);
-    document.getElementById("ISS_markers").addEventListener("click", glUtils.updateLUTTextures);
-    document.getElementById("ISS_markers").addEventListener("click", glUtils.draw);
+    document.getElementById("ISS_markers").addEventListener("change", glUtils.updateLUTTextures);
+    document.getElementById("ISS_markers").addEventListener("change", glUtils.draw);
 
     tmapp["hideSVGMarkers"] = true;
 }
