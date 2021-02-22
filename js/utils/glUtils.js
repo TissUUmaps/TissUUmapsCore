@@ -10,7 +10,9 @@ glUtils = {
     _numPoints: 1,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
+    _markerType: 0,
     _markerScale: 1.0,
+    _markerScalarRange: [0.0, 1.0],
     _barcodeToLUTIndex: {},
     _redrawFlag: false,
     _options: {antialias: false},
@@ -20,7 +22,9 @@ glUtils = {
 glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
+    uniform int u_markerType;
     uniform float u_markerScale;
+    uniform vec2 u_markerScalarRange;
     uniform sampler2D u_colorLUT;
 
     attribute vec4 a_position;
@@ -29,6 +33,8 @@ glUtils._markersVS = `
     varying vec2 v_shapeOrigin;
     varying float v_shapeColorBias;
 
+    #define MARKER_TYPE_BARCODE 0
+    #define MARKER_TYPE_CP 1
     #define SHAPE_GRID_SIZE 4.0
 
     void main()
@@ -38,7 +44,16 @@ glUtils._markersVS = `
         vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
         ndcPos.y = -ndcPos.y;
 
-        v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
+        if (u_markerType == MARKER_TYPE_BARCODE) {
+            v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
+        } else if (u_markerType == MARKER_TYPE_CP) {
+            vec2 range = u_markerScalarRange;
+            float normalized = (a_position.w + range[0]) / (range[1] - range[0]);
+            // TODO This fixed rainbow color scale should be replaced with a texture
+            v_color.rgb = clamp(sin((normalized + vec3(-0.5, 0.0, 0.5)) * 3.141592), 0.0, 1.0);
+            v_color.a = 7.0 / 255.0;
+        }
+
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
 
@@ -117,7 +132,7 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
         positions[4 * i + 0] = Math.random();  // X-coord
         positions[4 * i + 1] = Math.random();  // Y-coord
         positions[4 * i + 2] = Math.random();  // LUT-coord
-        positions[4 * i + 3] = 0.0;  // Reserved for future use
+        positions[4 * i + 3] = i / numPoints;  // Scalar data
     }
 
     const bytedata = new Float32Array(positions);
@@ -137,6 +152,7 @@ glUtils.loadMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
+    glUtils._markerType = 0;  // Barcode (gene expression data)
     const markerData = dataUtils["ISS_processeddata"];
     const numPoints = markerData.length;
     const imageWidth = OSDViewerUtils.getImageWidth();
@@ -162,6 +178,41 @@ glUtils.loadMarkers = function() {
 
     glUtils._numPoints = numPoints;
     glUtils.updateLUTTextures();
+}
+
+
+// Overwrite dummy data in vertex buffer with markers loaded from CSV file
+glUtils.loadCPMarkers = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl", glUtils._options);
+
+    glUtils._markerType = 1;  // CP (cell morphology data)
+    const markerData = CPDataUtils["CP_rawdata"];
+    const numPoints = markerData.length;
+    const propertyName = document.getElementById("CP_property_header").value;
+    const imageWidth = OSDViewerUtils.getImageWidth();
+    const imageHeight = OSDViewerUtils.getImageHeight();
+
+    const positions = [];
+    let scalarRange = [1e9, -1e9];
+    for (let i = 0; i < numPoints; ++i) {
+        positions[4 * i + 0] = Number(markerData[i]["Global_X"]) / imageWidth;
+        positions[4 * i + 1] = Number(markerData[i]["Global_Y"]) / imageHeight;
+        positions[4 * i + 2] = 7.0;  // Give all CP markers a round shape
+        positions[4 * i + 3] = Number(markerData[i][propertyName]);
+        scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 3]);
+        scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 3]);
+    }
+
+    const bytedata = new Float32Array(positions);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["markers"]);
+    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    glUtils._numPoints = numPoints;
+    glUtils._markerScalarRange = scalarRange;
+    glUtils.draw();  // Force redraw
 }
 
 
@@ -286,7 +337,9 @@ glUtils.draw = function() {
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
+    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), glUtils._markerType);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+    gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, colorLUT);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
@@ -354,8 +407,10 @@ glUtils.updateLUTTextures = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    console.log("Update LUTs");
-    glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
+    if (glUtils._markerType == 0) {  // LUTs are currently only used for barcode data
+        console.log("Update LUTs");
+        glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
+    }
 }
 
 

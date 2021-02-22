@@ -39,8 +39,10 @@ CPDataUtils.processISSRawData = function () {
     };
     if(!CPDataUtils[cpop + "_tree"])
         CPDataUtils[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(CPDataUtils[cpop + "_rawdata"]);  
-    CPDataUtils._drawCPdata=true;
+    CPDataUtils._drawCPdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
     markerUtils.drawCPdata({searchInTree:false}); //mandatory options obj
+
+    glUtils.loadCPMarkers();  // FIXME
 }
 
 CPDataUtils.readCSV = function (thecsv) {
