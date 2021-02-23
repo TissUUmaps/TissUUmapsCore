@@ -7,12 +7,13 @@ glUtils = {
     _programs: {},
     _buffers: {},
     _textures: {},
-    _numPoints: 1,
+    _numBarcodePoints: 0,
+    _numCPPoints: 0,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
-    _markerType: 0,
     _markerScale: 1.0,
     _markerScalarRange: [0.0, 1.0],
+    _colorscale: "null",
     _barcodeToLUTIndex: {},
     _redrawFlag: false,
     _options: {antialias: false},
@@ -147,12 +148,11 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 
 
 
-// Overwrite dummy data in vertex buffer with markers loaded from CSV file
+// Load barcode markers loaded from CSV file into vertex buffer
 glUtils.loadMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    glUtils._markerType = 0;  // Barcode (gene expression data)
     const markerData = dataUtils["ISS_processeddata"];
     const numPoints = markerData.length;
     const imageWidth = OSDViewerUtils.getImageWidth();
@@ -172,26 +172,27 @@ glUtils.loadMarkers = function() {
 
     const bytedata = new Float32Array(positions);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["markers"]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    glUtils._numPoints = numPoints;
+    glUtils._numBarcodePoints = numPoints;
     glUtils.updateLUTTextures();
 }
 
 
-// Overwrite dummy data in vertex buffer with markers loaded from CSV file
+// Load cell morphology markers loaded from CSV file into vertex buffer
 glUtils.loadCPMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    glUtils._markerType = 1;  // CP (cell morphology data)
     const markerData = CPDataUtils["CP_rawdata"];
     const numPoints = markerData.length;
     const propertyName = document.getElementById("CP_property_header").value;
+    const colorscale = document.getElementById("CP_colorscale").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
+    console.log(colorscale);
 
     const positions = [];
     let scalarRange = [1e9, -1e9];
@@ -206,12 +207,13 @@ glUtils.loadCPMarkers = function() {
 
     const bytedata = new Float32Array(positions);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["markers"]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    glUtils._numPoints = numPoints;
+    glUtils._numCPPoints = numPoints;
     glUtils._markerScalarRange = scalarRange;
+    glUtils._colorscale = colorscale;
     glUtils.draw();  // Force redraw
 }
 
@@ -326,9 +328,6 @@ glUtils.draw = function() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     const program = glUtils._programs["markers"];
-    const buffer = glUtils._buffers["markers"];
-    const colorLUT = glUtils._textures["colorLUT"];
-    const shapeAtlas = glUtils._textures["shapeAtlas"];
 
     gl.useProgram(program);
     gl.enable(gl.BLEND);
@@ -337,22 +336,32 @@ glUtils.draw = function() {
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
-    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), glUtils._markerType);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, colorLUT);
+    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
     gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, shapeAtlas);
+    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 1);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.POINTS, 0, glUtils._numPoints);
+    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+    gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
+    gl.enableVertexAttribArray(POSITION);
+    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
+    if (glUtils._colorscale != "null") {  // Only show markers when a colorscale is selected
+        gl.drawArrays(gl.POINTS, 0, glUtils._numCPPoints);
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.blendFunc(gl.ONE, gl.ONE);
@@ -407,7 +416,7 @@ glUtils.updateLUTTextures = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    if (glUtils._markerType == 0) {  // LUTs are currently only used for barcode data
+    if (glUtils._numBarcodePoints > 0) {  // LUTs are currently only used for barcode data
         console.log("Update LUTs");
         glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
     }
@@ -419,7 +428,8 @@ glUtils.init = function() {
     const gl = canvas.getContext("webgl", glUtils._options);
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
-    this._buffers["markers"] = this._createDummyMarkerBuffer(gl, this._numPoints);
+    this._buffers["barcodeMarkers"] = this._createDummyMarkerBuffer(gl, this._numBarcodePoints);
+    this._buffers["CPMarkers"] = this._createDummyMarkerBuffer(gl, this._numCPMarkers);
     this._textures["colorLUT"] = this._createColorLUTTexture(gl);
     this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, "markershapes.png");
 
