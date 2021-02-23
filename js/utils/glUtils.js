@@ -27,6 +27,7 @@ glUtils._markersVS = `
     uniform float u_markerScale;
     uniform vec2 u_markerScalarRange;
     uniform sampler2D u_colorLUT;
+    uniform sampler2D u_colorscale;
 
     attribute vec4 a_position;
 
@@ -49,9 +50,8 @@ glUtils._markersVS = `
             v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
         } else if (u_markerType == MARKER_TYPE_CP) {
             vec2 range = u_markerScalarRange;
-            float normalized = (a_position.w + range[0]) / (range[1] - range[0]);
-            // TODO This fixed rainbow color scale should be replaced with a texture
-            v_color.rgb = clamp(sin((normalized + vec3(-0.5, 0.0, 0.5)) * 3.141592), 0.0, 1.0);
+            float normalized = (a_position.w - range[0]) / (range[1] - range[0]);
+            v_color.rgb = texture2D(u_colorscale, vec2(normalized, 0.5)).rgb;
             v_color.a = 7.0 / 255.0;
         }
 
@@ -192,7 +192,6 @@ glUtils.loadCPMarkers = function() {
     const colorscale = document.getElementById("CP_colorscale").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
-    console.log(colorscale);
 
     const positions = [];
     let scalarRange = [1e9, -1e9];
@@ -214,6 +213,7 @@ glUtils.loadCPMarkers = function() {
     glUtils._numCPPoints = numPoints;
     glUtils._markerScalarRange = scalarRange;
     glUtils._colorscale = colorscale;
+    glUtils._updateColorScaleTexture(gl, glUtils._textures["colorscale"]);
     glUtils.draw();  // Force redraw
 }
 
@@ -270,6 +270,64 @@ glUtils._updateColorLUTTexture = function(gl, texture) {
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
         colors[4 * index + 3] = Number(visible) * (Number(shape) + 1);
+    }
+
+    const bytedata = new Uint8Array(colors);
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                  gl.UNSIGNED_BYTE, bytedata);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+glUtils._createColorScaleTexture = function(gl) {
+    const bytedata = new Uint8Array(256 * 4);
+
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
+                  gl.UNSIGNED_BYTE, bytedata);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    return texture;
+}
+
+
+glUtils._formatHex = function(color) {
+    if (color.includes("rgb")) {
+        const r = color.split(",")[0].replace("rgb(", "").replace(")", "");
+        const g = color.split(",")[1].replace("rgb(", "").replace(")", "");
+        const b = color.split(",")[2].replace("rgb(", "").replace(")", "");
+        const hex = (Number(r) * 65536 + Number(g) * 256 + Number(b)).toString(16);
+        color = "#" + ("0").repeat(6 - hex.length) + hex;
+    }
+    return color;
+}
+
+
+glUtils._updateColorScaleTexture = function(gl, texture) {
+    const colors = [];
+    for (let i = 0; i < 256; ++i) {
+        const normalized = i / 255.0;
+        if (glUtils._colorscale.includes("interpolate")) {
+            const color = d3[glUtils._colorscale](normalized);
+            const hexColor = glUtils._formatHex(color);  // D3 sometimes returns RGB strings
+            colors[4 * i + 0] = Number("0x" + hexColor.substring(1,3));
+            colors[4 * i + 1] = Number("0x" + hexColor.substring(3,5));
+            colors[4 * i + 2] = Number("0x" + hexColor.substring(5,7));
+            colors[4 * i + 3] = 1.0;
+        } else {
+            // Use a default rainbow color scale
+            colors[4 * i + 0] = Math.max(0.0, Math.sin((normalized - 0.5) * 3.141592)) * 255.99;
+            colors[4 * i + 1] = Math.max(0.0, Math.sin((normalized + 0.0) * 3.141592)) * 255.99;
+            colors[4 * i + 2] = Math.max(0.0, Math.sin((normalized + 0.5) * 3.141592)) * 255.99;
+            colors[4 * i + 3] = 1.0;
+        }
     }
 
     const bytedata = new Uint8Array(colors);
@@ -341,8 +399,11 @@ glUtils.draw = function() {
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
     gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorscale"]);
+    gl.uniform1i(gl.getUniformLocation(program, "u_colorscale"), 1);
+    gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
-    gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 1);
+    gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -431,6 +492,7 @@ glUtils.init = function() {
     this._buffers["barcodeMarkers"] = this._createDummyMarkerBuffer(gl, this._numBarcodePoints);
     this._buffers["CPMarkers"] = this._createDummyMarkerBuffer(gl, this._numCPMarkers);
     this._textures["colorLUT"] = this._createColorLUTTexture(gl);
+    this._textures["colorscale"] = this._createColorScaleTexture(gl);
     this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, "markershapes.png");
 
     glUtils.updateMarkerScale();
