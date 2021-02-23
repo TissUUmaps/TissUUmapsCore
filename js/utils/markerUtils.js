@@ -439,6 +439,7 @@ markerUtils.markerUI = function (barObject,options) {
     }else{
         thecolor=HTMLElementUtils.barcodeHTMLColor(barObject.key);
     }
+    thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
     var color = HTMLElementUtils.createElement({ type: "td" });
     var colorinput = HTMLElementUtils.inputTypeColor({ id: barObject.key + "-color-" + op, extraAttributes: { value: thecolor } })
     color.appendChild(colorinput);
