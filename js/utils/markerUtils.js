@@ -445,6 +445,10 @@ markerUtils.markerUI = function (barObject,options) {
     color.appendChild(colorinput);
     row.appendChild(color);
 
+    // Workaround for black color inputs in Safari (WebKit)
+    colorinput.value = "#ffffff";
+    colorinput.value = thecolor;
+
     var shape = HTMLElementUtils.createElement({ type: "td" });
     var shapeParams = { random: true, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
     var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
