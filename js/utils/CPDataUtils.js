@@ -13,7 +13,8 @@ CPDataUtils = {
     _minimumAmountToDisplay: 500,
     _markersize:0.0008,
     _subsamplingfactor:0.15,
-    _drawCPdata: false
+    _drawCPdata: false,
+    _expectedCSV: { "key_header": "Global_Exp_ID", "X_header": "Global_X", "Y_header": "Global_Y", "colorscale": "interpolateRainbow" },
 }
 
 /** 
@@ -125,7 +126,11 @@ CPDataUtils.readCSV = function (thecsv) {
                 markerUtils.drawCPdata({searchInTree:false});
             }
             CPProperty.addEventListener("change", changeProperty);
-
+            
+            if (csvheaders.includes(CPDataUtils._expectedCSV["key_header"])) CPKey.value = CPDataUtils._expectedCSV["key_header"];
+            if (csvheaders.includes(CPDataUtils._expectedCSV["X_header"])) CPX.value = CPDataUtils._expectedCSV["X_header"];
+            if (csvheaders.includes(CPDataUtils._expectedCSV["Y_header"])) CPY.value = CPDataUtils._expectedCSV["Y_header"];
+            CPLut.value = "interpolateRainbow";
         }
     );
 }
