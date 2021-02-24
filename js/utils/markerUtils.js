@@ -421,7 +421,10 @@ markerUtils.markerUI = function (barObject,options) {
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: barObject.key + "-checkbox-" + op,
         extraAttributes: { barcode: barObject.key },
-        eventListeners: { click: function () { markerUtils.markerBoxToggle($(this)); } }
+        eventListeners: { click: function () {
+            markerUtils.markerBoxToggle($(this));
+            document.getElementById("AllMarkers-checkbox-" + op).checked = false;
+        }}
     });
     markerUtils._checkBoxes[barObject.key] = checkinput;
 
@@ -459,6 +462,65 @@ markerUtils.markerUI = function (barObject,options) {
     var size = HTMLElementUtils.createElement({ type: "td" });
     var sizeinput = HTMLElementUtils.inputTypeText({ id: barObject.key + "-size-" + op, "class": "form-control" });
     size.appendChild(sizeinput);
+    row.appendChild(size);
+
+    return row;
+}
+
+/** 
+ * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
+ * clicking the box invokes the drawing of the marker or erase. 
+ * Selects a color based on the barcode letters so that the color are different versions of 
+ * the four corners of Ycbcr. Chooses a random shape
+ * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
+ * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
+ * options.drawGeneName is there and it is true it will draw the column "name" and omit it otherwise
+ * @returns {htmlnode} The nicely formated row for our markerUi table
+ * */
+markerUtils.markerUIAll = function (options) {
+    var op = tmapp["object_prefix"];
+    var row = HTMLElementUtils.createElement({ type: "tr", id: "allbarcodes-tr" });
+
+    //var tdkey = HTMLElementUtils.createElement({ type: "td", innerText: barObject.key });
+    //row.appendChild(tdkey);
+
+    if(options.drawGeneLetters){
+        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerText: "All Barcodes",
+            extraAttributes: { "title": "All Barcodes", "data-title":"All Barcodes" } });
+        row.appendChild(lettersrow);
+    }
+
+    if(options.drawGeneName){
+        var name = HTMLElementUtils.createElement({ type: "td", innerText: "All Genes",
+            extraAttributes: { "title": "All Genes", "data-title":"All Genes" } });
+        row.appendChild(name);
+    }
+    var length = 0;
+    dataUtils[op + "_data"].forEach(function (barcode) {
+        length += barcode.values.length;
+    });
+    var amount = HTMLElementUtils.createElement({ type: "td", innerText: '(' + length + ')' });
+    row.appendChild(amount);
+
+    var check = HTMLElementUtils.createElement({ type: "td" });
+    var checkinput = HTMLElementUtils.inputTypeCheckbox({
+        id: "AllMarkers-checkbox-" + op,
+        eventListeners: { click: function () { 
+            // TODO: Remove JQuery dependency here?
+            $("#ISS_table input[type=checkbox]").prop("checked",$("#AllMarkers-checkbox-ISS").prop("checked"));
+         } }
+    });
+    
+    check.appendChild(checkinput);
+    row.appendChild(check);
+
+    var color = HTMLElementUtils.createElement({ type: "td" });
+    row.appendChild(color);
+
+    var shape = HTMLElementUtils.createElement({ type: "td" });
+    row.appendChild(shape);
+
+    var size = HTMLElementUtils.createElement({ type: "td" });
     row.appendChild(size);
 
     return row;
@@ -519,11 +581,15 @@ markerUtils.printBarcodeUIs = function (options) {
         tblHead.appendChild(th);
     });
     tbl.appendChild(tblHead);
+    
+    var row = markerUtils.markerUIAll(options);
+    tblBody.appendChild(row);
 
     dataUtils[op + "_data"].forEach(function (barcode) {
         var row = markerUtils.markerUI(barcode,options);
         tblBody.appendChild(row);
     });
+    
     tbl.appendChild(tblBody);
     container.appendChild(tbl);
 
