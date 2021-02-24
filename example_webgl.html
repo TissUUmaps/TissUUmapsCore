@@ -40,7 +40,7 @@
                     </ul>
                 </li>
                 <li>
-                    <a id="project_title" href "#"> Slide A</a>
+                    <a id="project_title" href="#"> Slide A</a>
                 </li>
             </ul>
         </div>
@@ -207,9 +207,11 @@
                                                                     type="button"> Cancel</button>
                                                             </div>
                                                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                                                <input class="form-control" type="text"
+                                                                <input class="form-control" type="range"
                                                                     id="ISS_globalmarkersize_text"
-                                                                    placeholder="Global marker size" value="100" />
+                                                                    value="100" min="0" max="500" step="10"
+                                                                    oninput="document.getElementById('ISS_globalmarkersize_label').innerHTML = this.value;"/>
+                                                                <em class="range-label" id="ISS_globalmarkersize_label">100</em>
                                                             </div>
                                                         </div>
                                                         <!-- 1.4 Row for markers -->

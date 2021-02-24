@@ -2516,8 +2516,9 @@ input[type="file"] {
   display: block;
 }
 input[type="range"] {
-  display: block;
-  width: 100%;
+  display: inline-block;
+  width: 85px;
+  padding: 0px;
 }
 select[multiple],
 select[size] {
@@ -2535,6 +2536,12 @@ output {
   font-size: 14px;
   line-height: 1.42857143;
   color: #333333;
+}
+.range-label {
+  font-style: normal;
+  line-height: 40px;
+  height: 50px;
+  vertical-align: text-bottom;
 }
 .form-control {
   display: block;
