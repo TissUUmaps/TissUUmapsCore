@@ -13,10 +13,12 @@ glUtils = {
     _viewportRect: [0, 0, 1, 1],
     _markerScale: 1.0,
     _markerScalarRange: [0.0, 1.0],
-    _colorscale: "null",
+    _colorscaleName: "null",
+    _colorscaleData: [],
     _barcodeToLUTIndex: {},
     _redrawFlag: false,
     _options: {antialias: false},
+    _showColorbar: true,
 }
 
 
@@ -189,15 +191,17 @@ glUtils.loadCPMarkers = function() {
     const markerData = CPDataUtils["CP_rawdata"];
     const numPoints = markerData.length;
     const propertyName = document.getElementById("CP_property_header").value;
-    const colorscale = document.getElementById("CP_colorscale").value;
+    const xColumnName = document.getElementById("CP_X_header").value;
+    const yColumnName = document.getElementById("CP_Y_header").value;
+    const colorscaleName = document.getElementById("CP_colorscale").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
     const positions = [];
     let scalarRange = [1e9, -1e9];
     for (let i = 0; i < numPoints; ++i) {
-        positions[4 * i + 0] = Number(markerData[i]["Global_X"]) / imageWidth;
-        positions[4 * i + 1] = Number(markerData[i]["Global_Y"]) / imageHeight;
+        positions[4 * i + 0] = Number(markerData[i][xColumnName]) / imageWidth;
+        positions[4 * i + 1] = Number(markerData[i][yColumnName]) / imageHeight;
         positions[4 * i + 2] = 7.0;  // Give all CP markers a round shape
         positions[4 * i + 3] = Number(markerData[i][propertyName]);
         scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 3]);
@@ -212,8 +216,9 @@ glUtils.loadCPMarkers = function() {
 
     glUtils._numCPPoints = numPoints;
     glUtils._markerScalarRange = scalarRange;
-    glUtils._colorscale = colorscale;
+    glUtils._colorscaleName = colorscaleName;
     glUtils._updateColorScaleTexture(gl, glUtils._textures["colorscale"]);
+    glUtils._updateColorbarCanvas(colorscaleName, glUtils._colorscaleData, propertyName, scalarRange);
     glUtils.draw();  // Force redraw
 }
 
@@ -314,8 +319,8 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
     const colors = [];
     for (let i = 0; i < 256; ++i) {
         const normalized = i / 255.0;
-        if (glUtils._colorscale.includes("interpolate")) {
-            const color = d3[glUtils._colorscale](normalized);
+        if (glUtils._colorscaleName.includes("interpolate")) {
+            const color = d3[glUtils._colorscaleName](normalized);
             const hexColor = glUtils._formatHex(color);  // D3 sometimes returns RGB strings
             colors[4 * i + 0] = Number("0x" + hexColor.substring(1,3));
             colors[4 * i + 1] = Number("0x" + hexColor.substring(3,5));
@@ -329,6 +334,7 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
             colors[4 * i + 3] = 1.0;
         }
     }
+    glUtils._colorscaleData = colors;
 
     const bytedata = new Uint8Array(colors);
 
@@ -336,6 +342,64 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA,
                   gl.UNSIGNED_BYTE, bytedata);
     gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+glUtils._updateColorbarCanvas = function(colorscaleName, colorscaleData, propertyName, propertyRange) {
+    const canvas = document.getElementById("CP_colorbar");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    if (!glUtils._showColorbar || colorscaleName == "null") return;
+
+    const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
+    const numStops = 32;
+    for (let i = 0; i < numStops; ++i) {
+        const normalized = i / (numStops - 1);
+        const index = Math.floor(normalized * 255.99);
+        const r = Math.floor(colorscaleData[4 * index + 0]);
+        const g = Math.floor(colorscaleData[4 * index + 1]);
+        const b = Math.floor(colorscaleData[4 * index + 2]);
+        gradient.addColorStop(normalized, "rgb(" + r + "," + g + "," + b + ")");
+    }
+
+    // Draw colorbar (with outline)
+    ctx.fillStyle = gradient;
+    ctx.fillRect(64, 64, 256, 16);
+    ctx.strokeStyle = "#555";
+    ctx.strokeRect(64, 64, 256, 16);
+
+    // Convert range annotations to scientific notation if they may overflow
+    let propertyMin = propertyRange[0].toString();
+    let propertyMax = propertyRange[1].toString();
+    if (propertyMin.length > 9) propertyMin = propertyRange[0].toExponential(5);
+    if (propertyMax.length > 9) propertyMax = propertyRange[1].toExponential(5);
+
+    // Draw annotations (with drop shadow)
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#000";  // Shadow color
+    ctx.fillText(propertyName, ctx.canvas.width/2+1, 32+1);
+    ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 56+1);
+    ctx.fillText(propertyMax, ctx.canvas.width/2+128+1, 56+1);
+    ctx.fillStyle = "#fff";  // Text color
+    ctx.fillText(propertyName, ctx.canvas.width/2, 32);
+    ctx.fillText(propertyMin, ctx.canvas.width/2-128, 56);
+    ctx.fillText(propertyMax, ctx.canvas.width/2+128, 56);
+}
+
+
+// Creates a 2D-canvas for drawing the colorbar on top of the WebGL-canvas
+glUtils._createColorbarCanvas = function() {
+    const root = document.getElementById("gl_canvas").parentElement;
+    const canvas = document.createElement("canvas");
+    root.appendChild(canvas);
+
+    canvas.id = "CP_colorbar";
+    canvas.width = "384";  // Fixed width in pixels
+    canvas.height = "96";  // Fixed height in pixels
+    canvas.style = "position:relative; float:left; width:36%; left:32%; " + 
+                   "margin-top:-10.5%; z-index:20; pointer-events:none";
 }
 
 
@@ -420,7 +484,7 @@ glUtils.draw = function() {
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
-    if (glUtils._colorscale != "null") {  // Only show markers when a colorscale is selected
+    if (glUtils._colorscaleName != "null") {  // Only show markers when a colorscale is selected
         gl.drawArrays(gl.POINTS, 0, glUtils._numCPPoints);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -494,6 +558,8 @@ glUtils.init = function() {
     this._textures["colorLUT"] = this._createColorLUTTexture(gl);
     this._textures["colorscale"] = this._createColorScaleTexture(gl);
     this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, "markershapes.png");
+
+    this._createColorbarCanvas();  // The colorbar is drawn separately in a 2D-canvas
 
     glUtils.updateMarkerScale();
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.updateMarkerScale);
