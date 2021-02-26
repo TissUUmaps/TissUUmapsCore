@@ -398,8 +398,8 @@ glUtils._createColorbarCanvas = function() {
     canvas.id = "CP_colorbar";
     canvas.width = "384";  // Fixed width in pixels
     canvas.height = "96";  // Fixed height in pixels
-    canvas.style = "position:relative; float:left; width:36%; left:32%; " + 
-                   "margin-top:-10.5%; z-index:20; pointer-events:none";
+    canvas.style = "position:relative; float:left; width:31%; left:68%; " +
+                   "margin-top:-9%; z-index:20; pointer-events:none";
 }
 
 
