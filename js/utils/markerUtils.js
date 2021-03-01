@@ -19,6 +19,7 @@ markerUtils = {
     //type must be like d3.symbolVoss
     _drawPaths: true,
     _globalMarkerSize: 1,
+    _showSizeColumn: false,
     _uniqueColor:false, //if this and selector are true, it will try to find a color unique to each spot
     _uniqueColorSelector:null, //is a string of the type "[float,float,float]" that gets converted to a string "rgb(uint8,uint8,uint8)"
     _startCullingAt: 9000,
@@ -328,7 +329,10 @@ markerUtils.drawAllFromList = function (list) {
     //imageWidth is the size of the image in the viewer
     var imageWidth = OSDViewerUtils.getImageWidth();
 
-    var calculatedSize = Number(document.getElementById(key + "-size-" + op).value) / imageWidth / 1000;
+    var calculatedSize = null;
+    if (document.getElementById(key + "-size-" + op)) {
+        calculatedSize = Number(document.getElementById(key + "-size-" + op).value) / imageWidth / 1000;
+    }
 
     if (document.getElementById(op + "_globalmarkersize_text")) {
         if (document.getElementById(op + "_globalmarkersize_text").value) {
@@ -459,10 +463,12 @@ markerUtils.markerUI = function (barObject,options) {
     shape.appendChild(shapeinput);
     row.appendChild(shape);
 
-    var size = HTMLElementUtils.createElement({ type: "td" });
-    var sizeinput = HTMLElementUtils.inputTypeText({ id: barObject.key + "-size-" + op, "class": "form-control" });
-    size.appendChild(sizeinput);
-    row.appendChild(size);
+    if (markerUtils._showSizeColumn) {
+        var size = HTMLElementUtils.createElement({ type: "td" });
+        var sizeinput = HTMLElementUtils.inputTypeText({ id: barObject.key + "-size-" + op, "class": "form-control" });
+        size.appendChild(sizeinput);
+        row.appendChild(size);
+    }
 
     return row;
 }
@@ -520,8 +526,10 @@ markerUtils.markerUIAll = function (options) {
     var shape = HTMLElementUtils.createElement({ type: "td" });
     row.appendChild(shape);
 
-    var size = HTMLElementUtils.createElement({ type: "td" });
-    row.appendChild(size);
+    if (markerUtils._showSizeColumn) {
+        var size = HTMLElementUtils.createElement({ type: "td" });
+        row.appendChild(size);
+    }
 
     return row;
 }
@@ -534,7 +542,10 @@ markerUtils.printBarcodeUIs = function (options) {
     var op = tmapp["object_prefix"];
     //overlayUtils._d3nodes[op]=d3.select( tmapp[op+"_svgov"].node());
     //chekc if gene_name exists    
-    var headers = ["Count", "Show", "Color", "Shape", "Size"];
+    var headers = ["Count", "Show", "Color", "Shape"];
+    if (markerUtils._showSizeColumn) {
+        headers = ["Count", "Show", "Color", "Shape", "Size"];
+    }
     dataUtils.sortDataAndDownsample();
     //this is causing weird behaviour sometims it creates the name column sometimes no
     var example = dataUtils[op + "_data"][0].values[0];
