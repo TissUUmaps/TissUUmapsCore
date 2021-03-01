@@ -16,6 +16,7 @@ glUtils = {
     _colorscaleName: "null",
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
+    _barcodeToKey: {},
     _redrawFlag: false,
     _options: {antialias: false},
     _showColorbar: true,
@@ -157,12 +158,13 @@ glUtils.loadMarkers = function() {
 
     const markerData = dataUtils["ISS_processeddata"];
     const numPoints = markerData.length;
+    const keyName = document.getElementById("ISS_key_header").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
     // If new marker data was loaded, we need to assign each barcode an index
     // that we can use with the LUT textures for color, visibility, etc.
-    glUtils._updateBarcodeToLUTIndexDict(markerData);
+    glUtils._updateBarcodeToLUTIndexDict(markerData, keyName);
 
     const positions = [];
     for (let i = 0; i < numPoints; ++i) {
@@ -223,16 +225,20 @@ glUtils.loadCPMarkers = function() {
 }
 
 
-glUtils._updateBarcodeToLUTIndexDict = function(markerData) {
+glUtils._updateBarcodeToLUTIndexDict = function(markerData, keyName) {
     const barcodeToLUTIndex = {};
+    const barcodeToKey = {};
     const numPoints = markerData.length;
     for (let i = 0, index = 0; i < numPoints; ++i) {
         const barcode = markerData[i].letters;
+        const gene_name = markerData[i].gene_name;
         if (!(barcode in barcodeToLUTIndex)) {
             barcodeToLUTIndex[barcode] = index++;
+            barcodeToKey[barcode] = (keyName == "letters" ? barcode : gene_name);
         }
     }
     glUtils._barcodeToLUTIndex = barcodeToLUTIndex;
+    glUtils._barcodeToKey = barcodeToKey;
 }
 
 
@@ -268,9 +274,10 @@ glUtils._updateColorLUTTexture = function(gl, texture) {
     const colors = new Array(256 * 4);
     for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex)) {
         // Get color, shape, etc. from HTML input elements for barcode
-        const hexColor = document.getElementById(barcode + "-color-ISS").value;
-        const shape = document.getElementById(barcode + "-shape-ISS").value;
-        const visible = showAll || markerUtils._checkBoxes[barcode].checked;
+        const key = glUtils._barcodeToKey[barcode];  // Could be barcode or gene name
+        const hexColor = document.getElementById(key + "-color-ISS").value;
+        const shape = document.getElementById(key + "-shape-ISS").value;
+        const visible = showAll || markerUtils._checkBoxes[key].checked;
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
@@ -319,7 +326,8 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
     const colors = [];
     for (let i = 0; i < 256; ++i) {
         const normalized = i / 255.0;
-        if (glUtils._colorscaleName.includes("interpolate")) {
+        if (glUtils._colorscaleName.includes("interpolate") &&
+            !glUtils._colorscaleName.includes("Rainbow")) {
             const color = d3[glUtils._colorscaleName](normalized);
             const hexColor = glUtils._formatHex(color);  // D3 sometimes returns RGB strings
             colors[4 * i + 0] = Number("0x" + hexColor.substring(1,3));
@@ -327,10 +335,15 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
             colors[4 * i + 2] = Number("0x" + hexColor.substring(5,7));
             colors[4 * i + 3] = 1.0;
         } else {
-            // Use a default rainbow color scale
-            colors[4 * i + 0] = Math.max(0.0, Math.sin((normalized - 0.5) * 3.141592)) * 255.99;
-            colors[4 * i + 1] = Math.max(0.0, Math.sin((normalized + 0.0) * 3.141592)) * 255.99;
-            colors[4 * i + 2] = Math.max(0.0, Math.sin((normalized + 0.5) * 3.141592)) * 255.99;
+            // Use a version of Google's Turbo colormap with brighter blue range
+            // Reference: https://www.shadertoy.com/view/WtGBDw
+            const r = Math.sin((normalized - 0.33) * 3.141592);
+            const g = Math.sin((normalized + 0.00) * 3.141592);
+            const b = Math.sin((normalized + 0.33) * 3.141592);
+            const s = 1.0 - normalized;  // For purplish tone at end of the range
+            colors[4 * i + 0] = Math.max(0.0, Math.min(1.0, r * (1.0 - 0.5 * b*b) + s*s)) * 255.99;
+            colors[4 * i + 1] = Math.max(0.0, Math.min(1.0, g * (1.0 - r*r * b*b))) * 255.99;
+            colors[4 * i + 2] = Math.max(0.0, Math.min(1.0, b * (1.0 - 0.5 * r*r))) * 255.99;
             colors[4 * i + 3] = 1.0;
         }
     }
