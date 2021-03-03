@@ -460,7 +460,7 @@ glUtils.draw = function() {
     glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
     const homeBounds = tmapp["ISS_viewer"].world.getHomeBounds();
     glUtils._imageSize = [homeBounds.width, homeBounds.height];
-    const orientationDegrees = tmapp.options_osd["degrees"];
+    const orientationDegrees = tmapp["ISS_viewer"].viewport.getRotation();
 
     // The OSD viewer can be rotated, so need to apply the same transform to markers
     const t = orientationDegrees * (3.141592 / 180.0);
