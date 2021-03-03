@@ -26,6 +26,7 @@ glUtils = {
 glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
+    uniform mat2 u_viewportTransform;
     uniform int u_markerType;
     uniform float u_markerScale;
     uniform vec2 u_markerScalarRange;
@@ -48,6 +49,7 @@ glUtils._markersVS = `
         vec2 viewportPos = imagePos - u_viewportRect.xy;
         vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
         ndcPos.y = -ndcPos.y;
+        ndcPos = u_viewportTransform * ndcPos;
 
         if (u_markerType == MARKER_TYPE_BARCODE) {
             v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
@@ -458,6 +460,11 @@ glUtils.draw = function() {
     glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
     const homeBounds = tmapp["ISS_viewer"].world.getHomeBounds();
     glUtils._imageSize = [homeBounds.width, homeBounds.height];
+    const orientationDegrees = tmapp.options_osd["degrees"];
+
+    // The OSD viewer can be rotated, so need to apply the same transform to markers
+    const t = orientationDegrees * (3.141592 / 180.0);
+    const viewportTransform = [Math.cos(t), -Math.sin(t), Math.sin(t), Math.cos(t)];
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -471,6 +478,7 @@ glUtils.draw = function() {
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
+    gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
