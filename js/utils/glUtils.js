@@ -45,10 +45,10 @@ glUtils._markersVS = `
     #define MARKER_TYPE_CP 1
     #define SHAPE_GRID_SIZE 4.0
 
-    vec3 unpack_rgb8(float v)
+    vec3 hex_to_rgb(float v)
     {
-        // Extract RGB color from 24-bit int stored in float
-        return mod(v / vec3(1.0, 256.0, 65536.0), 256.0) / 255.0;
+        // Extract RGB color from 24-bit hex color stored in float
+        return mod(round(v / vec3(65536.0, 256.0, 1.0)), 256.0) / 255.0;
     }
 
     void main()
@@ -68,7 +68,7 @@ glUtils._markersVS = `
             v_color.a = 7.0 / 255.0;  // Give CP markers a round shape
         }
 
-        if (u_useColorFromMarker) v_color.rgb = unpack_rgb8(a_position.w);
+        if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
@@ -385,7 +385,8 @@ glUtils._updateColorbarCanvas = function(colorscaleName, colorscaleData, propert
     const ctx = canvas.getContext("2d");
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if (!glUtils._showColorbar || colorscaleName == "null") return;
+    if (!glUtils._showColorbar || colorscaleName == "null" ||
+        colorscaleName == "ownColorFromColumn") return;
 
     const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
     const numStops = 32;
