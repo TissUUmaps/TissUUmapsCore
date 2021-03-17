@@ -48,7 +48,7 @@ glUtils._markersVS = `
     vec3 hex_to_rgb(float v)
     {
         // Extract RGB color from 24-bit hex color stored in float
-        return mod(round(v / vec3(65536.0, 256.0, 1.0)), 256.0) / 255.0;
+        return mod(floor(v / vec3(65536.0, 256.0, 1.0) + 0.5), 256.0) / 255.0;
     }
 
     void main()
