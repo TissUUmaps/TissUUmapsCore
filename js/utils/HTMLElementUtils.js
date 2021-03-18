@@ -305,7 +305,7 @@ HTMLElementUtils.createForm = function (params) {
  * This method is used to add a layer */
 HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
     var settingsPanel = document.getElementById("image-overlay-panel");
-    var layerTable = document.getElementById("image-overlay-table");
+    var layerTable = document.getElementById("image-overlay-tbody");
     if (!layerTable) {
         layerTable = document.createElement("table");
         layerTable.id = "image-overlay-table";
@@ -314,9 +314,10 @@ HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
         for (filterIndex = 0; filterIndex < filterUtils._filtersUsed.length; filterIndex++) {
             filterHeaders += "<th style='text-align:center;'>" + filterUtils._filtersUsed[filterIndex] + "</th>";
         }
-        layerTable.innerHTML = "<thead><th style='text-align:center;'>Name</th><th style='text-align:center;'>Visible</th><th style='text-align:center;'>Opacity</th>" + filterHeaders + "</thead>"
+        layerTable.innerHTML = "<thead><th style='text-align:center;'>Name</th><th style='text-align:center;'>Visible</th><th style='text-align:center;'>Opacity</th>" + filterHeaders + "</thead><tbody id='image-overlay-tbody'></tbody>"
         settingsPanel.appendChild(layerTable);
     }
+    layerTable = document.getElementById("image-overlay-tbody");
     var tr = document.createElement("tr");
 
     var visible = document.createElement("input");
