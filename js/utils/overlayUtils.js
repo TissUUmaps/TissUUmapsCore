@@ -18,14 +18,55 @@ overlayUtils = {
     _zoomForSubsample:5.15
 }
 
+/**
+ * This method is used to add all layers from tmapp */
+overlayUtils.addAllLayers = function() {
+    tmapp.layers.forEach(function(layer, i) {
+        overlayUtils.addLayer(layer.name, layer.tileSource, i);
+    });
+}
+
+/**
+ * This method is used to add a layer */
+overlayUtils.addLayer = function(layerName, tileSource, i) {
+    var op = tmapp["object_prefix"];
+    var vname = op + "_viewer";
+
+    tmapp[vname].addTiledImage({
+        index: i + 1,
+        tileSource: tmapp._url_suffix + tileSource,
+        opacity: 1.0
+    });
+    HTMLElementUtils.addLayerSettings(layerName, i);
+}
+
+
 /** 
  * @param {Number} item Index of an OSD tile source
  * Set the opacity of a tile source */
-overlayUtils.setItemOpacity= function(item){
+overlayUtils.setItemOpacity = function(item, opacity) {
     var op = tmapp["object_prefix"];
-    var opa=Math.abs(1.0-tmapp[op + "_viewer"].world.getItemAt(item).opacity);	
-    tmapp[op + "_viewer"].world.getItemAt(item).setOpacity(opa);
+    if (!tmapp[op + "_viewer"].world.getItemAt(item)) {
+        setTimeout(function() {
+            overlayUtils.setItemOpacity(item, opacity);
+        }, 100);
+        return;
+    }
+    tmapp[op + "_viewer"].world.getItemAt(item).setOpacity(opacity);
 }
+
+overlayUtils.areAllFullyLoaded = function () {
+    var tiledImage;
+    var op = tmapp["object_prefix"];
+    var count = tmapp[op + "_viewer"].world.getItemCount();
+    for (var i = 0; i < count; i++) {
+      tiledImage = tmapp[op + "_viewer"].world.getItemAt(i);
+      if (!tiledImage.getFullyLoaded() && tiledImage.getOpacity() != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
 
 /** 
  * @param {String} layerName name of an existing d3 node

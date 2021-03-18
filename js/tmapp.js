@@ -60,26 +60,12 @@ tmapp.init = function () {
     //init OSD viewer
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
     //open the DZI xml file pointing to the tiles
-    tmapp[vname].open(this._url_suffix + this.fixed_file);
+    overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  this.fixed_file, -1)
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
 
     if(tmapp.layers){
-	    var settingspannel=document.getElementById("image-overlay-panel");
-    	tmapp.layers.forEach(function(layer,i){
-	    var _button = document.createElement("button");
-	    _button.setAttribute("id","layer"+(i+1)+"_btn");
-	    _button.setAttribute("layer",(i+1));
-	    _button.innerHTML=layer.name
-             settingspannel.appendChild(_button);
-	    tmapp[vname].addTiledImage({
-		    index: i+1,tileSource: tmapp._url_suffix+layer.tileSource, opacity:0.0
-	     });
-	    _button.addEventListener("click",function(ev){
-		 var layer=ev.srcElement.attributes.layer;
-	        overlayUtils.setItemOpacity(layer.value); 
-	    });
-	});
+        overlayUtils.addAllLayers();
     }
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     var svgovname = tmapp["object_prefix"] + "_svgov";
