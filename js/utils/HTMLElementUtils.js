@@ -314,7 +314,7 @@ HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
         for (filterIndex = 0; filterIndex < filterUtils._filtersUsed.length; filterIndex++) {
             filterHeaders += "<th style='text-align:center;'>" + filterUtils._filtersUsed[filterIndex] + "</th>";
         }
-        layerTable.innerHTML = "<thead><th style='text-align:center;'>Layer name</th><th style='text-align:center;'>Visible</th><th style='text-align:center;'>Opacity</th>" + filterHeaders + "</thead>"
+        layerTable.innerHTML = "<thead><th style='text-align:center;'>Name</th><th style='text-align:center;'>Visible</th><th style='text-align:center;'>Opacity</th>" + filterHeaders + "</thead>"
         settingsPanel.appendChild(layerTable);
     }
     var tr = document.createElement("tr");
