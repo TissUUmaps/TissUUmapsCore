@@ -1599,6 +1599,7 @@ pre code {
   padding-right: 15px;
 }
 .row {
+  padding-bottom: 7px;
   /*margin-left: -15px;
   margin-right: -15px;*/
 }
@@ -2249,6 +2250,7 @@ caption {
 }
 th {
   text-align: left;
+  padding: 7px;
 }
 .table {
   width: 100%;
@@ -5428,7 +5430,7 @@ button.list-group-item-danger.active:focus {
   line-height: 1.3;
 }
 .panel {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   background-color: #ffffff;
   border: 1px solid transparent;
   border-radius: 4px;

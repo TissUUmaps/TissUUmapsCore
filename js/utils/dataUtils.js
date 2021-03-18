@@ -110,7 +110,7 @@ dataUtils.processISSRawData = function () {
     dataUtils.makeQuadTrees();
     
     delete dataUtils[op + "_rawdata"];
-
+    document.getElementById("ISS_globalmarkersize").style.display = "block";
     glUtils.loadMarkers();  // FIXME
 }
 

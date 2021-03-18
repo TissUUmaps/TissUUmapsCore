@@ -343,7 +343,7 @@ HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
     td_opacity.style.padding = "6px";
     td_opacity.style.minWidth = "100px";
 
-    tr.innerHTML = "<td>" + layerName + "</td>";
+    tr.innerHTML = "<td style='padding:6px;'>" + layerName + "</td>";
     tr.appendChild(td_visible);
     tr.appendChild(td_opacity);
 

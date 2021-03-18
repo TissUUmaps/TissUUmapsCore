@@ -40,7 +40,7 @@ tmapp.registerActions = function () {
             as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
         }
     }
-    interfaceUtils.activateMainChildTabs("markers-gui");
+    //interfaceUtils.activateMainChildTabs("markers-gui");
 
 }
 /**
@@ -60,6 +60,9 @@ tmapp.init = function () {
     //init OSD viewer
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
     //open the DZI xml file pointing to the tiles
+    if (!tmapp.slideFilename) {
+        tmapp.slideFilename = "Main";
+    }
     overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  this.fixed_file, -1)
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
@@ -123,6 +126,10 @@ tmapp.init = function () {
         clickHandler: click_handler,
         scrollHandler: scroll_handler
     }).setTracking(true);
+
+    elt = document.getElementById("ISS_globalmarkersize");
+    tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
+    elt.style.display="None";
 
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
 } //finish init

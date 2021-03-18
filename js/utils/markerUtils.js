@@ -418,7 +418,7 @@ markerUtils.markerUI = function (barObject,options) {
         row.appendChild(name);
     }
 
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: '(' + barObject.values.length + ')' });
+    var amount = HTMLElementUtils.createElement({ type: "td", innerText: barObject.values.length });
     row.appendChild(amount);
 
     var check = HTMLElementUtils.createElement({ type: "td" });
@@ -505,7 +505,7 @@ markerUtils.markerUIAll = function (options) {
     dataUtils[op + "_data"].forEach(function (barcode) {
         length += barcode.values.length;
     });
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: '(' + length + ')' });
+    var amount = HTMLElementUtils.createElement({ type: "td", innerText: length });
     row.appendChild(amount);
 
     var check = HTMLElementUtils.createElement({ type: "td" });
@@ -571,7 +571,7 @@ markerUtils.printBarcodeUIs = function (options) {
 
     var colg=document.createElement ("colgroup");
     if(headers.length == 6 ){
-        colg.innerHTML='<col width="20%"><col width="20%"><col width="12%"><col width="12%"><col width="15%"><col width="17%">';
+        colg.innerHTML='<col width="20%"><col width="20%"><col width="16%"><col width="10%"><col width="12%"><col width="17%">';
         tbl.appendChild(colg);
     }
     else if(headers.length == 7 ){
