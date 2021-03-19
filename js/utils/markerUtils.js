@@ -572,7 +572,7 @@ markerUtils.printBarcodeUIs = function (options) {
 
     var colg=document.createElement ("colgroup");
     if(headers.length == 6 ){
-        colg.innerHTML='<col width="2%"><col width="20%"><col width="20%"><col width="16%"><col width="12%"><col width="17%">';
+        colg.innerHTML='<col width="2%"><col width="23%"><col width="20%"><col width="16%"><col width="12%"><col width="17%">';
         tbl.appendChild(colg);
     }
     else if(headers.length == 7 ){
@@ -586,11 +586,14 @@ markerUtils.printBarcodeUIs = function (options) {
     }
 
     var tblHead = document.createElement("thead");
+    var tblHeadTr = document.createElement("tr");
+    tblHead.appendChild(tblHeadTr);
+
     var tblBody = document.createElement("tbody");
     headers.forEach(function (header) {
         var th = document.createElement("th");
         th.appendChild(document.createTextNode(header));
-        tblHead.appendChild(th);
+        tblHeadTr.appendChild(th);
     });
     tbl.appendChild(tblHead);
     
