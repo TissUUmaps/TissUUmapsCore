@@ -59,3 +59,13 @@
     display:None;
     text-align:center;
 }
+#ISS_drawregions_btn.btn-primary:before {
+    content:"☑";
+    font-size:20px;
+    line-height: 14px;
+}
+#ISS_drawregions_btn.btn-secondary:before {
+    content:"☐";
+    font-size:20px;
+    line-height: 14px;
+}
