@@ -24,15 +24,15 @@ markerUtils = {
     _uniqueColorSelector:null, //is a string of the type "[float,float,float]" that gets converted to a string "rgb(uint8,uint8,uint8)"
     _startCullingAt: 9000,
     _checkBoxes: {},
-    _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye],
-    _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye"],
+    _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],
+    _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye", "Circle"],
     _colorsperkey:null
 }
 
 /** 
  * Draw a D3 symbol
  * @param {string} group d3 group where to put this marker at.
- * @param {sring} type [symbolCross, symbolDiamond, symbolSquare, symbolTriangle, symbolStar, symbolWye]
+ * @param {sring} type [symbolCross, symbolDiamond, symbolSquare, symbolTriangle, symbolStar, symbolWye, symbolCircle]
  * @param {Number} x x coordinate normalized by the width of the image
  * @param {Number} y y coordinate normalized by the width of the image... YES it is the width as well
  * @param {Number} size size relative to the normalized image width (width=1). Common size can be 0.005
@@ -459,7 +459,7 @@ markerUtils.markerUI = function (barObject,options) {
     var shape = HTMLElementUtils.createElement({ type: "td" });
     var shapeParams = { random: true, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
     var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
-    if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length)) + 0; shapeinput.selectedIndex = rnd; }
+    if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
     shape.appendChild(shapeinput);
     row.appendChild(shape);
 
