@@ -4,6 +4,7 @@
 <head>
     <title>TissUUmaps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8"/>
     <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
     <!--<script src="//d3js.org/d3-scale-chromatic.v0.3.min.js"></script>-->
     <script src="js/d3.v4.min.js"></script>
@@ -48,7 +49,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Row for viewer  -->
-            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8" style="max-width: calc(100% - 600px);">
+            <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8" style="max-width: calc(100% - 540px);">
                 <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize 
                 The ID will give the prefix for all the objects related to the viewer in this case ISS-->
                 <div id="ISS_viewer" class="ISS_viewer" style="position:absolute; width:100%">
@@ -64,7 +65,7 @@
                 </div>
                 <canvas id="gl_canvas" width="500" height="500" style="position:relative; z-index:10; pointer-events:none"></canvas>
             </div>
-            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 ISS_menu" style="overflow-y:auto; overflow-x:auto;min-width: 600px;">
+            <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 ISS_menu" style="overflow-y:auto; overflow-x:auto;min-width: 540px;">
                 <div class="row row-fullheight" style="padding-bottom: 0px;">
                     <!-- Level 0 tabs -->
                     <ul class="nav nav-tabs L0-tabs fixed-height">
@@ -450,6 +451,7 @@
         tmapp.fixed_file = "data/breastcancer/fluo.dzi";
         tmapp.slideFilename = "Fluo";
 	    tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
+        tmapp.mpp = 0.33;
         tmapp.registerActions();
         tmapp.init();
 

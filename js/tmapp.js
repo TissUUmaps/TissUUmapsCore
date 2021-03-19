@@ -12,7 +12,9 @@
 tmapp = {
     _url_suffix: "",
     _scrollDelay: 900,
-    fixed_file: ""
+    fixed_file: "",
+    mpp:0,
+    slideFilename:"Main"
 }
 
 /** 
@@ -60,9 +62,6 @@ tmapp.init = function () {
     //init OSD viewer
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
     //open the DZI xml file pointing to the tiles
-    if (!tmapp.slideFilename) {
-        tmapp.slideFilename = "Main";
-    }
     overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  this.fixed_file, -1)
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
@@ -131,6 +130,18 @@ tmapp.init = function () {
     tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
     elt.style.display="None";
 
+    if (tmapp.mpp != 0) {
+        tmapp[vname].scalebar({
+            pixelsPerMeter: tmapp.mpp ? (1e6 / tmapp.mpp) : 0,
+            xOffset: 200,
+            yOffset: 10,
+            barThickness: 3,
+            color: '#555555',
+            fontColor: '#333333',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            sizeAndTextRenderer: OpenSeadragon.ScalebarSizeAndTextRenderer.METRIC_LENGTH
+        });
+    }
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
 } //finish init
 
