@@ -111,7 +111,9 @@ dataUtils.processISSRawData = function () {
     
     delete dataUtils[op + "_rawdata"];
     document.getElementById("ISS_globalmarkersize").style.display = "block";
-    glUtils.loadMarkers();  // FIXME
+    if (window.hasOwnProperty("glUtils")) {
+        glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
+    }
 }
 
 

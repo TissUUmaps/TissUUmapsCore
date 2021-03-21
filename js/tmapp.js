@@ -143,6 +143,13 @@ tmapp.init = function () {
         });
     }
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
+
+    if (window.hasOwnProperty("glUtils")) {
+        console.log("Using GPU-based marker drawing (WebGL canvas)")
+        glUtils.init();
+    } else {
+        console.log("Using CPU-based marker drawing (SVG canvas)")
+    }
 } //finish init
 
 /**

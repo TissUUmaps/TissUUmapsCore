@@ -43,7 +43,9 @@ CPDataUtils.processISSRawData = function () {
     CPDataUtils._drawCPdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
     markerUtils.drawCPdata({searchInTree:false}); //mandatory options obj
 
-    glUtils.loadCPMarkers();  // FIXME
+    if (window.hasOwnProperty("glUtils")) {
+        glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing
+    }
 }
 
 CPDataUtils.readCSV = function (thecsv) {
