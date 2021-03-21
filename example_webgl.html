@@ -52,7 +52,6 @@
                 <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize 
                 The ID will give the prefix for all the objects related to the viewer in this case ISS-->
                 <div id="ISS_viewer" class="ISS_viewer" style="position:absolute; width:100%"></div>
-                <canvas id="gl_canvas" width="500" height="500" style="position:relative; z-index:10; pointer-events:none"></canvas>
             </div>
             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 ISS_menu" style="overflow-y:auto; overflow-x:auto">
                 <div class="row">
@@ -494,18 +493,6 @@
 	    tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
         tmapp.registerActions();
         tmapp.init();
-
-        glUtils.init();
-        glUtils.resize();
-        tmapp["ISS_viewer"].addHandler('resize', glUtils.resizeAndDraw);
-        tmapp["ISS_viewer"].addHandler('resize', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('open', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('open', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('container-exit', glUtils.postRedraw);
     });
 
 </script>

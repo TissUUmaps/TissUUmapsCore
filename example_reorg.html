@@ -54,7 +54,6 @@
                 The ID will give the prefix for all the objects related to the viewer in this case ISS-->
                 <div id="ISS_viewer" class="ISS_viewer" style="position:absolute; width:100%">
                 </div>
-                <canvas id="gl_canvas" width="500" height="500" style="position:relative; z-index:10; pointer-events:none"></canvas>
                 <!-- Global marker size slider -->
                 <div id="ISS_globalmarkersize">
                     <label>Marker size</label><br>
@@ -454,18 +453,6 @@
         //tmapp.mpp = 0.33;
         tmapp.registerActions();
         tmapp.init();
-
-        glUtils.init();
-        glUtils.resize();
-        tmapp["ISS_viewer"].addHandler('resize', glUtils.resizeAndDraw);
-        tmapp["ISS_viewer"].addHandler('resize', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('open', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('open', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('container-enter', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.draw);
-        tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.clearNavigatorArea);
-        tmapp["ISS_viewer"].addHandler('container-exit', glUtils.postRedraw);
     });
 
 </script>
