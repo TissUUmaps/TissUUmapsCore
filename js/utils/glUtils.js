@@ -103,10 +103,10 @@ glUtils._markersFS = `
 
         vec4 shapeColor = texture2D(u_shapeAtlas, uv, -0.5);
         shapeColor = clamp(shapeColor + v_shapeColorBias, 0.0, 1.0);
-        shapeColor.rgb *= shapeColor.a;
 
         gl_FragColor = shapeColor * v_color;
-        if (gl_FragColor.a < 0.1) discard;
+        gl_FragColor.rgb *= gl_FragColor.a;  // Need to pre-multiply alpha
+        if (gl_FragColor.a < 0.01) discard;
     }
 `;
 
@@ -356,7 +356,7 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
             colors[4 * i + 0] = Number("0x" + hexColor.substring(1,3));
             colors[4 * i + 1] = Number("0x" + hexColor.substring(3,5));
             colors[4 * i + 2] = Number("0x" + hexColor.substring(5,7));
-            colors[4 * i + 3] = 1.0;
+            colors[4 * i + 3] = 255.0;
         } else {
             // Use a version of Google's Turbo colormap with brighter blue range
             // Reference: https://www.shadertoy.com/view/WtGBDw
@@ -367,7 +367,7 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
             colors[4 * i + 0] = Math.max(0.0, Math.min(1.0, r * (1.0 - 0.5 * b*b) + s*s)) * 255.99;
             colors[4 * i + 1] = Math.max(0.0, Math.min(1.0, g * (1.0 - r*r * b*b))) * 255.99;
             colors[4 * i + 2] = Math.max(0.0, Math.min(1.0, b * (1.0 - 0.5 * r*r))) * 255.99;
-            colors[4 * i + 3] = 1.0;
+            colors[4 * i + 3] = 255.0;
         }
     }
     glUtils._colorscaleData = colors;
@@ -493,7 +493,7 @@ glUtils.draw = function() {
 
     gl.useProgram(program);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
