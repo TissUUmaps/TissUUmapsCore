@@ -113,6 +113,9 @@ dataUtils.processISSRawData = function () {
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").style.display = "block";
     }
+    if (document.getElementById("ISS_searchmarkers_row")) {
+        document.getElementById("ISS_searchmarkers_row").style.display = "block";
+    }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
     }
@@ -130,7 +133,6 @@ dataUtils.showMenuCSV = function(){
     var ISSX = document.getElementById(op + "_X_header");
     var ISSY = document.getElementById(op + "_Y_header");
     //console.log(dataUtils._CSVStructure["ISS_csv_header"]);
-    [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY].forEach(function (node) {
         node.innerHTML = "";
         var option = document.createElement("option");
         option.value = "null";

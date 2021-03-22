@@ -88,7 +88,7 @@
                                     <div class="row fixed-height">
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                             <div id="ISS_input_csv" style="margin-bottom: 5px;">
-                                                <label for="ISS_csv">Choose a CSV:</label>
+                                                <label for="ISS_csv">Import gene expression from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="ISS_csv" name="ISS_csv"
                                                     accept=".csv,.tsv,.txt">
                                                 <script type="text/javascript">
@@ -178,19 +178,10 @@
                                         </div>
                                     </div>
                                     <!-- 1.3 Row for barcode search -->
-                                    <div class="row fixed-height">
+                                    <div class="row fixed-height" id="ISS_searchmarkers_row" style="display:None;">
                                         <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
+                                            <label for="ISS_search">Filter:</label>
                                             <input class="form-control" type="text" id="ISS_search">
-                                        </div>
-                                        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
-                                            <button id="ISS_searchmarkers_btn" class="btn btn-primary"
-                                                type="button"> Search</button>
-                                        </div>
-                                        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
-                                            <button id="ISS_cancelsearch_btn" class="btn btn-primary"
-                                                type="button"> Cancel</button>
-                                        </div>
-                                        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
                                         </div>
                                     </div>
                                     <!-- 1.4 Row for markers -->
@@ -208,7 +199,7 @@
                                     <div class="row" id="CP_data_panel">
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                             <div id="CP_input_csv" style="margin-bottom: 5px;">
-                                                <label for="CP_csv">Choose a CSV:</label>
+                                                <label for="CP_csv">Import cell morphology from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="CP_csv" name="CP_csv"
                                                     accept=".csv,.tsv,.txt">
                                                 <script type="text/javascript">
