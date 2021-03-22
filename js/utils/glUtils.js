@@ -14,7 +14,7 @@ glUtils = {
     _viewportRect: [0, 0, 1, 1],
     _markerScale: 1.0,
     _markerScalarRange: [0.0, 1.0],
-    _markerOpacity: 0.5,
+    _markerOpacity: 1.0,
     _useColorFromMarker: false,
     _colorscaleName: "null",
     _colorscaleData: [],
