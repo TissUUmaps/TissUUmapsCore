@@ -14,6 +14,7 @@ glUtils = {
     _viewportRect: [0, 0, 1, 1],
     _markerScale: 1.0,
     _markerScalarRange: [0.0, 1.0],
+    _markerOpacity: 0.5,
     _useColorFromMarker: false,
     _colorscaleName: "null",
     _colorscaleData: [],
@@ -31,6 +32,7 @@ glUtils._markersVS = `
     uniform int u_markerType;
     uniform float u_markerScale;
     uniform vec2 u_markerScalarRange;
+    uniform float u_markerOpacity;
     uniform bool u_useColorFromMarker;
     uniform sampler2D u_colorLUT;
     uniform sampler2D u_colorscale;
@@ -78,7 +80,7 @@ glUtils._markersVS = `
         v_shapeColorBias = max(0.0, 1.0 - gl_PointSize * 0.2);
 
         // Discard point here in vertex shader if marker is hidden
-        v_color.a = v_color.a > 0.0 ? 1.0 : 0.0;
+        v_color.a = v_color.a > 0.0 ? u_markerOpacity : 0.0;
         if (v_color.a == 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 0.0);
     }
 `;
@@ -500,6 +502,7 @@ glUtils.draw = function() {
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
