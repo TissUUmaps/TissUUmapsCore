@@ -1,5 +1,5 @@
 /**
-* @file glUtils.js Handling WebGL stuff (shader loading, etc.)
+* @file glUtils.js Utilities for WebGL-based marker drawing
 * @author Fredrik Nysjo
 * @see {@link glUtils}
 */
