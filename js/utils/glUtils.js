@@ -71,7 +71,7 @@ glUtils._markersVS = `
         if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(1.0, u_markerScale / u_viewportRect.w);
+        gl_PointSize = max(2.0, u_markerScale / u_viewportRect.w);
 
         v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
@@ -102,7 +102,7 @@ glUtils._markersFS = `
         uv = (uv + v_shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
 
         vec4 shapeColor = texture2D(u_shapeAtlas, uv, -0.5);
-        shapeColor = clamp(shapeColor + v_shapeColorBias, 0.0, 1.0);
+        shapeColor.rgb = clamp(shapeColor.rgb + v_shapeColorBias, 0.0, 1.0);
 
         gl_FragColor = shapeColor * v_color;
         gl_FragColor.rgb *= gl_FragColor.a;  // Need to pre-multiply alpha
