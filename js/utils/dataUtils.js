@@ -110,7 +110,9 @@ dataUtils.processISSRawData = function () {
     dataUtils.makeQuadTrees();
     
     delete dataUtils[op + "_rawdata"];
-    document.getElementById("ISS_globalmarkersize").style.display = "block";
+    if (document.getElementById("ISS_globalmarkersize")) {
+        document.getElementById("ISS_globalmarkersize").style.display = "block";
+    }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
     }

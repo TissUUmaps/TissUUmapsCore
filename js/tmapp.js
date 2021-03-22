@@ -127,8 +127,10 @@ tmapp.init = function () {
     }).setTracking(true);
 
     elt = document.getElementById("ISS_globalmarkersize");
-    tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
-    elt.style.display="None";
+    if (elt) {
+        tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
+        elt.style.display="None";
+    }
 
     if (tmapp.mpp != 0) {
         tmapp[vname].scalebar({
