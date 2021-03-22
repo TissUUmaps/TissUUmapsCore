@@ -61,83 +61,89 @@ CPDataUtils.readCSV = function (thecsv) {
         function (d) { return d; },
         function (rows) {
             CPDataUtils[cpop + "_rawdata"] = rows;
-            var csvheaders = Object.keys(CPDataUtils[cpop + "_rawdata"][0]);
-            CPDataUtils._CSVStructure=csvheaders;
-
-            var datum=CPDataUtils[cpop + "_rawdata"][1];
-
-            var numericalheaders=[];
-
-            var rg=RegExp('^[0-9]*[.0-9]*$');
-            //Check which headers could require stats:
-            csvheaders.forEach(function(h){
-                if(rg.test(datum[h])){
-                    //if it is not nan it means it is a number...
-                    numericalheaders.push(h);
-                    CPDataUtils[cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
-                }
-            });
-
-            CPDataUtils[cpop + "_rawdata"].forEach(function(d){
-                numericalheaders.forEach(function(nh){
-                    if(d[nh]>CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]=d[nh];
-                    if(d[nh]<CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]=d[nh];                    
-                }); 
-            });
-
-            var CPKey = document.getElementById(cpop+"_key_header");
-            var CPProperty = document.getElementById(cpop+"_property_header");
-            var CPX = document.getElementById(cpop+"_X_header");
-            var CPY = document.getElementById(cpop+"_Y_header");
-            var CPLut = document.getElementById(cpop+"_colorscale");
-
-            CPDataUtils._d3LUTs.forEach(function(lut){
-                var option = document.createElement("option");
-                option.value = lut;
-                option.text = lut.replace("interpolate","");
-                CPLut.appendChild(option);
-            });
-                
-
-            [CPKey, CPProperty, CPX, CPY].forEach(function (node) {
-                node.innerHTML = "";
-                var option = document.createElement("option");
-                option.value = "null";
-                option.text = "-----";
-                node.appendChild(option);
-                csvheaders.forEach(function (head) {
-                    var option = document.createElement("option");
-                    option.value = head;
-                    option.text = head;
-                    node.appendChild(option);
-                });
-            });
-            var panel = document.getElementById(cpop+"_csv_headers");
-            panel.style = "";
-
-            //create tree, full and subsampled array
-            var length=CPDataUtils[cpop + "_rawdata"].length;
-            var amount=Math.floor(length*CPDataUtils._subsamplingfactor);
-            CPDataUtils[cpop + "_subsampled_data"]=CPDataUtils.randomSamplesFromList(amount,CPDataUtils[cpop + "_rawdata"]);
-
-            //create listener for change of property
-            var changeProperty=function(){
-                //find all CP nodes and remove them
-                for(d3nodename in overlayUtils._d3nodes){
-                    if(d3nodename.includes(cpop+"_prop_")){
-                        overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
-                    }
-                }
-                markerUtils.drawCPdata({searchInTree:false});
-            }
-            CPProperty.addEventListener("change", changeProperty);
-            
-            if (csvheaders.includes(CPDataUtils._expectedCSV["key_header"])) CPKey.value = CPDataUtils._expectedCSV["key_header"];
-            if (csvheaders.includes(CPDataUtils._expectedCSV["X_header"])) CPX.value = CPDataUtils._expectedCSV["X_header"];
-            if (csvheaders.includes(CPDataUtils._expectedCSV["Y_header"])) CPY.value = CPDataUtils._expectedCSV["Y_header"];
-            CPLut.value = "interpolateRainbow";
+            CPDataUtils.loadFromRawData();
         }
     );
+}
+
+CPDataUtils.loadFromRawData = function () {
+    var cpop = "CP";//tmapp["object_prefix"];
+    CPDataUtils[cpop + "_rawdata_stats"]={};
+    var csvheaders = Object.keys(CPDataUtils[cpop + "_rawdata"][0]);
+    CPDataUtils._CSVStructure=csvheaders;
+
+    var datum=CPDataUtils[cpop + "_rawdata"][1];
+
+    var numericalheaders=[];
+
+    var rg=RegExp('^[0-9]*[.0-9]*$');
+    //Check which headers could require stats:
+    csvheaders.forEach(function(h){
+        if(rg.test(datum[h])){
+            //if it is not nan it means it is a number...
+            numericalheaders.push(h);
+            CPDataUtils[cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
+        }
+    });
+
+    CPDataUtils[cpop + "_rawdata"].forEach(function(d){
+        numericalheaders.forEach(function(nh){
+            if(d[nh]>CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]=d[nh];
+            if(d[nh]<CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]=d[nh];                    
+        }); 
+    });
+
+    var CPKey = document.getElementById(cpop+"_key_header");
+    var CPProperty = document.getElementById(cpop+"_property_header");
+    var CPX = document.getElementById(cpop+"_X_header");
+    var CPY = document.getElementById(cpop+"_Y_header");
+    var CPLut = document.getElementById(cpop+"_colorscale");
+
+    CPDataUtils._d3LUTs.forEach(function(lut){
+        var option = document.createElement("option");
+        option.value = lut;
+        option.text = lut.replace("interpolate","");
+        CPLut.appendChild(option);
+    });
+        
+
+    [CPKey, CPProperty, CPX, CPY].forEach(function (node) {
+        node.innerHTML = "";
+        var option = document.createElement("option");
+        option.value = "null";
+        option.text = "-----";
+        node.appendChild(option);
+        csvheaders.forEach(function (head) {
+            var option = document.createElement("option");
+            option.value = head;
+            option.text = head;
+            node.appendChild(option);
+        });
+    });
+    var panel = document.getElementById(cpop+"_csv_headers");
+    panel.style = "";
+
+    //create tree, full and subsampled array
+    var length=CPDataUtils[cpop + "_rawdata"].length;
+    var amount=Math.floor(length*CPDataUtils._subsamplingfactor);
+    CPDataUtils[cpop + "_subsampled_data"]=CPDataUtils.randomSamplesFromList(amount,CPDataUtils[cpop + "_rawdata"]);
+
+    //create listener for change of property
+    var changeProperty=function(){
+        //find all CP nodes and remove them
+        for(d3nodename in overlayUtils._d3nodes){
+            if(d3nodename.includes(cpop+"_prop_")){
+                overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
+            }
+        }
+        markerUtils.drawCPdata({searchInTree:false});
+    }
+    CPProperty.addEventListener("change", changeProperty);
+    
+    if (csvheaders.includes(CPDataUtils._expectedCSV["key_header"])) CPKey.value = CPDataUtils._expectedCSV["key_header"];
+    if (csvheaders.includes(CPDataUtils._expectedCSV["X_header"])) CPX.value = CPDataUtils._expectedCSV["X_header"];
+    if (csvheaders.includes(CPDataUtils._expectedCSV["Y_header"])) CPY.value = CPDataUtils._expectedCSV["Y_header"];
+    CPLut.value = "interpolateRainbow";
 }
 
 /** 
