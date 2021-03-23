@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/tm-icon-style.css">    
 </head>
 
-<body>
+<body style="background-color:#ccc;">
     <div class="navbar navbar-default">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
@@ -67,7 +67,7 @@
             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 ISS_menu" style="overflow-y:hidden; overflow-x:auto;min-width: 506px;">
                 <div class="row row-fullheight" style="padding-bottom: 0px;">
                     <!-- Level 0 tabs -->
-                    <ul class="nav nav-tabs L0-tabs fixed-height">
+                    <ul class="nav nav-tabs L0-tabs">
                         <li> <a href="#markers-iss-gui" data-toggle="tab" aria-expanded="true"
                                 class="active main-child">Gene expression</a></li>
                         <li> <a href="#markers-cp-gui" data-toggle="tab"
@@ -117,7 +117,7 @@
                                         </div>
                                     </div>
                                     <!-- 1.2 Row header selection -->
-                                    <div class="row fixed-height" id="ISS_csv_headers"
+                                    <div class="row" id="ISS_csv_headers"
                                         style="visibility: hidden; display:none;">
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                             <div class="row">
@@ -196,7 +196,7 @@
                                         </div>
                                     </div>
                                     <!-- 1.3 Row for barcode search -->
-                                    <div class="row fixed-height" id="ISS_searchmarkers_row" style="display:None;">
+                                    <div class="row" id="ISS_searchmarkers_row" style="display:None;">
                                         <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
                                             <label for="ISS_search">Filter:</label>
                                             <input class="form-control" type="text" id="ISS_search">
@@ -321,7 +321,7 @@
                                 <div class="panel-body" style="height:100%;">
                                     <div class="row row-fullheight">
                                         <!-- Tabs 1.3.0 region subtabs -->
-                                        <ul class="nav nav-tabs L2-tabs fixed-height">
+                                        <ul class="nav nav-tabs L2-tabs">
                                             <li><a href="#markers-regions-project-gui" data-toggle="tab" aria-expanded="false" class="active main-child">Regions</a></li>
                                             <li><a href="#markers-regions-import-gui" data-toggle="tab"
                                                     aria-expanded="false">Import</a></li>
