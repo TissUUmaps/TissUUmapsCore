@@ -15,12 +15,39 @@
     //                 "Saturation","Gamma","Invert","Greyscale","Threshold","Erosion","Dilation"]
     _filtersUsed: ["Saturation","Brightness","Contrast"],
     _filters: {
+        "Colorize":{
+            params:{
+                type:"select",
+                options:[
+                    {text:"----", value:0},
+                    {text:"Red", value:"100,0,0"},
+                    {text:"Green", value:"0,100,0"},
+                    {text:"Blue", value:"0,0,100"},
+                    {text:"Yellow", value:"100,100,0"},
+                    {text:"Cyan", value:"0,100,100"},
+                    {text:"Magenta", value:"100,0,100"},
+                    {text:"Gray", value:"100,100,100"}
+                ]
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        var valueRGB = value.split(",")
+                        this.channels(
+                            {red: valueRGB[0]-100, green: valueRGB[1]-100, blue: valueRGB[2]-100}
+                        )
+                        this.render(callback);
+                    });
+                }
+            }
+        },
         "Brightness":{
             params:{
                 type:"range",
                 min:-100,
                 max:100,
-                step:1,
+                step:0.5,
                 value:0
             },
             filterFunction: function (value) {
@@ -278,9 +305,9 @@ filterUtils.getFilterItems = function() {
             items[filterInputsRanges[i].getAttribute("layer")] = []
         }
         filterFunction = filterUtils.getFilterFunction(filterInputsRanges[i].getAttribute("filter"));
-        if (filterInputsRanges[i].type == "range")
+        if (filterInputsRanges[i].type == "range" || filterInputsRanges[i].type == "select-one")
             inputValue = filterInputsRanges[i].value;
-        else
+        else if (filterInputsRanges[i].type == "checkbox")
             inputValue = filterInputsRanges[i].checked;
         if (inputValue) {
             items[filterInputsRanges[i].getAttribute("layer")].push(
@@ -293,4 +320,12 @@ filterUtils.getFilterItems = function() {
     }
     filterUtils._filterItems = items;
     filterUtils.applyFilterItems(items);
+}
+
+filterUtils.setCompositeOperation = function() {
+    var op = tmapp["object_prefix"];
+    tmapp[op + "_viewer"].compositeOperation = "lighter";
+    for (i = 0; i < tmapp[op + "_viewer"].world.getItemCount(); i++) {
+        tmapp[op + "_viewer"].world.getItemAt(i).setCompositeOperation("lighter");
+    }
 }

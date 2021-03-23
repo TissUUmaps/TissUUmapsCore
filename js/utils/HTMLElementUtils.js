@@ -111,17 +111,28 @@ HTMLElementUtils.selectTypeDropDown = function (params) {
     if (options) {
         options.forEach(function (symbol, i) {
             var option = document.createElement("option");
-            option.value = i;
-            option.text = symbol;
+            if (symbol.text) {
+                option.value = symbol.value;
+                option.text = symbol.text;
+            }
+            else {
+                option.value = i;
+                option.text = symbol;
+            }
             select.appendChild(option);
         });
+    }
+    var eventListeners = params.eventListeners || null;
+    if (params.eventListeners) {
+        for (var message in eventListeners) {
+            select.addEventListener(message, eventListeners[message]);
+        }
     }
     return select;
 }
 
 /** Create an HTML element with the common tags (e.g a,p,h1) */
 HTMLElementUtils.createFilter = function (params) {
-    console.log("Params: ",params);
     if (!params) {
         return null;
     }
@@ -132,7 +143,12 @@ HTMLElementUtils.createFilter = function (params) {
     else if (type == "checkbox") {
         filterInput = HTMLElementUtils.inputTypeCheckbox(params);
     }
-    filterInput.setAttribute("value", params.value);
+    else if (type == "select") {
+        filterInput = HTMLElementUtils.selectTypeDropDown(params);
+    }
+    if (params.value != undefined) {
+        filterInput.setAttribute("value", params.value);
+    }
     filterInput.setAttribute("layer", params.layer);
     filterInput.setAttribute("filter", params.filter);
     filterInput.setAttribute("id", "filterInput-" + params.filter + "-" + params.layer);
@@ -245,7 +261,6 @@ HTMLElementUtils.createColumn = function (params) {
     }
     return column;
 }
-
 
 /** Create a button */
 HTMLElementUtils.createButton = function (params) {
