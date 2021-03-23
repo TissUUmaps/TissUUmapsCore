@@ -84,16 +84,19 @@
                         <div class="tab-pane active" id="markers-iss-gui" style="height:100%;">
                             <div class="panel panel-default" style="height:100%;">
                                 <div class="panel-body row-fullheight">
-                                    <!-- 1.1 Row of file selection -->
+                                    <!-- 1.1 Row download -->
+                                    <div id="ISS_rowDownloadMarkers">
+                                    </div>
                                     <div class="row" >
                                         <div class="progress" id="ISS_csv_progress_parent" style="visibility:hidden; display:none; margin: 0px 10px 0px 10px;">
                                             <div id="ISS_csv_progress" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%; " aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                     </div>
+                                     <!-- 1.1.1 Row of file selection -->
                                      <div class="row" >
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                             <div id="ISS_input_csv" style="margin-bottom: 5px;">
-                                                <label for="ISS_csv">Import gene expression from CSV file:</label>
+                                                <label id="label_ISS_csv" for="ISS_csv">Import gene expression from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="ISS_csv" name="ISS_csv"
                                                     accept=".csv,.tsv,.txt">
                                                 <script type="text/javascript">
@@ -210,6 +213,9 @@
                         <div class="tab-pane" id="markers-cp-gui" style="height:100%;">
                             <div class="panel panel-default" style="height:100%;">
                                 <div class="panel-body">
+                                    <!-- 1.1 Row download -->
+                                    <div id="ISS_rowDownloadMarkersCP">
+                                    </div>
                                     <div class="row">
                                         <div class="progress" id="ISS_CP_csv_progress_parent" style="visibility:hidden; display:none; margin: 0px 10px 0px 10px;">
                                             <div id="ISS_CP_csv_progress" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%; " aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
@@ -219,7 +225,7 @@
                                     <div class="row" id="CP_data_panel">
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                             <div id="CP_input_csv" style="margin-bottom: 5px;">
-                                                <label for="CP_csv">Import cell morphology from CSV file:</label>
+                                                <label id="label_CP_csv" for="CP_csv">Import cell morphology from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="CP_csv" name="CP_csv"
                                                     accept=".csv,.tsv,.txt">
                                                 <script type="text/javascript">
@@ -327,7 +333,9 @@
                                             <div class="tab-pane active" id="markers-regions-project-gui" style="height:100%;">
                                                 <div class="panel panel-default" style="height:100%;">
                                                     <div class="panel-body row-fullheight">
-                                                        <div class="row fixed-height">
+                                                        <div id="ISS_rowDownloadRegions">
+                                                        </div>
+                                                        <div class="row">
                                                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
                                                                 <button id="ISS_drawregions_btn"
                                                                     class="btn btn-secondary" type="button">
@@ -462,6 +470,23 @@
         tmapp.slideFilename = "Fluo";
 	    tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
         //tmapp.mpp = 0.33;
+        
+        /*HTMLElementUtils.createDLButtonMarkers(
+            "Download data",
+            "barcodes.csv",
+            "Data is 100mb it will take some time to download and appear. Select the headers and click on Load markers"
+        );
+        HTMLElementUtils.createDLButtonMarkersCP(
+            "Download data",
+            "CPdata.csv",
+            ""
+        );
+        HTMLElementUtils.createDLButtonRegions(
+            "Download data",
+            "./regions.json",
+            "Or go to the import tab to import your own json file"
+        );*/
+
         tmapp.registerActions();
         tmapp.init();
     });

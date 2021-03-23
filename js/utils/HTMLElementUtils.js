@@ -449,3 +449,54 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
     });
     return thisChild;
 }
+
+HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
+    var row = HTMLElementUtils.createRow(null);
+    var buttonDiv = document.createElement("div");
+    buttonDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
+    row.appendChild(buttonDiv);
+    var paramButton = {
+        eventListeners: {"click":callback},
+        "class": "btn btn-primary",
+        innerText: innerText
+    }
+    var DLButton = HTMLElementUtils.createButton(paramButton);
+    DLButton.style.width = "100%";
+    buttonDiv.appendChild(DLButton);
+    
+    var commentDiv = document.createElement("div");
+    commentDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
+    commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px;"> ${comment} </p>`
+    row.appendChild(commentDiv);
+
+    downloadRow.appendChild(row);
+    console.log("downloadRow",downloadRow,row);
+}
+
+HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment) {
+    var downloadRow = document.getElementById("ISS_rowDownloadMarkers");
+    callback = function(e){
+        dataUtils.XHRCSV(dataURL)
+    }
+    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
+    var label = document.getElementById("label_ISS_csv");
+    label.innerHTML = "Or import gene expression from CSV file:";
+}
+
+HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment) {
+    var downloadRow = document.getElementById("ISS_rowDownloadMarkersCP");
+    callback = function(e){
+        CPDataUtils.readCSV(dataURL)
+    }
+    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
+    var label = document.getElementById("label_CP_csv");
+    label.innerHTML = "Or import cell morphology from CSV file:";
+}
+
+HTMLElementUtils.createDLButtonRegions = function(innerText, dataURL, comment) {
+    var downloadRow = document.getElementById("ISS_rowDownloadRegions");
+    callback = function(e){
+        regionUtils.JSONToRegions(dataURL)
+    }
+    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
+}
