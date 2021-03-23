@@ -20,6 +20,7 @@ HTMLElementUtils.inputTypeCheckbox = function (params) {
     checkbox.setAttribute("type", "checkbox");
     (params.id || null ? checkbox.setAttribute("id", params.id) : null);
     (params["class"] || null ? checkbox.setAttribute("class", params["class"]) : null);
+    (params["checked"] || null ? checkbox.checked=params["checked"] : null);
     var extraAttributes = params.extraAttributes || null;
     if (extraAttributes) {
         for (var attr in extraAttributes) {
@@ -105,6 +106,7 @@ HTMLElementUtils.selectTypeDropDown = function (params) {
     }
     var select = document.createElement("select");
     (params.id || null ? select.setAttribute("id", params.id) : null);
+    (params["class"] || null ? select.setAttribute("class", params["class"]) : null);
     var options = params.options || null;
     if (options) {
         options.forEach(function (symbol, i) {
@@ -255,9 +257,11 @@ HTMLElementUtils.createButton = function (params) {
     var button = document.createElement("button");
     (params.id || null ? button.setAttribute("id", params.id) : null);
     (params.innerText || null ? button.innerHTML = params.innerText : null);
-    if (params.eventListeners) {
+    (params["class"] || null ? button.setAttribute("class", params["class"]) : null);
+    var eventListeners = params.eventListeners || null;
+    if (eventListeners) {
         for (var message in eventListeners) {
-            checkbox.addEventListener(message, eventListeners[message]);
+            button.addEventListener(message, eventListeners[message]);
         }
     }
     if (params.extraAttributes) {
@@ -470,7 +474,6 @@ HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, com
     row.appendChild(commentDiv);
 
     downloadRow.appendChild(row);
-    console.log("downloadRow",downloadRow,row);
 }
 
 HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment) {
