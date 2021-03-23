@@ -53,7 +53,7 @@ dataUtils.processISSRawData = function () {
         var colorSelector = ISSColor.options[ISSColor.selectedIndex].value;
     else
 
-        var colorSelector = "null";
+    var colorSelector = "null";
     
     if (colorSelector && colorSelector != "null"){
         markerUtils._uniqueColor = true;
@@ -230,6 +230,7 @@ dataUtils.XHRCSV = function (thecsv) {
     //console.log(progressParent)
 
     var progressBar=interfaceUtils.getElementById("ISS_csv_progress");
+    var fakeProgress = 0;
     
     // Setup our listener to process compeleted requests
     xhr.onreadystatechange = function () {        
@@ -238,6 +239,7 @@ dataUtils.XHRCSV = function (thecsv) {
         // Process our return data
         if (xhr.status >= 200 && xhr.status < 300) {
             // What do when the request is successful
+            progressBar.style.width = "100%";
             dataUtils[op + "_rawdata"] = d3.csvParse(xhr.responseText);
             dataUtils.showMenuCSV();
             
@@ -254,6 +256,13 @@ dataUtils.XHRCSV = function (thecsv) {
             perc=perc.toString()+"%"
             progressBar.style.width = perc;
             //console.log(perc);
+        }
+        else {
+            fakeProgress += 1;
+            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
+            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
         }
     }
 

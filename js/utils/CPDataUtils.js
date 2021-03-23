@@ -23,6 +23,13 @@ CPDataUtils = {
 CPDataUtils.processISSRawData = function () {
     
     var cpop="CP";
+    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
+    if(progressParent == null){
+        console.log("No progress bar present.")
+    }else{
+        progressParent.style.visibility="hidden";
+        progressParent.style.display="none";
+    }
     var CPProperty = document.getElementById(cpop+"_property_header");
     var propertyselector=CPProperty.value;
     var CPX = document.getElementById(cpop+"_X_header");
@@ -56,14 +63,40 @@ CPDataUtils.readCSV = function (thecsv) {
     CPDataUtils[cpop + "_rawdata"] = {};
     CPDataUtils[cpop + "_rawdata_stats"]={};
     CPDataUtils._CSVStructure[cpop + "_csv_header"] = null;
+
+    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
+    progressParent.style.visibility="visible";
+    progressParent.style.display="block";
+    //console.log(progressParent)
+    var progressBar=interfaceUtils.getElementById("ISS_CP_csv_progress");
+    var fakeProgress = 0;
+
     var request = d3.csv(
         thecsv,
         function (d) { return d; },
         function (rows) {
+            progressBar.style.width = "100%";
             CPDataUtils[cpop + "_rawdata"] = rows;
             CPDataUtils.loadFromRawData();
         }
-    );
+    ).on("progress", function(pe){
+        //update progress bar
+        if (pe.lengthComputable) {
+            var maxsize = pe.total;
+            var prog=pe.loaded;
+            var perc=prog/maxsize*100;
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+            //console.log(perc);
+        }
+        else {
+            fakeProgress += 1;
+            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
+            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+        }
+    });;
 }
 
 CPDataUtils.loadFromRawData = function () {
