@@ -60,8 +60,6 @@ tmapp.init = function () {
     var vname = op + "_viewer";
     //init OSD viewer
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
-    //open the DZI xml file pointing to the tiles
-    overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  this.fixed_file, -1)
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
 
@@ -144,7 +142,7 @@ tmapp.init = function () {
         });
     }
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
-
+    filterUtils.initFilters();
     if (window.hasOwnProperty("glUtils")) {
         console.log("Using GPU-based marker drawing (WebGL canvas)")
         glUtils.init();

@@ -131,7 +131,7 @@ HTMLElementUtils.selectTypeDropDown = function (params) {
     return select;
 }
 
-/** Create an HTML element with the common tags (e.g a,p,h1) */
+/** Create an HTML filter */
 HTMLElementUtils.createFilter = function (params) {
     if (!params) {
         return null;
@@ -322,13 +322,14 @@ HTMLElementUtils.createForm = function (params) {
 
 /**
  * This method is used to add a layer */
-HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
+HTMLElementUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     var settingsPanel = document.getElementById("image-overlay-panel");
     var layerTable = document.getElementById("image-overlay-tbody");
     if (!layerTable) {
         layerTable = document.createElement("table");
         layerTable.id = "image-overlay-table";
         layerTable.className += "table table-striped"
+        layerTable.style.marginBottom = "0px";
         filterHeaders = "";
         for (filterIndex = 0; filterIndex < filterUtils._filtersUsed.length; filterIndex++) {
             filterHeaders += "<th style='text-align:center;'>" + filterUtils._filtersUsed[filterIndex] + "</th>";
@@ -393,7 +394,7 @@ HTMLElementUtils.addLayerSettings = function(layerName, layerIndex) {
             overlayUtils.setItemOpacity(layer, 0);
         }
     });
-    opacity.addEventListener("change", function(ev) {
+    opacity.addEventListener("input", function(ev) {
         var layer = ev.srcElement.getAttribute("layer")
         var slider = ev.srcElement;
         var checkbox = document.querySelectorAll('[layer="' + layer + '"][type="checkbox"]')[0];
