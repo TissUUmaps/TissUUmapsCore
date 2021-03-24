@@ -375,6 +375,9 @@ filterUtils.getFilterItems = function() {
     }
     for (i = 0; i < filterInputsRanges.length; i++) {
         filterInputsRanges[i];
+        if (!items[filterInputsRanges[i].getAttribute("layer")]) {
+            items[filterInputsRanges[i].getAttribute("layer")] = [];
+        }
         filterFunction = filterUtils.getFilterFunction(filterInputsRanges[i].getAttribute("filter"));
         if (filterInputsRanges[i].type == "range" || filterInputsRanges[i].type == "select-one")
             inputValue = filterInputsRanges[i].value;
