@@ -122,12 +122,18 @@ regionUtils.closePolygon = function () {
 	regionsobj = d3.select(canvas);
 
 	var hexcolor = overlayUtils.randomColor("hex");
-	regionsobj.append('polygon').attr("points", regionUtils._currentPoints).attr("id", regionid + "poly")
+	console.log([[regionUtils._currentPoints]]);
+	
+	/*regionsobj.append('polygon').attr("points", regionUtils._currentPoints).attr("id", regionid + "poly")
 		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-		.style("stroke", hexcolor).style("fill", "none");
+		.style("stroke", hexcolor).style("fill", "none");*/
 	regionUtils._isNewRegion = true;
 	regionUtils.addRegion([[regionUtils._currentPoints]], regionid, hexcolor);
 	regionUtils._currentPoints = null;
+	regionsobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionid].points)).attr("id", regionid + "poly")
+		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
+		.style("stroke", hexcolor).style("fill", "none");
+	
 }
 
 /** 
@@ -140,31 +146,32 @@ regionUtils.createImportedRegion = function (region) {
 	regionUtils._regions[region.id] = region;
 	var hexcolor = region.polycolor;
 
-	var tempointarray = [];
+	/*var tempointarray = [];
 	region.points.forEach(function (e) {
 		tempointarray.push(e.x);
 		tempointarray.push(e.y);
-	});
+	});*/
 
 	if(region.len==0){
 		console.log(region.id+" has length 0, recalculating length");
 		region.len=region.points.length;
 	}
-
-	regionsobj.append('polygon').attr("points", tempointarray).attr("id", region.id + "poly")
+	regionsobj.append('path').attr("d", regionUtils.pointsToPath(region.points)).attr("id", region.id + "poly")
 		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
 		.style("stroke", hexcolor).style("fill", "none");
+	/*regionsobj.append('polygon').attr("points", tempointarray).attr("id", region.id + "poly")
+		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
+		.style("stroke", hexcolor).style("fill", "none");*/
 	regionUtils.regionUI(region.id);
 
 }
 
 /** 
- * @param {String} regionid String id of region to fill
- * Given a region id, returns a path string */
-regionUtils.regionToPath = function (regionid) {
-	region = regionUtils._regions[regionid]
+ * @param {List} points List of list of list of points representing a path
+ * Given points' coordinates, returns a path string */
+regionUtils.pointsToPath = function (points) {
 	var path = "";
-	region.points.forEach(function (subregions) {
+	points.forEach(function (subregions) {
 		subregions.forEach(function (polygons) {
 			var first = true
 			polygons.forEach(function (point) {
@@ -175,7 +182,6 @@ regionUtils.regionToPath = function (regionid) {
 			path += " Z"
 		});
 	});
-	console.log(region.points, path);
 	return path;
 }
 
@@ -492,6 +498,7 @@ regionUtils.analyzeRegion = function (regionid) {
 	}
 	
 	regionUtils._regions[regionid].associatedPoints=[];
+	regionUtils._regions[regionid].barcodeHistogram=[];
 	
 	console.log("analyzing "+regionid);
 	var allkeys=Object.keys(dataUtils[op + "_barcodeGarden"]);
@@ -513,6 +520,11 @@ regionUtils.analyzeRegion = function (regionid) {
 
 	var rPanel = document.getElementById(op + regionid + "panel");
 	var rpanelbody = HTMLElementUtils.getFirstChildByClass(rPanel, "panel-body");
+	histodiv = document.getElementById(regionid + "histogram");
+	if (histodiv) {
+		histodiv.parentNode.removeChild(histodiv);
+	}
+
 	rpanelbody.setAttribute("style", "padding-top: 0px; height: 230px;overflow-y:scroll;");
 
 	var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "histogram" });
