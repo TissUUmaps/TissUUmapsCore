@@ -126,7 +126,7 @@ regionUtils.closePolygon = function () {
 		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
 		.style("stroke", hexcolor).style("fill", "none");
 	regionUtils._isNewRegion = true;
-	regionUtils.addRegion(regionUtils._currentPoints, regionid, hexcolor);
+	regionUtils.addRegion([[regionUtils._currentPoints]], regionid, hexcolor);
 	regionUtils._currentPoints = null;
 }
 
@@ -157,6 +157,28 @@ regionUtils.createImportedRegion = function (region) {
 	regionUtils.regionUI(region.id);
 
 }
+
+/** 
+ * @param {String} regionid String id of region to fill
+ * Given a region id, returns a path string */
+regionUtils.regionToPath = function (regionid) {
+	region = regionUtils._regions[regionid]
+	var path = "";
+	region.points.forEach(function (subregions) {
+		subregions.forEach(function (polygons) {
+			var first = true
+			polygons.forEach(function (point) {
+				if (first) {path += " M ";first = false;}
+				else {path += " L "}
+				path += point.x + " " + point.y;
+			});
+			path += " Z"
+		});
+	});
+	console.log(region.points, path);
+	return path;
+}
+
 /** 
  * @param {Number[]} p1 Array with x and y coords
  * @param {Number[]} p2 Array with x and y coords
@@ -172,15 +194,27 @@ regionUtils.addRegion = function (points, regionid, color) {
 	var imageWidth = OSDViewerUtils.getImageWidth();
 	var region = { "id": regionid, "points": [], "globalPoints": [], "regionName": regionid, "regionClass": null, "barcodeHistogram": [] };
 	region.len = points.length;
-	var _xmin = points[0][0], _xmax = points[0][0], _ymin = points[0][1], _ymax = points[0][1];
+	var _xmin = points[0][0][0][0], _xmax = points[0][0][0][0], _ymin = points[0][0][0][1], _ymax = points[0][0][0][1];
 	var objectPointsArray = [];
 	for (var i = 0; i < region.len; i++) {
-		if (points[i][0] > _xmax) _xmax = points[i][0];
-		if (points[i][0] < _xmin) _xmin = points[i][0];
-		if (points[i][1] > _ymax) _ymax = points[i][1];
-		if (points[i][1] < _ymin) _ymin = points[i][1];
-		region.points.push({ "x": points[i][0], "y": points[i][1] });
-		region.globalPoints.push({ "x": points[i][0] * imageWidth, "y": points[i][1] * imageWidth });
+		subregion = [];
+		globalSubregion = [];
+		for (var j = 0; j < points[i].length; j++) {
+			polygon = [];
+			globalPolygon = [];
+			for (var k = 0; k < points[i][j].length; k++) {
+				if (points[i][j][k][0] > _xmax) _xmax = points[i][j][k][0];
+				if (points[i][j][k][0] < _xmin) _xmin = points[i][j][k][0];
+				if (points[i][j][k][1] > _ymax) _ymax = points[i][j][k][1];
+				if (points[i][j][k][1] < _ymin) _ymin = points[i][j][k][1];
+				polygon.push({ "x": points[i][j][k][0], "y": points[i][j][k][1] });
+				globalPolygon.push({ "x": points[i][j][k][0] * imageWidth, "y": points[i][j][k][1] * imageWidth });
+			}
+			subregion.push(polygon);
+			globalSubregion.push(globalPolygon);
+		}
+		region.points.push(subregion);
+		region.globalPoints.push(globalSubregion);
 	}
 	region._xmin = _xmin, region._xmax = _xmax, region._ymin = _ymin, region._ymax = _ymax;
 	region._gxmin = _xmin * imageWidth, region._gxmax = _xmax * imageWidth, region._gymin = _ymin * imageWidth, region._gymax = _ymax * imageWidth;
@@ -274,6 +308,20 @@ regionUtils.regionUI = function (regionid) {
 	rpanelheading.innerHTML = regionText;
 }
 
+/**
+ * @param {*} x X coordinate of the point to check
+ * @param {*} y Y coordinate of the point to check
+ * @param {*} path SVG path
+ * @param {*} tmpPoint Temporary point to check if in path. This is only for speed.
+ * @returns 
+ * 
+ */
+ regionUtils.globalPointInPath=function(x,y,path,tmpPoint) {
+	tmpPoint.x = x;
+	tmpPoint.y = y;
+	return path.isPointInFill(tmpPoint);
+};
+
 /** 
  *  @param {Object} quadtree d3.quadtree where the points are stored
  *  @param {Number} x0 X coordinate of one point in a bounding box
@@ -284,16 +332,20 @@ regionUtils.regionUI = function (regionid) {
  *  Search for points inside a particular region */
 regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, regionid, options) {	
 	if (options.globalCoords) {
-		var pointInRegion = geometryUtils.globalPointInRegion;
+		var pointInPath = regionUtils.globalPointInPath;
 		var xselector = "global_X_pos";
 		var yselector = "global_Y_pos";
 	}else{
-		var pointInRegion = geometryUtils.viewerPointInRegion;
-		var xselector = "viewer_X_pos";
-		var yselector = "viewer_Y_pos";
+		throw {name : "NotImplementedError", message : "ViewerPointInPath not yet implemented."}; 
+
 	}
+	var imageWidth = OSDViewerUtils.getImageWidth();
 	var countsInsideRegion = 0;
 	var pointsInside=[];
+	regionPath=document.getElementById(regionid + "poly");
+	var svgovname = tmapp["object_prefix"] + "_svgov";
+	var svg = tmapp[svgovname]._svg;
+	tmpPoint = svg.createSVGPoint();
 	quadtree.visit(function (node, x1, y1, x2, y2) {
 		if (!node.length) {
 			do {
@@ -301,10 +353,9 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
 				d.scanned = true;
 				var selected = (d[xselector] >= x0) && (d[xselector] < x3) && (d[yselector] >= y0) && (d[yselector] < y3);
 				if (selected) {
-					if (pointInRegion(d[xselector], d[yselector], regionUtils._regions[regionid])) {
+					if (pointInPath(d[xselector] / imageWidth, d[yselector] / imageWidth, regionPath, tmpPoint)) {
 						countsInsideRegion += 1;
 						pointsInside.push(d);
-						
 					}
 				}
 			} while (node = node.next);
@@ -326,7 +377,6 @@ regionUtils.fillAllRegions=function(){
 		}
 	}
 }
-
 
 /** 
  * @param {String} regionid String id of region to fill
@@ -606,15 +656,7 @@ regionUtils.JSONToRegions= function(filepath){
 			var reader = new FileReader();
 			reader.onload=function(event) {
 				// The file's text will be printed here
-				var maxregionid=0;
-				var regions=JSON.parse(event.target.result);
-				for(i in regions){
-					//console.log(regions[i]);
-					regionUtils.createImportedRegion(regions[i]);
-					var numbers = regions[i].id.match(/\d+/g).map(Number);
-					if(numbers[0]>maxregionid) maxregionid=numbers[0];
-				}
-				regionUtils._currentRegionId=maxregionid;
+				regionUtils.JSONValToRegions(JSON.parse(event.target.result));
 			};
 			console.log(regionUtils._currentRegionId);
 			var result=reader.readAsText(file);
@@ -622,4 +664,17 @@ regionUtils.JSONToRegions= function(filepath){
 	} else {
 	  alert('The File APIs are not fully supported in this browser.');
 	}
+}
+
+regionUtils.JSONValToRegions= function(jsonVal){
+	// The file's text will be printed here
+	var maxregionid=0;
+var regions=jsonVal;
+	for(i in regions){
+		//console.log(regions[i]);
+		regionUtils.createImportedRegion(regions[i]);
+		var numbers = regions[i].id.match(/\d+/g).map(Number);
+		if(numbers[0]>maxregionid) maxregionid=numbers[0];
+	}
+	regionUtils._currentRegionId=maxregionid;
 }
