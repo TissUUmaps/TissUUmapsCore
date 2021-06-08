@@ -15,7 +15,7 @@
     //                 "Saturation","Gamma","Invert","Greyscale","Threshold","Erosion","Dilation"]
     _filtersUsed: ["Saturation","Brightness","Contrast"],
     _filters: {
-        "Color channel":{
+        "Color":{
             params:{
                 type:"select",
                 options:[
@@ -266,7 +266,7 @@
             },
             "class":"filterSelection",
             "checked":filterUtils._filtersUsed.filter(e => e === filter).length > 0,
-            id:"filerCheck_" + filter,
+            id:"filterCheck_" + filter,
             extraAttributes: {
                 "filter": filter
             }
@@ -274,7 +274,7 @@
         select = HTMLElementUtils.inputTypeCheckbox(selectParams);
         settingsPanel.appendChild(select);
         var label = document.createElement("label");
-        label.setAttribute("for", "filerCheck_" + filter);
+        label.setAttribute("for", "filterCheck_" + filter);
         label.innerHTML = "&nbsp;" + filter;
         settingsPanel.appendChild(label);
         settingsPanel.appendChild(document.createElement("br"));
