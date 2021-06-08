@@ -139,7 +139,8 @@ tmapp.init = function () {
             color: '#555555',
             fontColor: '#333333',
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            sizeAndTextRenderer: OpenSeadragon.ScalebarSizeAndTextRenderer.METRIC_LENGTH
+            sizeAndTextRenderer: OpenSeadragon.ScalebarSizeAndTextRenderer.METRIC_LENGTH,
+            location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT
         });
     }
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
