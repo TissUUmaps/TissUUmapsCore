@@ -134,7 +134,83 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
             overlayUtils.setItemOpacity(layer, 0);
         }
     });
+    overlayUtils.addLayerSlider();
+}
     
+/**
+ * This method is used to add a layer */
+ overlayUtils.addLayerSlider = function() {
+    if (document.getElementById("channelRangeInput") == undefined) {
+        var elt = document.createElement('div');
+        elt.className = "channelRange"
+        elt.id = "channelRangeDiv"
+        elt.style.zIndex = "100";
+        elt.style.paddingLeft = "5px";
+        elt.style.paddingBottom = "2px";
+        var span = document.createElement('div');
+        span.innerHTML = "Channel 1"
+        span.id = "channelValue"
+        span.style.maxWidth="200px";
+        span.style.overflow="hidden";
+        var channelRange = document.createElement("input");
+        channelRange.type = "range";
+        channelRange.style.width = "200px";
+        channelRange.id = "channelRangeInput";
+        elt.appendChild(span);
+        elt.appendChild(channelRange);
+        changeFun = function(ev) {
+            var slider = $(channelRange)[0];
+            channel = slider.value;
+            $(".visible-layers").prop("checked",true);$(".visible-layers").click();$("#visible-layer-"+(channel- -1)).click();
+            channelName = tmapp.layers[channel- -1].name;
+            channelName = channelName.split('.').slice(0, -1).join('.')
+            document.getElementById("channelValue").innerHTML = "Channel " + (channel - -2) + ": " + channelName;
+            if (document.getElementById(channelName+"-checkbox-ISS")) {
+                $("#ISS_table input[type=checkbox]").prop("checked",false);
+                $(document.getElementById(channelName +"-checkbox-ISS")).click();
+            }
+        };
+        channelRange.addEventListener("input", changeFun);
+
+        var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel";
+        $(elt).bind(mousewheelevt, moveSlider);
+        function moveSlider(e){
+            var zoomLevel = parseInt($(channelRange).val()); 
+            console.log("Mouse wheel!", zoomLevel, zoomLevel+1, zoomLevel-1)
+            console.log(e.originalEvent.wheelDelta);
+            // detect positive or negative scrolling
+            if ( e.originalEvent.wheelDelta < 0 ) {
+                //scroll down
+                $(channelRange).val(zoomLevel+1);
+            } else {
+                //scroll up
+                $(channelRange).val(zoomLevel-1);
+            }
+            
+            // trigger the change event
+            changeFun(e.originalEvent);
+            
+            //prevent page fom scrolling
+            return false;
+        }
+        tmapp['ISS_viewer'].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.BOTTOM_LEFT});
+    }
+    channelRange = document.getElementById("channelRangeInput");
+    var op = tmapp["object_prefix"];
+    var nLayers = tmapp.layers.length;
+    if (tmapp.fixed_file && tmapp.fixed_file != "") {
+        nLayers += 1
+    }
+    channelRange.setAttribute("min", -1);
+    channelRange.setAttribute("max", nLayers - 2);
+    channelRange.setAttribute("step", "1");
+    channelRange.setAttribute("value", "-1");
+    if (nLayers <= 1) {
+        document.getElementById("channelRangeDiv").style.display = "none";
+    }
+    else {
+        document.getElementById("channelRangeDiv").style.display = "table";
+    }
 }
 
 /**
