@@ -53,7 +53,7 @@ dataUtils.processISSRawData = function () {
         var colorSelector = ISSColor.options[ISSColor.selectedIndex].value;
     else
 
-    var colorSelector = "null";
+        var colorSelector = "null";
     
     if (colorSelector && colorSelector != "null"){
         markerUtils._uniqueColor = true;
