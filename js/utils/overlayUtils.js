@@ -15,7 +15,8 @@ overlayUtils = {
     _drawRegions: false,
     _d3nodes: {},
     _percentageForSubsample: 0.25,
-    _zoomForSubsample:5.15
+    _zoomForSubsample:5.15,
+    _layerOpacities:{}
 }
 
 /**
@@ -119,20 +120,22 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         var slider = document.querySelectorAll('[layer="' + layer + '"][type="range"]')[0];
         var checkbox = ev.srcElement;
         if (checkbox.checked) {
-            overlayUtils.setItemOpacity(layer, slider.value);
+            overlayUtils._layerOpacities[layer] = slider.value;
         } else {
-            overlayUtils.setItemOpacity(layer, 0);
+            overlayUtils._layerOpacities[layer] = 0;
         }
+        overlayUtils.setItemOpacity(layer);
     });
     opacity.addEventListener("input", function(ev) {
         var layer = ev.srcElement.getAttribute("layer")
         var slider = ev.srcElement;
         var checkbox = document.querySelectorAll('[layer="' + layer + '"][type="checkbox"]')[0];
         if (checkbox.checked) {
-            overlayUtils.setItemOpacity(layer, slider.value);
+            overlayUtils._layerOpacities[layer] = slider.value;
         } else {
-            overlayUtils.setItemOpacity(layer, 0);
+            overlayUtils._layerOpacities[layer] = 0;
         }
+        overlayUtils.setItemOpacity(layer);
     });
     overlayUtils.addLayerSlider();
 }
@@ -254,11 +257,13 @@ overlayUtils.addLayer = function(layerName, tileSource, i) {
 /** 
  * @param {Number} item Index of an OSD tile source
  * Set the opacity of a tile source */
-overlayUtils.setItemOpacity = function(item, opacity) {
+overlayUtils.setItemOpacity = function(item) {
+    opacity = overlayUtils._layerOpacities[item];
+
     var op = tmapp["object_prefix"];
     if (!tmapp[op + "_viewer"].world.getItemAt(item)) {
         setTimeout(function() {
-            overlayUtils.setItemOpacity(item, opacity);
+            overlayUtils.setItemOpacity(item);
         }, 100);
         return;
     }
