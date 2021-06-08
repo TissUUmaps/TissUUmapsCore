@@ -121,12 +121,8 @@ regionUtils.closePolygon = function () {
 	d3.select("." + drawingclass).remove();
 	regionsobj = d3.select(canvas);
 
-	var hexcolor = overlayUtils.randomColor("hex");
-	console.log([[regionUtils._currentPoints]]);
-	
-	/*regionsobj.append('polygon').attr("points", regionUtils._currentPoints).attr("id", regionid + "poly")
-		.attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-		.style("stroke", hexcolor).style("fill", "none");*/
+	var hexcolor = overlayUtils.randomColor("hex");	
+
 	regionUtils._isNewRegion = true;
 	regionUtils.addRegion([[regionUtils._currentPoints]], regionid, hexcolor);
 	regionUtils._currentPoints = null;
@@ -145,13 +141,6 @@ regionUtils.createImportedRegion = function (region) {
 
 	regionUtils._regions[region.id] = region;
 	var hexcolor = region.polycolor;
-
-	/*var tempointarray = [];
-	region.points.forEach(function (e) {
-		tempointarray.push(e.x);
-		tempointarray.push(e.y);
-	});*/
-
 	if(region.len==0){
 		console.log(region.id+" has length 0, recalculating length");
 		region.len=region.points.length;
@@ -319,8 +308,6 @@ regionUtils.regionUI = function (regionid) {
  * @param {*} y Y coordinate of the point to check
  * @param {*} path SVG path
  * @param {*} tmpPoint Temporary point to check if in path. This is only for speed.
- * @returns 
- * 
  */
  regionUtils.globalPointInPath=function(x,y,path,tmpPoint) {
 	tmpPoint.x = x;
