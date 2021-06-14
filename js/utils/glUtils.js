@@ -16,6 +16,7 @@ glUtils = {
     _markerScalarRange: [0.0, 1.0],
     _markerOpacity: 1.0,
     _useColorFromMarker: false,
+    _usePiechartFromMarker: false,
     _colorscaleName: "null",
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
@@ -34,6 +35,7 @@ glUtils._markersVS = `
     uniform vec2 u_markerScalarRange;
     uniform float u_markerOpacity;
     uniform bool u_useColorFromMarker;
+    uniform bool u_usePiechartFromMarker;
     uniform sampler2D u_colorLUT;
     uniform sampler2D u_colorscale;
 
@@ -42,6 +44,7 @@ glUtils._markersVS = `
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
     varying float v_shapeColorBias;
+    varying float v_shapeSector;
 
     #define MARKER_TYPE_BARCODE 0
     #define MARKER_TYPE_CP 1
@@ -63,7 +66,12 @@ glUtils._markersVS = `
         ndcPos = u_viewportTransform * ndcPos;
 
         if (u_markerType == MARKER_TYPE_BARCODE) {
-            v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
+            if (u_usePiechartFromMarker) {
+                v_color.rgb = hex_to_rgb(a_position.w);
+                v_color.a = 7.0 / 255.0;  // Give markers a round shape
+            } else {
+                v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
+            }
         } else if (u_markerType == MARKER_TYPE_CP) {
             vec2 range = u_markerScalarRange;
             float normalized = (a_position.z - range[0]) / (range[1] - range[0]);
@@ -79,6 +87,7 @@ glUtils._markersVS = `
         v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
         v_shapeColorBias = max(0.0, 1.0 - gl_PointSize * 0.2);
+        v_shapeSector = a_position.z;  // TODO
 
         // Discard point here in vertex shader if marker is hidden
         v_color.a = v_color.a > 0.0 ? u_markerOpacity : 0.0;
@@ -90,14 +99,23 @@ glUtils._markersVS = `
 glUtils._markersFS = `
     precision mediump float;
 
+    uniform bool u_usePiechartFromMarker;
     uniform sampler2D u_shapeAtlas;
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
     varying float v_shapeColorBias;
+    varying float v_shapeSector;
 
     #define UV_SCALE 0.7
     #define SHAPE_GRID_SIZE 4.0
+
+    float sectorToAlpha(float sector, vec2 uv)
+    {
+        vec2 dir = normalize(gl_PointCoord.xy - 0.5);
+        float theta = atan(dir.x, dir.y);
+        return float(theta < (sector * 2.0 - 1.0) * 3.141592);
+    }
 
     void main()
     {
@@ -106,6 +124,10 @@ glUtils._markersFS = `
 
         vec4 shapeColor = texture2D(u_shapeAtlas, uv, -0.5);
         shapeColor.rgb = clamp(shapeColor.rgb + v_shapeColorBias, 0.0, 1.0);
+
+        if (u_usePiechartFromMarker) {
+            shapeColor.a *= sectorToAlpha(v_shapeSector, uv);
+        }
 
         gl_FragColor = shapeColor * v_color;
         gl_FragColor.rgb *= gl_FragColor.a;  // Need to pre-multiply alpha
@@ -165,6 +187,23 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 }
 
 
+// Generate a list of random sectors in format (angle, angle offset)
+glUtils._createDummySectors = function(numSectors) {
+    let sectors = [], sum = 0;
+    for (let i = 0; i < numSectors; ++i) {
+        sectors[i] = Math.floor(Math.random() * 100.0);
+        sum += sectors[i];
+    }
+    for (let i = 0; i < numSectors; ++i) {
+        sectors[i] /= sum;
+    }
+    for (let i = numSectors - 2; i >= 0; --i) {
+        sectors[i] += sectors[i + 1];
+    }
+    return sectors;
+}
+
+
 // Load barcode markers loaded from CSV file into vertex buffer
 glUtils.loadMarkers = function() {
     if (!glUtils._initialized) return;
@@ -172,7 +211,7 @@ glUtils.loadMarkers = function() {
     const gl = canvas.getContext("webgl", glUtils._options);
 
     const markerData = dataUtils["ISS_processeddata"];
-    const numPoints = markerData.length;
+    let numPoints = markerData.length;
     const keyName = document.getElementById("ISS_key_header").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
@@ -185,13 +224,31 @@ glUtils.loadMarkers = function() {
     const useColorFromMarker = markerUtils._uniqueColor && (colorPropertyName in markerData[0]);
     let hexColor = "#000000";
 
+    let numSectors = 8;  // TODO Hard-coded for now
+    const piechartPalette = ["#d40328", "#22ac33", "#517bb1", "#f181af", "#ec9b05", "#b4d98b", "#9e4194", "#dc197c"];
+
     const positions = [];
-    for (let i = 0; i < numPoints; ++i) {
-        if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
-        positions[4 * i + 0] = markerData[i].global_X_pos / imageWidth;
-        positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
-        positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] / 4095.0;
-        positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
+    if (glUtils._usePiechartFromMarker) {
+        for (let i = 0; i < numPoints; ++i) {
+            const sectorAngles = glUtils._createDummySectors(numSectors);
+            for (let j = 0; j < numSectors; ++j) {
+                const k = (i * numSectors + j);
+                hexColor = piechartPalette[j % 8];
+                positions[4 * k + 0] = markerData[i].global_X_pos / imageWidth;
+                positions[4 * k + 1] = markerData[i].global_Y_pos / imageHeight;
+                positions[4 * k + 2] = sectorAngles[j];
+                positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
+            }
+        }
+        numPoints *= numSectors;
+    } else {
+        for (let i = 0; i < numPoints; ++i) {
+            if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
+            positions[4 * i + 0] = markerData[i].global_X_pos / imageWidth;
+            positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
+            positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] / 4095.0;
+            positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
+        }
     }
 
     const bytedata = new Float32Array(positions);
@@ -528,6 +585,7 @@ glUtils.draw = function() {
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
+    gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker);
     gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -538,6 +596,7 @@ glUtils.draw = function() {
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
         glUtils._colorscaleName.includes("ownColorFromColumn"));
+    gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), false);
     if (glUtils._colorscaleName != "null") {  // Only show markers when a colorscale is selected
         gl.drawArrays(gl.POINTS, 0, glUtils._numCPPoints);
     }
