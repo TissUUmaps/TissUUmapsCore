@@ -187,7 +187,7 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 }
 
 
-// Generate a list of random sectors in format (angle, angle offset)
+// Generate a list of random normalized sector angles in format (TODO)
 glUtils._createDummySectors = function(numSectors) {
     let sectors = [], sum = 0;
     for (let i = 0; i < numSectors; ++i) {
@@ -201,6 +201,22 @@ glUtils._createDummySectors = function(numSectors) {
         sectors[i] += sectors[i + 1];
     }
     return sectors;
+}
+
+
+// Create a list of normalized sector angles in format (TODO)
+glUtils._createPiechartAngles = function(sectors) {
+    let angles = [], sum = 0.0;
+    for (let i = 0; i < sectors.length; ++i) {
+        sum += Number(sectors[i]);
+    }
+    for (let i = 0; i < sectors.length; ++i) {
+        angles[i] = Number(sectors[i]) / sum;
+    }
+    for (let i = sectors.length - 2; i >= 0; --i) {
+        angles[i] += angles[i + 1];
+    }
+    return angles;
 }
 
 
@@ -224,19 +240,22 @@ glUtils.loadMarkers = function() {
     const useColorFromMarker = markerUtils._uniqueColor && (colorPropertyName in markerData[0]);
     let hexColor = "#000000";
 
-    let numSectors = 8;  // TODO Hard-coded for now
+    const sectorsPropertyName = markerUtils._uniquePiechartSelector;
+    const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
     const piechartPalette = ["#d40328", "#22ac33", "#517bb1", "#f181af", "#ec9b05", "#b4d98b", "#9e4194", "#dc197c"];
 
     const positions = [];
-    if (glUtils._usePiechartFromMarker) {
+    if (usePiechartFromMarker) {
+        const numSectors = markerData[0][sectorsPropertyName].split(";").length;
         for (let i = 0; i < numPoints; ++i) {
-            const sectorAngles = glUtils._createDummySectors(numSectors);
+            const sectors = markerData[i][sectorsPropertyName].split(";");
+            const piechartAngles = glUtils._createPiechartAngles(sectors);
             for (let j = 0; j < numSectors; ++j) {
                 const k = (i * numSectors + j);
-                hexColor = piechartPalette[j % 8];
+                hexColor = piechartPalette[j % piechartPalette.length];
                 positions[4 * k + 0] = markerData[i].global_X_pos / imageWidth;
                 positions[4 * k + 1] = markerData[i].global_Y_pos / imageHeight;
-                positions[4 * k + 2] = sectorAngles[j];
+                positions[4 * k + 2] = piechartAngles[j];
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
             }
         }
@@ -259,6 +278,7 @@ glUtils.loadMarkers = function() {
 
     glUtils._numBarcodePoints = numPoints;
     glUtils._useColorFromMarker = useColorFromMarker;
+    glUtils._usePiechartFromMarker = usePiechartFromMarker;
     glUtils.updateLUTTextures();
 }
 
