@@ -169,7 +169,6 @@ dataUtils.showMenuCSV = function(){
     var ISSPiechart = document.getElementById(op + "_piechart_header");
     var ISSKey = document.getElementById(op + "_key_header");
     //console.log(dataUtils._CSVStructure["ISS_csv_header"]);
-    [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor].forEach(function (node) {
     [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSPiechart].forEach(function (node) {
         if (!node) return;
         node.innerHTML = "";
