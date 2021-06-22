@@ -36,6 +36,7 @@ glUtils._markersVS = `
     uniform float u_markerOpacity;
     uniform bool u_useColorFromMarker;
     uniform bool u_usePiechartFromMarker;
+    uniform bool u_alphaPass;
     uniform sampler2D u_colorLUT;
     uniform sampler2D u_colorscale;
 
@@ -43,8 +44,8 @@ glUtils._markersVS = `
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
-    varying float v_shapeColorBias;
     varying float v_shapeSector;
+    varying float v_shapeSize;
 
     #define MARKER_TYPE_BARCODE 0
     #define MARKER_TYPE_CP 1
@@ -69,6 +70,7 @@ glUtils._markersVS = `
             if (u_usePiechartFromMarker) {
                 v_color.rgb = hex_to_rgb(a_position.w);
                 v_color.a = 7.0 / 255.0;  // Give markers a round shape
+                if (u_alphaPass) v_color.a *= float(a_position.z == 1.0);
             } else {
                 v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
             }
@@ -86,8 +88,8 @@ glUtils._markersVS = `
 
         v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
-        v_shapeColorBias = max(0.0, 1.0 - gl_PointSize * 0.2);
         v_shapeSector = a_position.z;  // TODO
+        v_shapeSize = gl_PointSize;
 
         // Discard point here in vertex shader if marker is hidden
         v_color.a = v_color.a > 0.0 ? u_markerOpacity : 0.0;
@@ -104,17 +106,27 @@ glUtils._markersFS = `
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
-    varying float v_shapeColorBias;
     varying float v_shapeSector;
+    varying float v_shapeSize;
 
     #define UV_SCALE 0.7
     #define SHAPE_GRID_SIZE 4.0
 
-    float sectorToAlpha(float sector, vec2 uv)
+    float sectorToAlpha(float sector, vec2 delta)
     {
-        vec2 dir = normalize(gl_PointCoord.xy - 0.5);
+        vec2 dir = normalize(gl_PointCoord.xy + delta - 0.5);
         float theta = atan(dir.x, dir.y);
         return float(theta < (sector * 2.0 - 1.0) * 3.141592);
+    }
+
+    float sectorToAlphaAA(float sector, float pointSize)
+    {
+        float accum = 0.0;
+        accum += sectorToAlpha(sector, vec2(-0.25, -0.25) / pointSize);
+        accum += sectorToAlpha(sector, vec2( 0.25, -0.25) / pointSize);
+        accum += sectorToAlpha(sector, vec2(-0.25,  0.25) / pointSize);
+        accum += sectorToAlpha(sector, vec2( 0.25,  0.25) / pointSize);
+        return accum / 4.0;
     }
 
     void main()
@@ -123,10 +135,11 @@ glUtils._markersFS = `
         uv = (uv + v_shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
 
         vec4 shapeColor = texture2D(u_shapeAtlas, uv, -0.5);
-        shapeColor.rgb = clamp(shapeColor.rgb + v_shapeColorBias, 0.0, 1.0);
+        float shapeColorBias = max(0.0, 1.0 - v_shapeSize * 0.2);
+        shapeColor.rgb = clamp(shapeColor.rgb + shapeColorBias, 0.0, 1.0);
 
         if (u_usePiechartFromMarker) {
-            shapeColor.a *= sectorToAlpha(v_shapeSector, uv);
+            shapeColor.a *= sectorToAlphaAA(v_shapeSector, v_shapeSize);
         }
 
         gl_FragColor = shapeColor * v_color;
@@ -606,7 +619,19 @@ glUtils.draw = function() {
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
     gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker);
-    gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+    if (glUtils._usePiechartFromMarker) {
+        // 1st pass: draw alpha for whole marker shapes
+        gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
+        gl.colorMask(false, false, false, true);
+        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+        // 2nd pass: draw colors for individual piechart sectors
+        gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), false);
+        gl.colorMask(true, true, true, false);
+        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+        gl.colorMask(true, true, true, true);
+    } else {
+        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
