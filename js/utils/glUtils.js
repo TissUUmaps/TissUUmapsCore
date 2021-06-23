@@ -23,6 +23,7 @@ glUtils = {
     _barcodeToKey: {},
     _options: {antialias: false},
     _showColorbar: true,
+    _piechartPalette: ["#fff100", "#ff8c00", "#e81123", "#ec008c", "#68217a", "#00188f", "#00bcf2", "#00b294", "#009e49", "#bad80a"]
 }
 
 
@@ -255,7 +256,7 @@ glUtils.loadMarkers = function() {
 
     const sectorsPropertyName = markerUtils._uniquePiechartSelector;
     const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
-    const piechartPalette = ["#d40328", "#22ac33", "#517bb1", "#f181af", "#ec9b05", "#b4d98b", "#9e4194", "#dc197c"];
+    const piechartPalette = glUtils._piechartPalette;
 
     const positions = [];
     if (usePiechartFromMarker) {

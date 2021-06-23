@@ -146,6 +146,9 @@ dataUtils.processISSRawData = function () {
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
     }
+    if (markerUtils._uniquePiechartSelector != ""){
+        markerUtils.addPiechartLegend();
+    }
 }
 
 /** 
@@ -179,7 +182,7 @@ dataUtils.showMenuCSV = function(){
         csvheaders.forEach(function (head) {
             var option = document.createElement("option");
             option.value = head;
-            option.text = head;
+            option.text = head.split(";")[0];
             node.appendChild(option);
         });
     });
