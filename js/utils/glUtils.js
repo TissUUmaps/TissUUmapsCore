@@ -42,7 +42,7 @@ glUtils._markersVS = `
     uniform sampler2D u_colorscale;
 
     attribute vec4 a_position;
-    attribute float a_index;
+    attribute float a_index; 
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
@@ -628,7 +628,7 @@ glUtils.draw = function() {
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX);
-    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 4);
+    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
@@ -651,7 +651,7 @@ glUtils.draw = function() {
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX);
-    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 4);
+    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 16);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
