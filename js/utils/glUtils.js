@@ -17,6 +17,7 @@ glUtils = {
     _markerOpacity: 1.0,
     _useColorFromMarker: false,
     _usePiechartFromMarker: false,
+    _pickedMarker: -1,
     _colorscaleName: "null",
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
@@ -38,11 +39,12 @@ glUtils._markersVS = `
     uniform bool u_useColorFromMarker;
     uniform bool u_usePiechartFromMarker;
     uniform bool u_alphaPass;
+    uniform float u_pickedMarker;
     uniform sampler2D u_colorLUT;
     uniform sampler2D u_colorscale;
 
     attribute vec4 a_position;
-    attribute float a_index; 
+    attribute float a_index;
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
@@ -73,6 +75,7 @@ glUtils._markersVS = `
                 v_color.rgb = hex_to_rgb(a_position.w);
                 v_color.a = 8.0 / 255.0;  // Give markers a round shape
                 if (u_alphaPass) v_color.a *= float(a_position.z > 0.999);
+                if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
             } else {
                 v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
             }
@@ -152,6 +155,54 @@ glUtils._markersFS = `
 
         gl_FragColor = shapeColor * v_color;
         if (gl_FragColor.a < 0.01) discard;
+    }
+`;
+
+
+glUtils._pickingVS = `
+    uniform vec2 u_imageSize;
+    uniform vec4 u_viewportRect;
+    uniform mat2 u_viewportTransform;
+    uniform float u_markerScale;
+    uniform sampler2D u_colorLUT;
+
+    attribute vec4 a_position;
+    attribute float a_index;
+
+    varying vec4 v_color;
+
+    vec3 hex_to_rgb(float v)
+    {
+        // Extract RGB color from 24-bit hex color stored in float
+        v = clamp(v, 0.0, 16777215.0);
+        return floor(mod((v + 0.49) / vec3(65536.0, 256.0, 1.0), 256.0)) / 255.0;
+    }
+
+    void main()
+    {
+        vec2 imagePos = a_position.xy * u_imageSize;
+        vec2 viewportPos = imagePos - u_viewportRect.xy;
+        vec2 ndcPos = (viewportPos / u_viewportRect.zw) * 2.0 - 1.0;
+        ndcPos.y = -ndcPos.y;
+        ndcPos = u_viewportTransform * ndcPos;
+
+        v_color.rgb = hex_to_rgb(a_index);
+        v_color.a = 0.0;
+
+        gl_Position = vec4(-0.9999, -0.9999, 0.0, 1.0);
+        gl_PointSize = 1.0;
+    }
+`;
+
+
+glUtils._pickingFS = `
+    precision mediump float;
+
+    varying vec4 v_color;
+
+    void main()
+    {
+        gl_FragColor = v_color;
     }
 `;
 
@@ -633,6 +684,7 @@ glUtils.draw = function() {
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
     gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker);
+    gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"), glUtils._pickedMarker);
     if (glUtils._usePiechartFromMarker) {
         // 1st pass: draw alpha for whole marker shapes
         gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
@@ -720,6 +772,7 @@ glUtils.init = function() {
     osd.appendChild(canvas);
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
+    this._programs["picking"] = this._loadShaderProgram(gl, this._pickingVS, this._pickingFS);
     this._buffers["barcodeMarkers"] = this._createDummyMarkerBuffer(gl, this._numBarcodePoints);
     this._buffers["CPMarkers"] = this._createDummyMarkerBuffer(gl, this._numCPMarkers);
     this._textures["colorLUT"] = this._createColorLUTTexture(gl);
