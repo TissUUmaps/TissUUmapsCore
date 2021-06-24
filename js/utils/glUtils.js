@@ -42,6 +42,7 @@ glUtils._markersVS = `
     uniform sampler2D u_colorscale;
 
     attribute vec4 a_position;
+    attribute float a_index;
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
@@ -187,15 +188,16 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 
 
 glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
-    const positions = [];
+    const positions = [], indices = [];
     for (let i = 0; i < numPoints; ++i) {
         positions[4 * i + 0] = Math.random();  // X-coord
         positions[4 * i + 1] = Math.random();  // Y-coord
         positions[4 * i + 2] = Math.random();  // LUT-coord
         positions[4 * i + 3] = i / numPoints;  // Scalar data
+        indices[i] = i;  // Store index needed for picking
     }
 
-    const bytedata = new Float32Array(positions);
+    const bytedata = new Float32Array(positions.concat(indices));
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
@@ -263,7 +265,7 @@ glUtils.loadMarkers = function() {
     const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
     const piechartPalette = glUtils._piechartPalette;
 
-    const positions = [];
+    const positions = [], indices = [];
     if (usePiechartFromMarker) {
         const numSectors = markerData[0][sectorsPropertyName].split(";").length;
         for (let i = 0; i < numPoints; ++i) {
@@ -276,6 +278,7 @@ glUtils.loadMarkers = function() {
                 positions[4 * k + 1] = markerData[i].global_Y_pos / imageHeight;
                 positions[4 * k + 2] = piechartAngles[j];
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
+                indices[k] = i;  // Store index needed for picking
             }
         }
         numPoints *= numSectors;
@@ -286,10 +289,11 @@ glUtils.loadMarkers = function() {
             positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
             positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] / 4095.0;
             positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
+            indices[i] = i;  // Store index needed for picking
         }
     }
 
-    const bytedata = new Float32Array(positions);
+    const bytedata = new Float32Array(positions.concat(indices));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
@@ -320,7 +324,7 @@ glUtils.loadCPMarkers = function() {
     const useColorFromMarker = colorscaleName.includes("ownColorFromColumn");
     let hexColor = "#000000";
 
-    const positions = [];
+    const positions = [], indices = [];
     let scalarRange = [1e9, -1e9];
     for (let i = 0; i < numPoints; ++i) {
         if (useColorFromMarker) hexColor = markerData[i][propertyName];
@@ -328,11 +332,12 @@ glUtils.loadCPMarkers = function() {
         positions[4 * i + 1] = Number(markerData[i][yColumnName]) / imageHeight;
         positions[4 * i + 2] = Number(markerData[i][propertyName]);
         positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
+        indices[i] = i;  // Store index needed for picking
         scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
         scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
     }
 
-    const bytedata = new Float32Array(positions);
+    const bytedata = new Float32Array(positions.concat(indices));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
@@ -601,6 +606,7 @@ glUtils.draw = function() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const POSITION = gl.getAttribLocation(program, "a_position");
+    const INDEX = gl.getAttribLocation(program, "a_index");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
@@ -621,6 +627,8 @@ glUtils.draw = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(INDEX);
+    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 4);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
@@ -642,6 +650,8 @@ glUtils.draw = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
     gl.enableVertexAttribArray(POSITION);
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(INDEX);
+    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 4);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
