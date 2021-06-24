@@ -21,7 +21,7 @@ glUtils = {
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
     _barcodeToKey: {},
-    _options: {antialias: false},
+    _options: {antialias: false, premultipliedAlpha: false},
     _showColorbar: true,
     _piechartPalette: ["#fff100", "#ff8c00", "#e81123", "#ec008c", "#68217a", "#00188f", "#00bcf2", "#00b294", "#009e49", "#bad80a"]
 }
@@ -70,8 +70,8 @@ glUtils._markersVS = `
         if (u_markerType == MARKER_TYPE_BARCODE) {
             if (u_usePiechartFromMarker) {
                 v_color.rgb = hex_to_rgb(a_position.w);
-                v_color.a = 7.0 / 255.0;  // Give markers a round shape
-                if (u_alphaPass) v_color.a *= float(a_position.z == 1.0);
+                v_color.a = 8.0 / 255.0;  // Give markers a round shape
+                if (u_alphaPass) v_color.a *= float(a_position.z > 0.999);
             } else {
                 v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
             }
@@ -103,6 +103,7 @@ glUtils._markersFS = `
     precision mediump float;
 
     uniform bool u_usePiechartFromMarker;
+    uniform bool u_alphaPass;
     uniform sampler2D u_shapeAtlas;
 
     varying vec4 v_color;
@@ -113,20 +114,24 @@ glUtils._markersFS = `
     #define UV_SCALE 0.7
     #define SHAPE_GRID_SIZE 4.0
 
-    float sectorToAlpha(float sector, vec2 delta)
+    float sectorToAlpha(float sector, vec2 uv)
     {
-        vec2 dir = normalize(gl_PointCoord.xy + delta - 0.5);
+        vec2 dir = normalize(uv - 0.5);
         float theta = atan(dir.x, dir.y);
         return float(theta < (sector * 2.0 - 1.0) * 3.141592);
     }
 
-    float sectorToAlphaAA(float sector, float pointSize)
+    float sectorToAlphaAA(float sector, vec2 uv, float delta)
     {
+        // This workaround avoids the problem with small pixel-wide
+        // gaps that can appear between the first and last sector
+        if (uv.y < 0.5 && abs(uv.x - 0.5) < delta) return 1.0;
+
         float accum = 0.0;
-        accum += sectorToAlpha(sector, vec2(-0.25, -0.25) / pointSize);
-        accum += sectorToAlpha(sector, vec2( 0.25, -0.25) / pointSize);
-        accum += sectorToAlpha(sector, vec2(-0.25,  0.25) / pointSize);
-        accum += sectorToAlpha(sector, vec2( 0.25,  0.25) / pointSize);
+        accum += sectorToAlpha(sector, uv + vec2(-delta, -delta));
+        accum += sectorToAlpha(sector, uv + vec2(delta, -delta));
+        accum += sectorToAlpha(sector, uv + vec2(-delta, delta));
+        accum += sectorToAlpha(sector, uv + vec2(delta, delta));
         return accum / 4.0;
     }
 
@@ -139,12 +144,12 @@ glUtils._markersFS = `
         float shapeColorBias = max(0.0, 1.0 - v_shapeSize * 0.2);
         shapeColor.rgb = clamp(shapeColor.rgb + shapeColorBias, 0.0, 1.0);
 
-        if (u_usePiechartFromMarker) {
-            shapeColor.a *= sectorToAlphaAA(v_shapeSector, v_shapeSize);
+        if (u_usePiechartFromMarker && !u_alphaPass) {
+            float delta = 0.25 / v_shapeSize;
+            shapeColor.a *= sectorToAlphaAA(v_shapeSector, gl_PointCoord, delta);
         }
 
         gl_FragColor = shapeColor * v_color;
-        gl_FragColor.rgb *= gl_FragColor.a;  // Need to pre-multiply alpha
         if (gl_FragColor.a < 0.01) discard;
     }
 `;
@@ -593,7 +598,7 @@ glUtils.draw = function() {
 
     gl.useProgram(program);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const POSITION = gl.getAttribLocation(program, "a_position");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
@@ -623,7 +628,6 @@ glUtils.draw = function() {
     if (glUtils._usePiechartFromMarker) {
         // 1st pass: draw alpha for whole marker shapes
         gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
-        gl.colorMask(false, false, false, true);
         gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
         // 2nd pass: draw colors for individual piechart sectors
         gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), false);
