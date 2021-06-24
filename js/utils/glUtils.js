@@ -18,6 +18,7 @@ glUtils = {
     _useColorFromMarker: false,
     _usePiechartFromMarker: false,
     _pickedMarker: -1,
+    _pickingEnabled: false,
     _colorscaleName: "null",
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
@@ -164,6 +165,7 @@ glUtils._pickingVS = `
     uniform vec4 u_viewportRect;
     uniform mat2 u_viewportTransform;
     uniform float u_markerScale;
+    uniform int u_op;
     uniform sampler2D u_colorLUT;
 
     attribute vec4 a_position;
@@ -186,7 +188,7 @@ glUtils._pickingVS = `
         ndcPos.y = -ndcPos.y;
         ndcPos = u_viewportTransform * ndcPos;
 
-        v_color.rgb = hex_to_rgb(a_index);
+        v_color.rgb = hex_to_rgb(a_index + float(u_op));
         v_color.a = 0.0;
 
         gl_Position = vec4(-0.9999, -0.9999, 0.0, 1.0);
@@ -616,25 +618,9 @@ glUtils._loadTextureFromImageURL = function(gl, src) {
 glUtils.clearNavigatorArea = function() {}
 
 
-glUtils.draw = function() {
-    const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl", glUtils._options);
-
-    const bounds = tmapp["ISS_viewer"].viewport.getBounds();
-    glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
-    const homeBounds = tmapp["ISS_viewer"].world.getHomeBounds();
-    glUtils._imageSize = [homeBounds.width, homeBounds.height];
-    const orientationDegrees = tmapp["ISS_viewer"].viewport.getRotation();
-
-    // The OSD viewer can be rotated, so need to apply the same transform to markers
-    const t = orientationDegrees * (3.141592 / 180.0);
-    const viewportTransform = [Math.cos(t), -Math.sin(t), Math.sin(t), Math.cos(t)];
-
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
+glUtils.drawColorPass = function(gl, viewportTransform) {
+    // Set up render pipeline
     const program = glUtils._programs["markers"];
-
     gl.useProgram(program);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -646,6 +632,7 @@ glUtils.draw = function() {
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity);
+
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
@@ -655,8 +642,6 @@ glUtils.draw = function() {
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.enableVertexAttribArray(POSITION);
@@ -697,9 +682,80 @@ glUtils.draw = function() {
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
+    // Restore render pipeline state
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.disable(gl.BLEND);
     gl.useProgram(null);
+}
+
+
+glUtils.drawPickingPass = function(gl, viewportTransform) {
+    if (!glUtils._usePiechartFromMarker || !glUtils._pickingEnabled) {
+        glUtils._pickedMarker = -1;
+        return;  // TODO: Right now, we only perform picking for piecharts
+    }
+
+    // Set up render pipeline
+    const program = glUtils._programs["picking"];
+    gl.useProgram(program);
+
+    const POSITION = gl.getAttribLocation(program, "a_position");
+    const INDEX = gl.getAttribLocation(program, "a_index");
+    gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
+    gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
+    gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
+    gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
+    gl.enableVertexAttribArray(POSITION);
+    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(INDEX);
+    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
+    // 1st pass: clear the corner pixel
+    gl.uniform1i(gl.getUniformLocation(program, "u_op"), 0);
+    gl.drawArrays(gl.POINTS, 0, 1);
+    // 2nd pass: draw all the markers (as single pixels)
+    gl.uniform1i(gl.getUniformLocation(program, "u_op"), 1);
+    gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    // Read back pixel at location (0, 0) to get the picked object
+    const result = new Uint8Array(4);
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
+    const picked = Number(result[2] + result[1] * 256 + result[0] * 65336) - 1;
+    console.log(result);
+    console.log(picked);
+    glUtils._pickedMarker = picked;
+
+    // Restore render pipeline state
+    gl.useProgram(null);
+}
+
+
+glUtils.draw = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl", glUtils._options);
+
+    const bounds = tmapp["ISS_viewer"].viewport.getBounds();
+    glUtils._viewportRect = [bounds.x, bounds.y, bounds.width, bounds.height];
+    const homeBounds = tmapp["ISS_viewer"].world.getHomeBounds();
+    glUtils._imageSize = [homeBounds.width, homeBounds.height];
+    const orientationDegrees = tmapp["ISS_viewer"].viewport.getRotation();
+
+    // The OSD viewer can be rotated, so need to apply the same transform to markers
+    const t = orientationDegrees * (3.141592 / 180.0);
+    const viewportTransform = [Math.cos(t), -Math.sin(t), Math.sin(t), Math.cos(t)];
+
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    glUtils.drawColorPass(gl, viewportTransform);
+    glUtils.drawPickingPass(gl, viewportTransform);
 }
 
 
