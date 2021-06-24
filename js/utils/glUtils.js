@@ -259,23 +259,6 @@ glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
 }
 
 
-// Generate a list of random normalized sector angles in format (TODO)
-glUtils._createDummySectors = function(numSectors) {
-    let sectors = [], sum = 0;
-    for (let i = 0; i < numSectors; ++i) {
-        sectors[i] = Math.floor(Math.random() * 100.0);
-        sum += sectors[i];
-    }
-    for (let i = 0; i < numSectors; ++i) {
-        sectors[i] /= sum;
-    }
-    for (let i = numSectors - 2; i >= 0; --i) {
-        sectors[i] += sectors[i + 1];
-    }
-    return sectors;
-}
-
-
 // Create a list of normalized sector angles in format (TODO)
 glUtils._createPiechartAngles = function(sectors) {
     let angles = [], sum = 0.0;
