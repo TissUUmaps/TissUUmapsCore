@@ -726,7 +726,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform) {
     // Read back pixel at location (0, 0) to get the picked object
     const result = new Uint8Array(4);
     gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
-    const picked = Number(result[2] + result[1] * 256 + result[0] * 65336) - 1;
+    const picked = Number(result[2] + result[1] * 256 + result[0] * 65536) - 1;
     console.log(result);
     console.log(picked);
     glUtils._pickedMarker = picked;
