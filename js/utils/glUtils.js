@@ -19,6 +19,7 @@ glUtils = {
     _usePiechartFromMarker: false,
     _pickedMarker: -1,
     _pickingEnabled: false,
+    _pickingLocation: [0.0, 0.0],
     _colorscaleName: "null",
     _colorscaleData: [],
     _barcodeToLUTIndex: {},
@@ -55,6 +56,7 @@ glUtils._markersVS = `
     #define MARKER_TYPE_BARCODE 0
     #define MARKER_TYPE_CP 1
     #define SHAPE_GRID_SIZE 4.0
+    #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
 
     vec3 hex_to_rgb(float v)
     {
@@ -90,7 +92,7 @@ glUtils._markersVS = `
         if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(2.0, u_markerScale / u_viewportRect.w);
+        gl_PointSize = max(2.0, min(256.0, u_markerScale / u_viewportRect.w));
 
         v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
@@ -99,7 +101,7 @@ glUtils._markersVS = `
 
         // Discard point here in vertex shader if marker is hidden
         v_color.a = v_color.a > 0.0 ? u_markerOpacity : 0.0;
-        if (v_color.a == 0.0) gl_Position = vec4(2.0, 2.0, 2.0, 0.0);
+        if (v_color.a == 0.0) DISCARD_VERTEX;
     }
 `;
 
@@ -164,6 +166,8 @@ glUtils._pickingVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
     uniform mat2 u_viewportTransform;
+    uniform vec2 u_canvasSize;
+    uniform vec2 u_pickingLocation;
     uniform float u_markerScale;
     uniform int u_op;
     uniform sampler2D u_colorLUT;
@@ -172,6 +176,10 @@ glUtils._pickingVS = `
     attribute float a_index;
 
     varying vec4 v_color;
+
+    #define OP_CLEAR 0
+    #define OP_WRITE_INDEX 1
+    #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
 
     vec3 hex_to_rgb(float v)
     {
@@ -188,8 +196,19 @@ glUtils._pickingVS = `
         ndcPos.y = -ndcPos.y;
         ndcPos = u_viewportTransform * ndcPos;
 
-        v_color.rgb = hex_to_rgb(a_index + float(u_op));
-        v_color.a = 0.0;
+        v_color = vec4(0.0);
+        if (u_op == OP_WRITE_INDEX) {
+            vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
+            canvasPos.y = (u_canvasSize.y - canvasPos.y);  // Y-axis is inverted
+            float pointSize = max(2.0, min(256.0, u_markerScale / u_viewportRect.w));
+            
+            // TODO This test works as an inside/outside test for the special
+            // case where the marker shape is round; for the general case, we
+            // would need to sample the shape texture of each marker.
+            if (length(canvasPos - u_pickingLocation) > pointSize * 0.4) DISCARD_VERTEX;
+
+            v_color.rgb = hex_to_rgb(a_index + float(u_op));
+        }
 
         gl_Position = vec4(-0.9999, -0.9999, 0.0, 1.0);
         gl_PointSize = 1.0;
@@ -690,7 +709,7 @@ glUtils.drawColorPass = function(gl, viewportTransform) {
 
 
 glUtils.drawPickingPass = function(gl, viewportTransform) {
-    if (!glUtils._usePiechartFromMarker || !glUtils._pickingEnabled) {
+    if (!glUtils._usePiechartFromMarker) {
         glUtils._pickedMarker = -1;
         return;  // TODO: Right now, we only perform picking for piecharts
     }
@@ -704,6 +723,8 @@ glUtils.drawPickingPass = function(gl, viewportTransform) {
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
+    gl.uniform2fv(gl.getUniformLocation(program, "u_canvasSize"), [gl.canvas.width, gl.canvas.height]);
+    gl.uniform2fv(gl.getUniformLocation(program, "u_pickingLocation"), glUtils._pickingLocation);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
 
     gl.activeTexture(gl.TEXTURE0);
@@ -754,8 +775,21 @@ glUtils.draw = function() {
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+    if (glUtils._pickingEnabled) {
+        glUtils.drawPickingPass(gl, viewportTransform);
+        glUtils._pickingEnabled = false;  // Clear flag until next click event
+    }
+
     glUtils.drawColorPass(gl, viewportTransform);
-    glUtils.drawPickingPass(gl, viewportTransform);
+}
+
+
+glUtils.pick = function(event) {
+    if (event.quick) {
+        glUtils._pickingEnabled = true;
+        glUtils._pickingLocation = [event.position.x, event.position.y];
+        glUtils.draw();
+    }
 }
 
 
@@ -833,6 +867,8 @@ glUtils.init = function() {
     tmapp["ISS_viewer"].addHandler('open', glUtils.draw);
     tmapp["ISS_viewer"].removeHandler('viewport-change', glUtils.draw);
     tmapp["ISS_viewer"].addHandler('viewport-change', glUtils.draw);
+    tmapp["ISS_viewer"].removeHandler('canvas-click', glUtils.pick);
+    tmapp["ISS_viewer"].addHandler('canvas-click', glUtils.pick);
 
     glUtils._initialized = true;
     glUtils.resize();  // Force initial resize to OSD canvas size
