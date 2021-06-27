@@ -794,7 +794,7 @@ glUtils.pick = function(event) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.style = "min-width:150px; min-height:40px; background-color:white; " +
+            div.style = "min-width:150px; min-height:40px; background-color:white; margin:-2px 10px; " +
                         "border:1px solid; z-index:20; opacity:80%; pointer-events:none";
 
             tmapp["ISS_viewer"].addOverlay({
