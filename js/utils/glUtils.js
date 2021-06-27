@@ -26,6 +26,7 @@ glUtils = {
     _barcodeToKey: {},
     _options: {antialias: false, premultipliedAlpha: false},
     _showColorbar: true,
+    _showMarkerInfo: true,
     _piechartPalette: ["#fff100", "#ff8c00", "#e81123", "#ec008c", "#68217a", "#00188f", "#00bcf2", "#00b294", "#009e49", "#bad80a"]
 }
 
@@ -748,8 +749,6 @@ glUtils.drawPickingPass = function(gl, viewportTransform) {
     const result = new Uint8Array(4);
     gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
     const picked = Number(result[2] + result[1] * 256 + result[0] * 65536) - 1;
-    console.log(result);
-    console.log(picked);
     glUtils._pickedMarker = picked;
 
     // Restore render pipeline state
@@ -789,6 +788,23 @@ glUtils.pick = function(event) {
         glUtils._pickingEnabled = true;
         glUtils._pickingLocation = [event.position.x, event.position.y];
         glUtils.draw();
+
+        tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");
+        if (glUtils._pickedMarker >= 0 && glUtils._showMarkerInfo) {
+            const div = document.createElement("div");
+            div.id = "ISS_marker_info";
+            div.width = "1px"; div.height = "1px";
+            div.style = "min-width:150px; min-height:40px; background-color:white; " +
+                        "border:1px solid; z-index:20; opacity:80%; pointer-events:none";
+
+            tmapp["ISS_viewer"].addOverlay({
+                element: div,
+                placement: "TOP_LEFT",
+                location: tmapp["ISS_viewer"].viewport.viewerElementToViewportCoordinates(event.position),
+                checkResize: false,
+                rotationMode: OpenSeadragon.OverlayRotationMode.NO_ROTATION
+            });
+        }
     }
 }
 
