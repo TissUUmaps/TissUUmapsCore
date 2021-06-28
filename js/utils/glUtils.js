@@ -75,13 +75,15 @@ glUtils._markersVS = `
         ndcPos = u_viewportTransform * ndcPos;
 
         if (u_markerType == MARKER_TYPE_BARCODE) {
-            if (u_usePiechartFromMarker) {
+            float barcodeID = mod(a_position.z, 4096.0);
+            v_color = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5));
+
+            if (u_usePiechartFromMarker && v_color.a > 0.0) {
+                v_shapeSector = a_position.z / 16777215.0;
                 v_color.rgb = hex_to_rgb(a_position.w);
                 v_color.a = 8.0 / 255.0;  // Give markers a round shape
-                if (u_alphaPass) v_color.a *= float(a_position.z > 0.999);
+                if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
                 if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
-            } else {
-                v_color = texture2D(u_colorLUT, vec2(a_position.z, 0.5));
             }
         } else if (u_markerType == MARKER_TYPE_CP) {
             vec2 range = u_markerScalarRange;
@@ -97,7 +99,6 @@ glUtils._markersVS = `
 
         v_shapeOrigin.x = mod(v_color.a * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor((v_color.a * 255.0 - 1.0) / SHAPE_GRID_SIZE);
-        v_shapeSector = a_position.z;  // TODO
         v_shapeSize = gl_PointSize;
 
         // Discard point here in vertex shader if marker is hidden
@@ -199,6 +200,10 @@ glUtils._pickingVS = `
 
         v_color = vec4(0.0);
         if (u_op == OP_WRITE_INDEX) {
+            float barcodeID = mod(a_position.z, 4096.0);
+            float shapeID = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a;
+            if (shapeID == 0.0) DISCARD_VERTEX;
+
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
             canvasPos.y = (u_canvasSize.y - canvasPos.y);  // Y-axis is inverted
             float pointSize = max(2.0, min(256.0, u_markerScale / u_viewportRect.w));
@@ -332,7 +337,8 @@ glUtils.loadMarkers = function() {
                 hexColor = piechartPalette[j % piechartPalette.length];
                 positions[4 * k + 0] = markerData[i].global_X_pos / imageWidth;
                 positions[4 * k + 1] = markerData[i].global_Y_pos / imageHeight;
-                positions[4 * k + 2] = piechartAngles[j];
+                positions[4 * k + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] +
+                                       Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
                 indices[k] = i;  // Store index needed for picking
             }
@@ -343,7 +349,7 @@ glUtils.loadMarkers = function() {
             if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
             positions[4 * i + 0] = markerData[i].global_X_pos / imageWidth;
             positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
-            positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] / 4095.0;
+            positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters];
             positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
         }
@@ -794,7 +800,7 @@ glUtils.pick = function(event) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.style = "min-width:150px; min-height:40px; background-color:white; margin:-2px 10px; " +
+            div.style = "min-width:150px; min-height:40px; background-color:white; margin:0px; " +
                         "border:1px solid; z-index:20; opacity:80%; pointer-events:none";
 
             tmapp["ISS_viewer"].addOverlay({
