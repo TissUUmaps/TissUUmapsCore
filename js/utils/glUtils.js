@@ -13,6 +13,7 @@ glUtils = {
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
     _markerScale: 1.0,
+    _useMarkerScaleFix: true,
     _markerScalarRange: [0.0, 1.0],
     _markerOpacity: 1.0,
     _useColorFromMarker: false,
@@ -82,8 +83,8 @@ glUtils._markersVS = `
                 v_shapeSector = a_position.z / 16777215.0;
                 v_color.rgb = hex_to_rgb(a_position.w);
                 v_color.a = 8.0 / 255.0;  // Give markers a round shape
-                if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
                 if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
+                if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
             }
         } else if (u_markerType == MARKER_TYPE_CP) {
             vec2 range = u_markerScalarRange;
@@ -644,7 +645,7 @@ glUtils._loadTextureFromImageURL = function(gl, src) {
 glUtils.clearNavigatorArea = function() {}
 
 
-glUtils.drawColorPass = function(gl, viewportTransform) {
+glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     // Set up render pipeline
     const program = glUtils._programs["markers"];
     gl.useProgram(program);
@@ -675,7 +676,7 @@ glUtils.drawColorPass = function(gl, viewportTransform) {
     gl.enableVertexAttribArray(INDEX);
     gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
     gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker);
     gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"), glUtils._pickedMarker);
@@ -699,7 +700,7 @@ glUtils.drawColorPass = function(gl, viewportTransform) {
     gl.enableVertexAttribArray(INDEX);
     gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 16);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale * 0.5);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted * 0.5);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
         glUtils._colorscaleName.includes("ownColorFromColumn"));
     gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), false);
@@ -715,7 +716,7 @@ glUtils.drawColorPass = function(gl, viewportTransform) {
 }
 
 
-glUtils.drawPickingPass = function(gl, viewportTransform) {
+glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     if (!glUtils._usePiechartFromMarker) {
         glUtils._pickedMarker = -1;
         return;  // TODO: Right now, we only perform picking for piecharts
@@ -732,7 +733,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform) {
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform2fv(gl.getUniformLocation(program, "u_canvasSize"), [gl.canvas.width, gl.canvas.height]);
     gl.uniform2fv(gl.getUniformLocation(program, "u_pickingLocation"), glUtils._pickingLocation);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), glUtils._markerScale);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
@@ -776,16 +777,21 @@ glUtils.draw = function() {
     const t = orientationDegrees * (3.141592 / 180.0);
     const viewportTransform = [Math.cos(t), -Math.sin(t), Math.sin(t), Math.cos(t)];
 
+    // Compute adjusted marker scale so that the actual marker size becomes less
+    // dependant on screen resolution or window size
+    let markerScaleAdjusted = glUtils._markerScale;
+    if (glUtils._useMarkerScaleFix) markerScaleAdjusted *= (gl.canvas.height / 900.0);
+
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     if (glUtils._pickingEnabled) {
-        glUtils.drawPickingPass(gl, viewportTransform);
+        glUtils.drawPickingPass(gl, viewportTransform, markerScaleAdjusted);
         glUtils._pickingEnabled = false;  // Clear flag until next click event
     }
 
-    glUtils.drawColorPass(gl, viewportTransform);
+    glUtils.drawColorPass(gl, viewportTransform, markerScaleAdjusted);
 }
 
 
