@@ -862,3 +862,34 @@ markerUtils.addPiechartLegend = function () {
     })
     console.log(sectors);
 }
+
+/** Adding piechart table on pickup */
+markerUtils.makePieChartTable = function (barcode) {
+    var op = tmapp["object_prefix"];
+    var sectors = [];
+    if (markerUtils._uniquePiechartSelector.split(";").length > 1) {
+        sectors = markerUtils._uniquePiechartSelector.split(";");
+    }
+    else {
+        numSectors = dataUtils[op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
+        for(var i = 0; i < numSectors; i++) {
+            sectors.push("Sector " + (i+1));
+        }
+    }
+    outText = "";
+    sectorValues = barcode[markerUtils._uniquePiechartSelector].split(";")
+    sortedSectors = [];
+    sectors.forEach(function (sector, index) {
+        sortedSectors.push([parseFloat(sectorValues[index]), sector, index])
+    });
+    sortedSectors.sort(
+        function cmp(a, b) {
+
+            return b[0]-a[0];
+        }
+    );
+    sortedSectors.forEach(function (sector) {
+        outText += "<span style='border:2px solid " + glUtils._piechartPalette[sector[2] % glUtils._piechartPalette.length] + ";padding:3px;margin:2px;display: inline-block;'>" + sector[1] + ": " + (sector[0] * 100).toFixed(1) + " %</span> ";
+    })
+    return outText;
+}
