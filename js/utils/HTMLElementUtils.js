@@ -348,6 +348,63 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
     return thisChild;
 }
 
+HTMLElementUtils.createDLSelect = function(downloadRow, innerText, callback, comment, options) {
+    var row = HTMLElementUtils.createRow(null);
+    var selectDiv = document.createElement("div");
+    var titleDiv = document.createElement("div");
+    titleDiv.setAttribute("class", "col-xs-12 col-sm-12 col-md-12 col-lg-12");
+    titleDiv.innerHTML = `<b> ${innerText} </b>`
+    row.appendChild(titleDiv);
+    
+    selectDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
+    row.appendChild(selectDiv);
+    var paramSelect = {
+        // eventListeners: {"change":callback},
+        // "class": "btn btn-primary",
+        // innerText: innerText
+        options: options,
+        class: "chosen-select"
+    }
+    var DLSelect = HTMLElementUtils.selectTypeDropDown(paramSelect);
+    DLSelect.setAttribute("data-placeholder", "Choose a gene...")
+    DLSelect.style.width = "100%";
+    selectDiv.appendChild(DLSelect);
+    
+    var commentDiv = document.createElement("div");
+    commentDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
+    commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px;"> ${comment} </p>`
+    row.appendChild(commentDiv);
+
+    downloadRow.appendChild(row);
+
+    $(".chosen-select").chosen({disable_search_threshold: 10, search_contains: true});
+    $(".chosen-select").on('change', function(evt, params) {
+        callback(evt, params);
+    });
+    return row;
+}
+
+HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, expectedCSV) {
+    var downloadRow = document.getElementById("ISS_rowDownloadMarkers");
+    callback = function(e, params){
+        console.log(params);
+        var dataURL = params.selected;
+        if (dataURL == "") return;
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV);
+        dataUtils.XHRCSV(dataURL);
+    }
+    options = [{"value":"","text":"Select a gene"}];
+    dataURLs.forEach (function (dataURL) {
+        options.push({
+            "value": dataURL,
+            "text": dataURL.split('/').reverse()[0]
+        })
+    });
+    HTMLElementUtils.createDLSelect(downloadRow, innerText, callback, comment, options);
+    var label = document.getElementById("label_ISS_csv");
+    label.innerHTML = "Or import gene expression from CSV file:";
+}
+
 HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
     var row = HTMLElementUtils.createRow(null);
     var buttonDiv = document.createElement("div");
@@ -368,6 +425,7 @@ HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, com
     row.appendChild(commentDiv);
 
     downloadRow.appendChild(row);
+    return row;
 }
 
 HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment, expectedCSV) {
