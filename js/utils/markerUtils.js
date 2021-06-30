@@ -872,7 +872,7 @@ markerUtils.addPiechartLegend = function () {
 }
 
 /** Adding piechart table on pickup */
-markerUtils.makePieChartTable = function (barcode) {
+markerUtils.makePiechartTable = function (barcode) {
     var op = tmapp["object_prefix"];
     var sectors = [];
     if (markerUtils._uniquePiechartSelector.split(";").length > 1) {
