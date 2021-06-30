@@ -30,7 +30,8 @@ markerUtils = {
     _checkBoxes: {},
     _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],
     _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye", "Circle"],
-    _colorsperkey:null
+    _colorsperkey:null,
+    _randomShape:true,
 }
 
 /** 
@@ -439,7 +440,7 @@ markerUtils.markerUI = function (barObject,options) {
     var amount = HTMLElementUtils.createElement({ type: "td", innerText: barObject.values.length });
     row.appendChild(amount);
 
-    if (!markerUtils._uniqueColor) {
+    if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
         var thecolor="#5fb5f6"
         if(options.randomColorForMarker){
             thecolor=overlayUtils.randomColor("hex");
@@ -462,12 +463,14 @@ markerUtils.markerUI = function (barObject,options) {
         colorinput.value = thecolor;
     }
 
-    var shape = HTMLElementUtils.createElement({ type: "td" });
-    var shapeParams = { random: true, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
-    var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
-    if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
-    shape.appendChild(shapeinput);
-    row.appendChild(shape);
+    if (!markerUtils._uniquePiechart) {
+        var shape = HTMLElementUtils.createElement({ type: "td" });
+        var shapeParams = { random: markerUtils._randomShape, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
+        var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
+        if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
+        shape.appendChild(shapeinput);
+        row.appendChild(shape);
+    }
 
     if (markerUtils._showSizeColumn) {
         var size = HTMLElementUtils.createElement({ type: "td" });
@@ -526,12 +529,14 @@ markerUtils.markerUIAll = function (options) {
     var amount = HTMLElementUtils.createElement({ type: "td", innerText: length });
     row.appendChild(amount);
 
-    if (!markerUtils._uniqueColor) {
+    if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
         var color = HTMLElementUtils.createElement({ type: "td" });
         row.appendChild(color);
     }
-    var shape = HTMLElementUtils.createElement({ type: "td" });
-    row.appendChild(shape);
+    if (!markerUtils._uniquePiechart) {
+        var shape = HTMLElementUtils.createElement({ type: "td" });
+        row.appendChild(shape);
+    }
 
     if (markerUtils._showSizeColumn) {
         var size = HTMLElementUtils.createElement({ type: "td" });
@@ -555,6 +560,9 @@ markerUtils.printBarcodeUIs = function (options) {
     }
     if (markerUtils._uniqueColor) {
         headers = ["Count", "Shape"];
+    }
+    if (markerUtils._uniquePiechart) {
+        headers = ["Count"];
     }
     dataUtils.sortDataAndDownsample();
     //this is causing weird behaviour sometims it creates the name column sometimes no

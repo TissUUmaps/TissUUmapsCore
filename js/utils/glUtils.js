@@ -472,7 +472,13 @@ glUtils._updateColorLUTTexture = function(gl, texture) {
         else {
             var hexColor = "#000000";
         }
-        const shape = document.getElementById(key + "-shape-ISS").value;
+        shapeInput = document.getElementById(key + "-shape-ISS")
+        if (shapeInput) {
+            var shape = document.getElementById(key + "-shape-ISS").value;
+        }
+        else {
+            var shape = "";
+        };
         const visible = showAll || markerUtils._checkBoxes[key].checked;
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
