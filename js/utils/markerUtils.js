@@ -12,7 +12,7 @@
    * @property {Obj}   markerUtils._checkBoxes - 
    * @property {Array(String)}   markerUtils._d3Symbols -  
    * @property {Array(String)}   markerUtils._d3SymbolStrings - 
-   * * @property {Object}   load colors per key if known previously 
+   * * @property {Object}  markerUtils._colorsperkey - load colors per key if known previously 
    * 
 */
 
