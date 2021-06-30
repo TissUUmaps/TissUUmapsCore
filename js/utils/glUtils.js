@@ -49,6 +49,7 @@ glUtils._markersVS = `
 
     attribute vec4 a_position;
     attribute float a_index;
+    attribute float a_scale;
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
@@ -96,7 +97,7 @@ glUtils._markersVS = `
         if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(2.0, min(256.0, u_markerScale / u_viewportRect.w));
+        gl_PointSize = max(2.0, min(256.0, a_scale * u_markerScale / u_viewportRect.w));
 
         v_shapeOrigin.x = mod((v_color.a + 0.00001) * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor(((v_color.a + 0.00001) * 255.0 - 1.0) / SHAPE_GRID_SIZE);
@@ -177,6 +178,7 @@ glUtils._pickingVS = `
 
     attribute vec4 a_position;
     attribute float a_index;
+    attribute float a_scale;
 
     varying vec4 v_color;
 
@@ -207,7 +209,7 @@ glUtils._pickingVS = `
 
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
             canvasPos.y = (u_canvasSize.y - canvasPos.y);  // Y-axis is inverted
-            float pointSize = max(2.0, min(256.0, u_markerScale / u_viewportRect.w));
+            float pointSize = max(2.0, min(256.0, a_scale * u_markerScale / u_viewportRect.w));
             
             // TODO This test works as an inside/outside test for the special
             // case where the marker shape is round; for the general case, we
@@ -267,16 +269,17 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 
 
 glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
-    const positions = [], indices = [];
+    const positions = [], indices = [], scales = [];
     for (let i = 0; i < numPoints; ++i) {
         positions[4 * i + 0] = Math.random();  // X-coord
         positions[4 * i + 1] = Math.random();  // Y-coord
         positions[4 * i + 2] = Math.random();  // LUT-coord
         positions[4 * i + 3] = i / numPoints;  // Scalar data
         indices[i] = i;  // Store index needed for picking
+        scales[i] = 1.0;  // Marker scale factor
     }
 
-    const bytedata = new Float32Array(positions.concat(indices));
+    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
@@ -327,7 +330,7 @@ glUtils.loadMarkers = function() {
     const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
     const piechartPalette = glUtils._piechartPalette;
 
-    const positions = [], indices = [];
+    const positions = [], indices = [], scales = [];
     if (usePiechartFromMarker) {
         const numSectors = markerData[0][sectorsPropertyName].split(";").length;
         for (let i = 0; i < numPoints; ++i) {
@@ -342,6 +345,7 @@ glUtils.loadMarkers = function() {
                                        Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
                 indices[k] = i;  // Store index needed for picking
+                scales[k] = 1.0;  // Marker scale factor (TODO)
             }
         }
         numPoints *= numSectors;
@@ -353,10 +357,11 @@ glUtils.loadMarkers = function() {
             positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters];
             positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
+            scales[i] = 1.0;  // Marker scale factor (TODO)
         }
     }
 
-    const bytedata = new Float32Array(positions.concat(indices));
+    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
@@ -387,7 +392,7 @@ glUtils.loadCPMarkers = function() {
     const useColorFromMarker = colorscaleName.includes("ownColorFromColumn");
     let hexColor = "#000000";
 
-    const positions = [], indices = [];
+    const positions = [], indices = [], scales = [];
     let scalarRange = [1e9, -1e9];
     for (let i = 0; i < numPoints; ++i) {
         if (useColorFromMarker) hexColor = markerData[i][propertyName];
@@ -396,11 +401,13 @@ glUtils.loadCPMarkers = function() {
         positions[4 * i + 2] = Number(markerData[i][propertyName]);
         positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
         indices[i] = i;  // Store index needed for picking
+        scales[i] = 0.5;  // Marker scale factor (TODO)
+
         scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
         scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
     }
 
-    const bytedata = new Float32Array(positions.concat(indices));
+    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
@@ -660,6 +667,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
 
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
+    const SCALE = gl.getAttribLocation(program, "a_scale");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
@@ -681,6 +689,8 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX);
     gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
+    gl.enableVertexAttribArray(SCALE);
+    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 20);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
@@ -705,8 +715,10 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX);
     gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 16);
+    gl.enableVertexAttribArray(SCALE);
+    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 20);
     gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted * 0.5);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
     gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
         glUtils._colorscaleName.includes("ownColorFromColumn"));
     gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), false);
@@ -734,6 +746,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
 
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
+    const SCALE = gl.getAttribLocation(program, "a_scale");
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
@@ -750,6 +763,8 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX);
     gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
+    gl.enableVertexAttribArray(SCALE);
+    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 20);
     // 1st pass: clear the corner pixel
     gl.uniform1i(gl.getUniformLocation(program, "u_op"), 0);
     gl.drawArrays(gl.POINTS, 0, 1);
