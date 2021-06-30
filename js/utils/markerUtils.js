@@ -512,14 +512,14 @@ markerUtils.markerUIAll = function (options) {
     row.appendChild(check);
 
     if(options.drawGeneLetters){
-        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All Barcodes</label>",
-            extraAttributes: { "title": "All Barcodes", "data-title":"All Barcodes" } });
+        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: { "title": "All", "data-title":"All" } });
         row.appendChild(lettersrow);
     }
 
     if(options.drawGeneName){
-        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All Genes</label>",
-            extraAttributes: { "title": "All Genes", "data-title":"All Genes" } });
+        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: { "title": "All", "data-title":"All" } });
         row.appendChild(name);
     }
     var length = 0;
