@@ -50,11 +50,16 @@ dataUtils.processISSRawData = function () {
     var ISSYNode = document.getElementById("ISS_Y_header");
     var ySelector = ISSYNode.options[ISSYNode.selectedIndex].value;
     var ISSColor = document.getElementById("ISS_color_header");
+    var ISSScale = document.getElementById("ISS_scale_header");
     var ISSPiechart = document.getElementById("ISS_piechart_header");
     if (ISSColor)
         var colorSelector = ISSColor.options[ISSColor.selectedIndex].value;
     else
         var colorSelector = "null";
+    if (ISSScale)
+        var scaleSelector = ISSPiechart.options[ISSScale.selectedIndex].value;
+    else
+        var scaleSelector = "null";
     if (ISSPiechart)
         var piechartSelector = ISSPiechart.options[ISSPiechart.selectedIndex].value;
     else
@@ -75,6 +80,14 @@ dataUtils.processISSRawData = function () {
     else {
         markerUtils._uniquePiechart = false;
         markerUtils._uniquePiechartSelector = "";
+    }
+    if (scaleSelector && scaleSelector != "null"){
+        markerUtils._uniqueScale = true;
+        markerUtils._uniqueScaleSelector = scaleSelector;
+    }
+    else {
+        markerUtils._uniqueScale = false;
+        markerUtils._uniqueScaleSelector = "";
     }
     
     //check that the key is available
@@ -111,9 +124,16 @@ dataUtils.processISSRawData = function () {
         //console.log("entered here");
         dataUtils._nameAndLetters.drawGeneName = true;
     }
+    else {
+        dataUtils._nameAndLetters.drawGeneName = false;
+    }
     if (!(barcodeSelector == "null")) {
         //console.log("entered here");
         dataUtils._nameAndLetters.drawGeneLetters = true;
+    }
+    else {
+        //console.log("entered here");
+        dataUtils._nameAndLetters.drawGeneLetters = false;
     }
     
     var toRemove = [barcodeSelector, nameSelector, xSelector, ySelector];
@@ -150,6 +170,9 @@ dataUtils.processISSRawData = function () {
     if (markerUtils._uniquePiechartSelector != ""){
         markerUtils.addPiechartLegend();
     }
+    else {
+        document.getElementById("piechartLegend").style.display="none";
+    }
 }
 
 /** 
@@ -170,10 +193,11 @@ dataUtils.showMenuCSV = function(){
     var ISSX = document.getElementById(op + "_X_header");
     var ISSY = document.getElementById(op + "_Y_header");
     var ISSColor = document.getElementById(op + "_color_header");
+    var ISSScale = document.getElementById(op + "_scale_header");
     var ISSPiechart = document.getElementById(op + "_piechart_header");
     var ISSKey = document.getElementById(op + "_key_header");
     //console.log(dataUtils._CSVStructure["ISS_csv_header"]);
-    [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSPiechart].forEach(function (node) {
+    [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSScale, ISSPiechart].forEach(function (node) {
         if (!node) return;
         node.innerHTML = "";
         var option = document.createElement("option");
@@ -200,6 +224,7 @@ dataUtils.showMenuCSV = function(){
     if (csvheaders.includes(dataUtils._expectedCSV["Y_col"])) ISSY.value = dataUtils._expectedCSV["Y_col"];
     if (csvheaders.includes(dataUtils._expectedCSV["color"])) ISSColor.value = dataUtils._expectedCSV["color"];
     if (csvheaders.includes(dataUtils._expectedCSV["piechart"])) ISSPiechart.value = dataUtils._expectedCSV["piechart"];
+    if (csvheaders.includes(dataUtils._expectedCSV["scale"])) ISSScale.value = dataUtils._expectedCSV["scale"];
     if (dataUtils._expectedCSV["key"]) ISSKey.value = dataUtils._expectedCSV["key"];
     if (dataUtils._autoLoadCSV) {
         setTimeout(function () {
@@ -278,6 +303,8 @@ dataUtils.XHRCSV = function (thecsv) {
             
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
+            progressParent.style.display = "none";
+            alert ("Impossible to load data, please contact an administrator.")
         }     
     };
     

@@ -17,6 +17,7 @@ glUtils = {
     _markerScalarRange: [0.0, 1.0],
     _markerOpacity: 1.0,
     _useColorFromMarker: false,
+    _useScaleFromMarker: false,
     _usePiechartFromMarker: false,
     _pickedMarker: -1,
     _pickingEnabled: false,
@@ -326,6 +327,9 @@ glUtils.loadMarkers = function() {
     const useColorFromMarker = markerUtils._uniqueColor && (colorPropertyName in markerData[0]);
     let hexColor = "#000000";
 
+    const scalePropertyName = markerUtils._uniqueScaleSelector;
+    const useScaleFromMarker = markerUtils._uniqueScale && (scalePropertyName in markerData[0]);
+
     const sectorsPropertyName = markerUtils._uniquePiechartSelector;
     const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
     const piechartPalette = glUtils._piechartPalette;
@@ -345,7 +349,8 @@ glUtils.loadMarkers = function() {
                                        Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
                 indices[k] = i;  // Store index needed for picking
-                scales[k] = 1.0;  // Marker scale factor (TODO)
+                if (useScaleFromMarker) scales[k] = markerData[i][scalePropertyName];
+                else scales[k] = 1.0;  // Marker scale factor
             }
         }
         numPoints *= numSectors;
@@ -357,7 +362,8 @@ glUtils.loadMarkers = function() {
             positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters];
             positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
-            scales[i] = 1.0;  // Marker scale factor (TODO)
+            if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
+            else scales[i] = 1.0;  // Marker scale factor
         }
     }
 
@@ -369,6 +375,7 @@ glUtils.loadMarkers = function() {
 
     glUtils._numBarcodePoints = numPoints;
     glUtils._useColorFromMarker = useColorFromMarker;
+    glUtils._useScaleFromMarker = useScaleFromMarker;
     glUtils._usePiechartFromMarker = usePiechartFromMarker;
     glUtils.updateLUTTextures();
 }
@@ -392,6 +399,9 @@ glUtils.loadCPMarkers = function() {
     const useColorFromMarker = colorscaleName.includes("ownColorFromColumn");
     let hexColor = "#000000";
 
+    const scalePropertyName = markerUtils._uniqueScaleSelector;
+    const useScaleFromMarker = markerUtils._uniqueScale && (scalePropertyName in markerData[0]);
+
     const positions = [], indices = [], scales = [];
     let scalarRange = [1e9, -1e9];
     for (let i = 0; i < numPoints; ++i) {
@@ -401,7 +411,8 @@ glUtils.loadCPMarkers = function() {
         positions[4 * i + 2] = Number(markerData[i][propertyName]);
         positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
         indices[i] = i;  // Store index needed for picking
-        scales[i] = 0.5;  // Marker scale factor (TODO)
+        if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
+        else scales[i] = 1.0;
 
         scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
         scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
