@@ -20,7 +20,8 @@ dataUtils = {
     _barcodesByAmount: [],
     _maximumAmountInLowerRes: 5000,
     _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
-    _drawOptions: { randomColorForMarker: false }
+    _drawOptions: { randomColorForMarker: false },
+    _autoLoadCSV: false
     //_minimumAmountToDisplay: 500,
     //_subsamplingRate: 100,
 }
@@ -187,7 +188,9 @@ dataUtils.showMenuCSV = function(){
         });
     });
     var panel = document.getElementById(op + "_csv_headers");
-    panel.style = "";
+    if (!dataUtils._autoLoadCSV) {
+        panel.style = "";
+    }
     //search for defaults if any, "barcode" used to be called "letters"
     //it is still "letters in the obejct" but the BarcodeInputValue can be anything chosen by the user
     //and found in the csv column
@@ -198,7 +201,11 @@ dataUtils.showMenuCSV = function(){
     if (csvheaders.includes(dataUtils._expectedCSV["color"])) ISSColor.value = dataUtils._expectedCSV["color"];
     if (csvheaders.includes(dataUtils._expectedCSV["piechart"])) ISSPiechart.value = dataUtils._expectedCSV["piechart"];
     if (dataUtils._expectedCSV["key"]) ISSKey.value = dataUtils._expectedCSV["key"];
-
+    if (dataUtils._autoLoadCSV) {
+        setTimeout(function () {
+            document.getElementById(op + "_bringmarkers_btn").click();
+        },500);
+    }
 }
 
 /** 
