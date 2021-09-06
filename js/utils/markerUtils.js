@@ -6,6 +6,8 @@
    * @property {Number}     markerUtils._globalMarkerSize - 
    * @property {Number}   markerUtils._uniqueColor - Keep then number of drawn regions and also let them be the id, 
    * @property {String} markerUtils._uniqueColorSelector - 
+   * @property {Bool} markerUtils._uniqueScale -
+   * @property {String} markerUtils._uniqueScaleSelector -
    * @property {Bool} markerUtils._uniquePiechart -
    * @property {String} markerUtils._uniquePiechartSelector -
    * @property {Number}   markerUtils._startCullingAt - 
@@ -24,6 +26,8 @@ markerUtils = {
     _showSizeColumn: false,
     _uniqueColor:false, //if this and selector are true, it will try to find a color unique to each spot
     _uniqueColorSelector:null, //is a string of the type "[float,float,float]" that gets converted to a string "rgb(uint8,uint8,uint8)"
+    _uniqueScale:false, //if this and selector are true, it will try to find a color unique to each spot
+    _uniqueScaleSelector:null, //is a string of the type "[float,float,float]" that gets converted to a string "rgb(uint8,uint8,uint8)"
     _uniquePiechart:false, //if this and selector are true, it will try to show a unique piechart for each spot
     _uniquePiechartSelector:null, //a string with the name of the piechart data field in the CSV
     _startCullingAt: 9000,
@@ -31,7 +35,10 @@ markerUtils = {
     _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],
     _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye", "Circle"],
     _colorsperkey:null,
+    _startMarkersOn:false,
     _randomShape:true,
+    _selectedShape:0,
+    _headerNames:{"Barcode":"Barcode","Gene":"Gene"}
 }
 
 /** 
@@ -468,6 +475,7 @@ markerUtils.markerUI = function (barObject,options) {
         var shapeParams = { random: markerUtils._randomShape, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
         var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
         if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
+        else {shapeinput.selectedIndex = markerUtils._selectedShape}
         shape.appendChild(shapeinput);
         row.appendChild(shape);
     }
@@ -510,7 +518,6 @@ markerUtils.markerUIAll = function (options) {
     
     check.appendChild(checkinput);
     row.appendChild(check);
-
     if(options.drawGeneLetters){
         var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
             extraAttributes: { "title": "All", "data-title":"All" } });
@@ -542,7 +549,11 @@ markerUtils.markerUIAll = function (options) {
         var size = HTMLElementUtils.createElement({ type: "td" });
         row.appendChild(size);
     }
-
+    if (markerUtils._startMarkersOn) {
+        setTimeout(function() {
+            checkinput.click();
+        },100);
+    }
     return row;
 }
 
@@ -618,7 +629,13 @@ markerUtils.printBarcodeUIs = function (options) {
     var tblBody = document.createElement("tbody");
     headers.forEach(function (header) {
         var th = document.createElement("th");
-        th.appendChild(document.createTextNode(header));
+        if (markerUtils._headerNames[header]) {
+            headerText = markerUtils._headerNames[header];
+        }
+        else {
+            headerText = header;
+        }
+        th.appendChild(document.createTextNode(headerText));
         tblHeadTr.appendChild(th);
     });
     tbl.appendChild(tblHead);
@@ -834,13 +851,17 @@ markerUtils.addPiechartLegend = function () {
         elt.style.zIndex = "100";
         elt.style.paddingLeft = "5px";
         elt.style.paddingBottom = "2px";
+        elt.style.overflowY = "auto";
+        elt.style.maxHeight = "Calc(100vh - 245px)";
         tmapp['ISS_viewer'].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
     }
     elt = document.getElementById("piechartLegend");
+    elt.style.display="block";
     elt.innerHTML = "";
     var table = HTMLElementUtils.createElement({ type: "table"});
     table.style.borderSpacing = "3px";
     table.style.borderCollapse = "separate";
+    table.style.fontSize = "10px";
     var title = HTMLElementUtils.createElement({ type: "div", innerHTML: "<b>Piechart legend</b>"});
     elt.appendChild(title);
     elt.appendChild(table);
@@ -890,12 +911,14 @@ markerUtils.makePiechartTable = function (barcode) {
     sectors.forEach(function (sector, index) {
         sortedSectors.push([parseFloat(sectorValues[index]), sector, index])
     });
+    console.dir(sortedSectors);
     sortedSectors.sort(
         function cmp(a, b) {
 
             return b[0]-a[0];
         }
     );
+    console.dir(sortedSectors);
     sortedSectors.forEach(function (sector) {
         outText += "<span style='border:2px solid " + glUtils._piechartPalette[sector[2] % glUtils._piechartPalette.length] + ";padding:3px;margin:2px;display: inline-block;'>" + sector[1] + ": " + (sector[0] * 100).toFixed(1) + " %</span> ";
     })
