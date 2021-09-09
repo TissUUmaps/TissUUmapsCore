@@ -25,7 +25,7 @@ overlayUtils.addAllLayers = function() {
     /* For backward compatibility with tmapp.fixed_file, but converted to a layer */
     if (tmapp.fixed_file && tmapp.fixed_file != "") {
         tmapp.layers.unshift({"name":tmapp.slideFilename, "tileSource":tmapp.fixed_file})
-        overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  tmapp.fixed_file, -1)
+        /*overlayUtils.addLayer(tmapp.slideFilename, tmapp._url_suffix +  tmapp.fixed_file, -1)*/
         tmapp.fixed_file = "";
     }
     tmapp.layers.forEach(function(layer, i) {
