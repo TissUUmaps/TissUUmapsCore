@@ -152,6 +152,7 @@ tmapp.init = function () {
     } else {
         console.log("Using CPU-based marker drawing (SVG canvas)")
     }
+    projectUtils.registerActions();
 } //finish init
 
 /**
