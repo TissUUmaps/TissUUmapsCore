@@ -6,25 +6,55 @@
 
 /**
 * @namespace dataUtils
-* @property {Object} dataUtils._expectedCSV - Expected csv structure
-* @property {Object} dataUtils._subsampledBarcodes - Containing the subsamples barcode trees to display
-* @property {Array}  dataUtils._barcodesByAmount - Sorted list of arrays of the data
-* @property {Number} dataUtils._maximumAmountInLowerRes - Maximum amount of points to display in low res
-* @property {Object} dataUtils._nameAndLetters - Contains two bools drawGeneName and drawGeneLetters to know if and which to display between barcode or gene name
-* @property {Object} dataUtils._drawOptions - Options for markerUtils.printBarcodeUIs */
+* @property {Object} dataUtils.data["gene"]._expectedCSV - Expected csv structure
+* @property {Object} dataUtils.data["gene"]._subsampledBarcodes - Containing the subsamples barcode trees to display
+* @property {Array}  dataUtils.data["gene"]._barcodesByAmount - Sorted list of arrays of the data
+* @property {Number} dataUtils.data["gene"]._maximumAmountInLowerRes - Maximum amount of points to display in low res
+* @property {Object} dataUtils.data["gene"]._nameAndLetters - Contains two bools drawGeneName and drawGeneLetters to know if and which to display between barcode or gene name
+* @property {Object} dataUtils.data["gene"]._drawOptions - Options for markerUtils.printBarcodeUIs */
 dataUtils = {
-    /** _CSVStructure - Expected csv structure */
-    _CSVStructure: { headers: ["barcode", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-    _expectedCSV: { "group": "macro_cluster", "name": "", "X_col": "global_X_pos", "Y_col": "global_Y_pos", "key": "" },
-    _subsampledBarcodes: {},
-    _barcodesByAmount: [],
-    _maximumAmountInLowerRes: 5000,
-    _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
-    _drawOptions: { randomColorForMarker: false },
-    _autoLoadCSV: false
-    //_minimumAmountToDisplay: 500,
-    //_subsamplingRate: 100,
+    data:{
+        "gene":{
+            /** _CSVStructure - Expected csv structure */
+            _CSVStructure: { headers: ["barcode", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
+            _expectedCSV: { "group": "macro_cluster", "name": "", "X_col": "global_X_pos", "Y_col": "global_Y_pos", "key": "" },
+            _subsampledBarcodes: {},
+            _barcodesByAmount: [],
+            _maximumAmountInLowerRes: 5000,
+            _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
+            _drawOptions: { randomColorForMarker: false },
+            _autoLoadCSV: false
+            //_minimumAmountToDisplay: 500,
+            //_subsamplingRate: 100
+        },
+        "morphology":{
+            _CSVStructure: { headers: ["letters", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
+            _expectedCSV: { "key_header": "Global_Exp_ID", "X_header": "Global_X", "Y_header": "Global_Y", "colorscale": "interpolateRainbow" },
+            _d3LUTs:["ownColorFromColumn","interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys", "interpolatePurples", "interpolateReds", "interpolateOranges"],
+            _subsampledItems: {},
+            _ownColorLut:{"class":"hexcolor"},
+            _barcodesByAmount: [],
+            _subsamplingRate: 100,
+            _minimumAmountToDisplay: 500,
+            _markersize:0.0008,
+            _subsamplingfactor:0.15,
+            _drawCPdata: false
+        }
+        /*
+        data_type:{kv pairs}
+        ... and inifinitely more data "types" like piecharts or whatever
+        */
+    }
 }
+
+dataUtils.processRawData = function(data_id){
+    if(data_id.includes("gene"))
+        {dataUtils.processISSRawData();}
+    else if(data_id.includes("morphology"))
+        {dataUtils.processRawMorphologyData();}
+
+}
+
 /** 
 * From the interface, get the key that will be used for nesting the raw data 
 * and making my lovely quadtrees */
@@ -122,26 +152,26 @@ dataUtils.processISSRawData = function () {
     
     if (!(nameSelector == "null")) {
         //console.log("entered here");
-        dataUtils._nameAndLetters.drawGeneName = true;
+        dataUtils.data["gene"]._nameAndLetters.drawGeneName = true;
     }
     else {
-        dataUtils._nameAndLetters.drawGeneName = false;
+        dataUtils.data["gene"]._nameAndLetters.drawGeneName = false;
     }
     if (!(barcodeSelector == "null")) {
         //console.log("entered here");
-        dataUtils._nameAndLetters.drawGeneLetters = true;
+        dataUtils.data["gene"]._nameAndLetters.drawGeneLetters = true;
     }
     else {
         //console.log("entered here");
-        dataUtils._nameAndLetters.drawGeneLetters = false;
+        dataUtils.data["gene"]._nameAndLetters.drawGeneLetters = false;
     }
     
     var toRemove = [barcodeSelector, nameSelector, xSelector, ySelector];
     var extraSelectors = []
-    dataUtils._CSVStructure[op + "_csv_header"].forEach(function (item) { extraSelectors.push(item) });
+    dataUtils.data["gene"]._CSVStructure[op + "_csv_header"].forEach(function (item) { extraSelectors.push(item) });
     extraSelectors = extraSelectors.filter((el) => !toRemove.includes(el));
-    dataUtils[op + "_processeddata"] = [];
-    dataUtils[op + "_rawdata"].forEach(function (rawdatum) {
+    dataUtils.data["gene"][op + "_processeddata"] = [];
+    dataUtils.data["gene"][op + "_rawdata"].forEach(function (rawdatum) {
         var obj = {};
         obj["letters"] = rawdatum[barcodeSelector];
         obj["gene_name"] = rawdatum[nameSelector];
@@ -152,12 +182,12 @@ dataUtils.processISSRawData = function () {
         extraSelectors.forEach(function (extraSelector) {
             obj[extraSelector] = rawdatum[extraSelector];
         });
-        dataUtils[op + "_processeddata"].push(obj);
+        dataUtils.data["gene"][op + "_processeddata"].push(obj);
     });
     
     dataUtils.makeQuadTrees();
     
-    delete dataUtils[op + "_rawdata"];
+    delete dataUtils.data["gene"][op + "_rawdata"];
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").style.display = "block";
     }
@@ -171,7 +201,7 @@ dataUtils.processISSRawData = function () {
         markerUtils.addPiechartLegend();
     }
     else {
-        document.getElementById("piechartLegend").style.display="none";
+        interfaceUtils.getElementById("piechartLegend").style.display="none";
     }
 }
 
@@ -179,15 +209,15 @@ dataUtils.processISSRawData = function () {
 * Set expected headers
 */
 dataUtils.setExpectedCSV = function(expectedCSV){
-    dataUtils._expectedCSV = expectedCSV;
+    dataUtils.data["gene"]._expectedCSV = expectedCSV;
 }
 
 /** 
 * Show the menu do select the CSV headers that contain the information to display*/
 dataUtils.showMenuCSV = function(){
     var op = tmapp["object_prefix"];
-    var csvheaders = Object.keys(dataUtils[op + "_rawdata"][0]);
-    dataUtils._CSVStructure[op + "_csv_header"] = csvheaders;
+    var csvheaders = Object.keys(dataUtils.data["gene"][op + "_rawdata"][0]);
+    dataUtils.data["gene"]._CSVStructure[op + "_csv_header"] = csvheaders;
     var ISSBarcodeInput = document.getElementById(op + "_barcode_header");
     var ISSNanmeInput = document.getElementById(op + "_name_header");
     var ISSX = document.getElementById(op + "_X_header");
@@ -196,7 +226,7 @@ dataUtils.showMenuCSV = function(){
     var ISSScale = document.getElementById(op + "_scale_header");
     var ISSPiechart = document.getElementById(op + "_piechart_header");
     var ISSKey = document.getElementById(op + "_key_header");
-    //console.log(dataUtils._CSVStructure["ISS_csv_header"]);
+    //console.log(dataUtils.data["gene"]._CSVStructure["ISS_csv_header"]);
     [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSScale, ISSPiechart].forEach(function (node) {
         if (!node) return;
         node.innerHTML = "";
@@ -212,21 +242,21 @@ dataUtils.showMenuCSV = function(){
         });
     });
     var panel = document.getElementById(op + "_csv_headers");
-    if (!dataUtils._autoLoadCSV) {
+    if (!dataUtils.data["gene"]._autoLoadCSV) {
         panel.style = "";
     }
     //search for defaults if any, "barcode" used to be called "letters"
     //it is still "letters in the obejct" but the BarcodeInputValue can be anything chosen by the user
     //and found in the csv column
-    if (csvheaders.includes(dataUtils._expectedCSV["group"])) ISSBarcodeInput.value = dataUtils._expectedCSV["group"];
-    if (csvheaders.includes(dataUtils._expectedCSV["name"])) ISSNanmeInput.value = dataUtils._expectedCSV["name"];
-    if (csvheaders.includes(dataUtils._expectedCSV["X_col"])) ISSX.value = dataUtils._expectedCSV["X_col"];
-    if (csvheaders.includes(dataUtils._expectedCSV["Y_col"])) ISSY.value = dataUtils._expectedCSV["Y_col"];
-    if (csvheaders.includes(dataUtils._expectedCSV["color"])) ISSColor.value = dataUtils._expectedCSV["color"];
-    if (csvheaders.includes(dataUtils._expectedCSV["piechart"])) ISSPiechart.value = dataUtils._expectedCSV["piechart"];
-    if (csvheaders.includes(dataUtils._expectedCSV["scale"])) ISSScale.value = dataUtils._expectedCSV["scale"];
-    if (dataUtils._expectedCSV["key"]) ISSKey.value = dataUtils._expectedCSV["key"];
-    if (dataUtils._autoLoadCSV) {
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["group"])) ISSBarcodeInput.value = dataUtils.data["gene"]._expectedCSV["group"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["name"])) ISSNanmeInput.value = dataUtils.data["gene"]._expectedCSV["name"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["X_col"])) ISSX.value = dataUtils.data["gene"]._expectedCSV["X_col"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["Y_col"])) ISSY.value = dataUtils.data["gene"]._expectedCSV["Y_col"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["color"])) ISSColor.value = dataUtils.data["gene"]._expectedCSV["color"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["piechart"])) ISSPiechart.value = dataUtils.data["gene"]._expectedCSV["piechart"];
+    if (csvheaders.includes(dataUtils.data["gene"]._expectedCSV["scale"])) ISSScale.value = dataUtils.data["gene"]._expectedCSV["scale"];
+    if (dataUtils.data["gene"]._expectedCSV["key"]) ISSKey.value = dataUtils.data["gene"]._expectedCSV["key"];
+    if (dataUtils.data["gene"]._autoLoadCSV) {
         setTimeout(function () {
             document.getElementById(op + "_bringmarkers_btn").click();
         },500);
@@ -234,7 +264,7 @@ dataUtils.showMenuCSV = function(){
 }
 
 /** 
-* Creeate the dataUtils[op + "_barcodeGarden"] ("Garden" as opposed to "forest")
+* Creeate the dataUtils.data["gene"][op + "_barcodeGarden"] ("Garden" as opposed to "forest")
 * To save all the trees per barcode or per key. It is an object so that it is easy to just call
 * the right tree given the key instead of looping through an array. */
 dataUtils.makeQuadTrees = function () {
@@ -250,24 +280,24 @@ dataUtils.makeQuadTrees = function () {
     var op = tmapp["object_prefix"];
     var knode = document.getElementById(op + "_key_header");
     var key = knode.options[knode.selectedIndex].value;
-    var allbarcodes = d3.nest().key(function (d) { return d[key]; }).entries(dataUtils[op + "_processeddata"]);
+    var allbarcodes = d3.nest().key(function (d) { return d[key]; }).entries(dataUtils.data["gene"][op + "_processeddata"]);
     console.log(allbarcodes);
-    dataUtils[op + "_barcodeGarden"] = {};
+    dataUtils.data["gene"][op + "_barcodeGarden"] = {};
     for (var i = 0; i < allbarcodes.length; i++) {
         var gardenKey = allbarcodes[i].key;
         var gene_name = allbarcodes[i].values[0].gene_name || "";
         var letters = allbarcodes[i].values[0].letters || "";
         //console.log(letters);
-        dataUtils[op + "_barcodeGarden"][gardenKey] = d3.quadtree().x(x).y(y).addAll(allbarcodes[i].values);
-        dataUtils[op + "_barcodeGarden"][gardenKey].treeName = letters;
-        dataUtils[op + "_barcodeGarden"][gardenKey].treeGeneName = gene_name;
+        dataUtils.data["gene"][op + "_barcodeGarden"][gardenKey] = d3.quadtree().x(x).y(y).addAll(allbarcodes[i].values);
+        dataUtils.data["gene"][op + "_barcodeGarden"][gardenKey].treeName = letters;
+        dataUtils.data["gene"][op + "_barcodeGarden"][gardenKey].treeGeneName = gene_name;
         //create the subsampled for all those that need it                  
     }
-    dataUtils[op + "_data"] = [];
+    dataUtils.data["gene"][op + "_data"] = [];
     allbarcodes.forEach(function (n) {
-        dataUtils[op + "_data"].push(n);
+        dataUtils.data["gene"][op + "_data"].push(n);
     });
-    markerUtils.printBarcodeUIs(dataUtils._drawOptions);
+    markerUtils.printBarcodeUIs(dataUtils.data["gene"]._drawOptions);
     var panel = document.getElementById(op+"_csv_headers");
     panel.style = "visibility: hidden; display:none;";
     
@@ -298,7 +328,7 @@ dataUtils.XHRCSV = function (thecsv) {
         if (xhr.status >= 200 && xhr.status < 300) {
             // What do when the request is successful
             progressBar.style.width = "100%";
-            dataUtils[op + "_rawdata"] = d3.csvParse(xhr.responseText);
+            dataUtils.data["gene"][op + "_rawdata"] = d3.csvParse(xhr.responseText);
             dataUtils.showMenuCSV();
             
         }else{
@@ -342,13 +372,13 @@ dataUtils.readCSV = function (thecsv) {
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
     panel.style.visibility="hidden"; 
     panel.style.display="none"
-    dataUtils[op + "_rawdata"] = {};
-    dataUtils._CSVStructure[op + "_csv_header"] = null;
+    dataUtils.data["gene"][op + "_rawdata"] = {};
+    dataUtils.data["gene"]._CSVStructure[op + "_csv_header"] = null;
     var request = d3.csv(
         thecsv,
         function (d) { return d; },
         function (rows) {
-            dataUtils[op + "_rawdata"] = rows;
+            dataUtils.data["gene"][op + "_rawdata"] = rows;
             dataUtils.showMenuCSV();
         }
     );
@@ -362,7 +392,7 @@ dataUtils.readCSV = function (thecsv) {
 * @param {String} barcode Barcode or gene_name (key) to search for in op+_data*/
 dataUtils.randomMarkersFromBarcode = function (amount, barcode) {
     var op = tmapp["object_prefix"];
-    dataUtils[op + "_data"].forEach(function (bar) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (bar) {
         if (bar.key == barcode) {
             var barcodes = bar.values;
             var maxindex = barcodes.length - 1;
@@ -373,7 +403,7 @@ dataUtils.randomMarkersFromBarcode = function (amount, barcode) {
                 barcodes[i] = barcodes[index];
                 barcodes[index] = temp;
             }
-            dataUtils._subsampledBarcodes[barcode] = barcodes.slice(0, amount);
+            dataUtils.data["gene"]._subsampledBarcodes[barcode] = barcodes.slice(0, amount);
         }
     });
 }
@@ -404,7 +434,7 @@ dataUtils.randomSamplesFromList = function (amount, list) {
 dataUtils.findBarcodesInRawData = function (keystring) {
     var op = tmapp["object_prefix"];
     var values = null;
-    dataUtils[op + "_data"].forEach(function (input) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (input) {
         if (input.key == keystring) {
             values = input.values;
         }
@@ -413,7 +443,7 @@ dataUtils.findBarcodesInRawData = function (keystring) {
 }
 
 /** 
-* Take dataUtils[op + "_data"] and sort it (permanently). 
+* Take dataUtils.data["gene"][op + "_data"] and sort it (permanently). 
 * Calculate and save the right amount of downsampling for each barcode.
 * And save the subsample arrays, subsampling is homogeneous   */
 dataUtils.sortDataAndDownsample = function () {
@@ -424,50 +454,31 @@ dataUtils.sortDataAndDownsample = function () {
         return 0;
     };
     
-    dataUtils[op + "_data"].sort(compareKeys);
+    dataUtils.data["gene"][op + "_data"].sort(compareKeys);
     
     //take the last element of the list which has the minimum amount
-    var minamount = dataUtils[op + "_data"][dataUtils[op + "_data"].length - 1].values.length;
+    var minamount = dataUtils.data["gene"][op + "_data"][dataUtils.data["gene"][op + "_data"].length - 1].values.length;
     //take the first element of the list which has the maximum amount
-    var maxamount = dataUtils[op + "_data"][0].values.length;
+    var maxamount = dataUtils.data["gene"][op + "_data"][0].values.length;
     //total amount of barcodes
-    var amountofbarcodes = dataUtils[op + "_data"].length;
+    var amountofbarcodes = dataUtils.data["gene"][op + "_data"].length;
     
-    dataUtils[op + "_data"].forEach(function (barcode) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
         var normalized = (barcode.values.length - minamount) / maxamount;
-        var downsize = dataUtils._maximumAmountInLowerRes * Math.log(barcode.values.length) / Math.log(maxamount);
+        var downsize = dataUtils.data["gene"]._maximumAmountInLowerRes * Math.log(barcode.values.length) / Math.log(maxamount);
         if (downsize > barcode.values.length) { downsize = barcode.values.length; }
-        dataUtils._barcodesByAmount.push({ "barcode": barcode.key, "amount": barcode.values.length, "normalized": normalized, "downsize": downsize });
+        dataUtils.data["gene"]._barcodesByAmount.push({ "barcode": barcode.key, "amount": barcode.values.length, "normalized": normalized, "downsize": downsize });
     });
     
-    dataUtils._barcodesByAmount.forEach(function (b) {
+    dataUtils.data["gene"]._barcodesByAmount.forEach(function (b) {
         dataUtils.randomMarkersFromBarcode(b.downsize, b.barcode);
     });
-}
-
-/**
- * @namespace CPDataUtils
- * @classdesc Sets of functions to prepare and preload data information from Cell profiler
-*/
-CPDataUtils = {
-    //                      String: a key, X , Y, Q
-    _CSVStructure: { headers: ["letters", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-    _d3LUTs:["ownColorFromColumn","interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys", "interpolatePurples", "interpolateReds", "interpolateOranges"],
-    _subsampledItems: {},
-    _ownColorLut:{"class":"hexcolor"},
-    _barcodesByAmount: [],
-    _subsamplingRate: 100,
-    _minimumAmountToDisplay: 500,
-    _markersize:0.0008,
-    _subsamplingfactor:0.15,
-    _drawCPdata: false,
-    _expectedCSV: { "key_header": "Global_Exp_ID", "X_header": "Global_X", "Y_header": "Global_Y", "colorscale": "interpolateRainbow" },
 }
 
 /** 
  * From the interface, get the key that will be used for nesting the raw data 
  * and making the quadtrees*/
-CPDataUtils.processISSRawData = function () {
+dataUtils.processRawMorphologyData = function () {
     
     var cpop="CP";
     var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
@@ -492,10 +503,10 @@ CPDataUtils.processISSRawData = function () {
     var y = function (d) {
         return d[yselector];
     };
-    if(!CPDataUtils[cpop + "_tree"])
-        CPDataUtils[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(CPDataUtils[cpop + "_rawdata"]);  
-    CPDataUtils._drawCPdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
-    markerUtils.drawCPdata({searchInTree:false}); //mandatory options obj
+    if(!dataUtils.data["gene"][cpop + "_tree"])
+        dataUtils.data["gene"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["gene"][cpop + "_rawdata"]);  
+    dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
+    markerUtils.drawdata({searchInTree:false}); //mandatory options obj
     
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").style.display = "block";
@@ -505,18 +516,20 @@ CPDataUtils.processISSRawData = function () {
     }
 }
 
+CPDataUtils={};
+
 /** 
 * Set expected headers
 */
 CPDataUtils.setExpectedCSV = function(expectedCSV){
-    CPDataUtils._expectedCSV = expectedCSV;
+    dataUtils.data["morphology"]._expectedCSV = expectedCSV;
 }
 
 CPDataUtils.readCSV = function (thecsv) {
     var cpop = "CP";//tmapp["object_prefix"];
-    CPDataUtils[cpop + "_rawdata"] = {};
-    CPDataUtils[cpop + "_rawdata_stats"]={};
-    CPDataUtils._CSVStructure[cpop + "_csv_header"] = null;
+    dataUtils.data["morphology"][ + "_rawdata"] = {};
+    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
+    dataUtils.data["morphology"]._CSVStructure[cpop + "_csv_header"] = null;
 
     var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
     progressParent.style.visibility="visible";
@@ -530,7 +543,7 @@ CPDataUtils.readCSV = function (thecsv) {
         function (d) { return d; },
         function (rows) {
             progressBar.style.width = "100%";
-            CPDataUtils[cpop + "_rawdata"] = rows;
+            dataUtils.data["morphology"][ + "_rawdata"] = rows;
             CPDataUtils.loadFromRawData();
         }
     ).on("progress", function(pe){
@@ -555,11 +568,11 @@ CPDataUtils.readCSV = function (thecsv) {
 
 CPDataUtils.loadFromRawData = function () {
     var cpop = "CP";//tmapp["object_prefix"];
-    CPDataUtils[cpop + "_rawdata_stats"]={};
-    var csvheaders = Object.keys(CPDataUtils[cpop + "_rawdata"][0]);
-    CPDataUtils._CSVStructure=csvheaders;
+    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
+    var csvheaders = Object.keys(dataUtils.data["morphology"][ + "_rawdata"][0]);
+    dataUtils.data["morphology"]._CSVStructure=csvheaders;
 
-    var datum=CPDataUtils[cpop + "_rawdata"][1];
+    var datum=dataUtils.data["morphology"][ + "_rawdata"][1];
 
     var numericalheaders=[];
 
@@ -569,14 +582,14 @@ CPDataUtils.loadFromRawData = function () {
         if(rg.test(datum[h])){
             //if it is not nan it means it is a number...
             numericalheaders.push(h);
-            CPDataUtils[cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
+            dataUtils.data["morphology"][ + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
         }
     });
 
-    CPDataUtils[cpop + "_rawdata"].forEach(function(d){
+    dataUtils.data["morphology"][ + "_rawdata"].forEach(function(d){
         numericalheaders.forEach(function(nh){
-            if(d[nh]>CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["max"]=d[nh];
-            if(d[nh]<CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]) CPDataUtils[cpop + "_rawdata_stats"][nh]["min"]=d[nh];                    
+            if(d[nh]>dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]=d[nh];
+            if(d[nh]<dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]=d[nh];                    
         }); 
     });
 
@@ -586,7 +599,7 @@ CPDataUtils.loadFromRawData = function () {
     var CPY = document.getElementById(cpop+"_Y_header");
     var CPLut = document.getElementById(cpop+"_colorscale");
 
-    CPDataUtils._d3LUTs.forEach(function(lut){
+    dataUtils.data["morphology"]._d3LUTs.forEach(function(lut){
         var option = document.createElement("option");
         option.value = lut;
         option.text = lut.replace("interpolate","");
@@ -611,9 +624,9 @@ CPDataUtils.loadFromRawData = function () {
     panel.style = "";
 
     //create tree, full and subsampled array
-    var length=CPDataUtils[cpop + "_rawdata"].length;
-    var amount=Math.floor(length*CPDataUtils._subsamplingfactor);
-    CPDataUtils[cpop + "_subsampled_data"]=CPDataUtils.randomSamplesFromList(amount,CPDataUtils[cpop + "_rawdata"]);
+    var length=dataUtils.data["morphology"][ + "_rawdata"].length;
+    var amount=Math.floor(length*dataUtils.data["morphology"]._subsamplingfactor);
+    dataUtils.data["morphology"][ + "_subsampled_data"]=CPDataUtils.randomSamplesFromList(amount,dataUtils.data["morphology"][ + "_rawdata"]);
 
     //create listener for change of property
     var changeProperty=function(){
@@ -627,10 +640,10 @@ CPDataUtils.loadFromRawData = function () {
     }
     CPProperty.addEventListener("change", changeProperty);
     
-    if (csvheaders.includes(CPDataUtils._expectedCSV["key_header"])) CPKey.value = CPDataUtils._expectedCSV["key_header"];
-    if (csvheaders.includes(CPDataUtils._expectedCSV["property_header"])) CPProperty.value = CPDataUtils._expectedCSV["property_header"];
-    if (csvheaders.includes(CPDataUtils._expectedCSV["X_header"])) CPX.value = CPDataUtils._expectedCSV["X_header"];
-    if (csvheaders.includes(CPDataUtils._expectedCSV["Y_header"])) CPY.value = CPDataUtils._expectedCSV["Y_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["key_header"])) CPKey.value = dataUtils.data["morphology"]._expectedCSV["key_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["property_header"])) CPProperty.value = dataUtils.data["morphology"]._expectedCSV["property_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["X_header"])) CPX.value = dataUtils.data["morphology"]._expectedCSV["X_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["Y_header"])) CPY.value = dataUtils.data["morphology"]._expectedCSV["Y_header"];
     CPLut.value = "interpolateRainbow";
 }
 
@@ -675,7 +688,7 @@ CPDataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
     
     var pointsInside = [];
     
-    CPDataUtils[cpop + "_tree"].visit(function (node, x1, y1, x2, y2) {
+    dataUtils.data["morphology"][ + "_tree"].visit(function (node, x1, y1, x2, y2) {
         if (!node.length) {
             do {
                 var d = node.data;
@@ -690,4 +703,3 @@ CPDataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
     });
     return pointsInside;
 }
-
