@@ -25,7 +25,7 @@ tmapp.registerActions = function () {
     var cpop="CP";
 
     interfaceUtils.listen(op + '_collapse_btn','click', function () { interfaceUtils.toggleRightPanel() },false);
-    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processISSRawData(); },false);
+    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processRawData("gene_data"); },false);
     interfaceUtils.listen(op + '_search','input', function () { markerUtils.hideRowsThatDontContain(); },false);
     interfaceUtils.listen(op + '_drawall_btn','click', function () { markerUtils.drawAllToggle(); },false);
     interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
@@ -33,7 +33,7 @@ tmapp.registerActions = function () {
     interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
     interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
     interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { CPDataUtils.processISSRawData() },false);
+    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { CPDataUtils.processRawData("morphology_data") },false);
     var navtabs=document.getElementsByClassName("nav-tabs")[0];
     var uls=navtabs.getElementsByTagName("ul");
     for(var i=0;i<uls.length;i++){

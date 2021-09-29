@@ -316,7 +316,7 @@ glUtils.loadMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    const markerData = dataUtils["ISS_processeddata"];
+    const markerData = dataUtils.data["gene"]["ISS_processeddata"];
     let numPoints = markerData.length;
     const keyName = document.getElementById("ISS_key_header").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
@@ -846,7 +846,7 @@ glUtils.pick = function(event) {
             div.width = "1px"; div.height = "1px";
             div.style = "background-color:white; margin:0px; padding:2px 6px; " +
                         "border:1px solid; z-index:19; opacity:80%; pointer-events:none";
-            div.innerHTML = markerUtils.makePiechartTable(dataUtils["ISS_processeddata"][glUtils._pickedMarker]);
+            div.innerHTML = markerUtils.makePiechartTable(dataUtils.data["gene"]["ISS_processeddata"][glUtils._pickedMarker]);
 
             tmapp["ISS_viewer"].addOverlay({
                 element: div,

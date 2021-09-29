@@ -35,7 +35,7 @@ interfaceUtils.listen= function(domid,event,handler,debug){
 interfaceUtils.analyzeRegionUI = function (callingbutton) {
 	var op = tmapp["object_prefix"];
 
-	if (!dataUtils[op + "_barcodeGarden"]) {
+	if (!dataUtils.data["gene"][op + "_barcodeGarden"]) {
 		alert("Load markers first");
 		return;
     }

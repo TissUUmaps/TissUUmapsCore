@@ -374,7 +374,7 @@ overlayUtils.modifyDisplayIfAny = function () {
             if (percentage < overlayUtils._percentageForSubsample) {
                 //console.log("percentage less than " + overlayUtils._percentageForSubsample);
                 markersInViewportBounds = markerUtils.arrayOfMarkersInBox(
-                    dataUtils[op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
+                    dataUtils.data["gene"][op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
                 );
 
                 //console.log(markersInViewportBounds.length);
@@ -385,8 +385,8 @@ overlayUtils.modifyDisplayIfAny = function () {
 
             } else {
                 //if the percentage of image I see is bigger than a threshold then use the predownsampled markers
-                if (dataUtils._subsampledBarcodes[barcode]) {
-                    markerUtils.drawAllFromList(dataUtils._subsampledBarcodes[barcode]);
+                if (dataUtils.data["gene"]._subsampledBarcodes[barcode]) {
+                    markerUtils.drawAllFromList(dataUtils.data["gene"]._subsampledBarcodes[barcode]);
                 } else {
                     markerUtils.drawAllFromBarcode(barcode);
                 }
@@ -402,7 +402,7 @@ overlayUtils.modifyDisplayIfAny = function () {
             markerUtils.drawCPdata({searchInTree:true,xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax});
         } else {
             console.log("subsample");
-            //I create the subsampled one already when I read de CP csv, in CPDataUtils[cpop + "_subsampled_data"]     
+            //I create the subsampled one already when I read de CP csv, in dataUtils.data["morphology"][ + "_subsampled_data"]     
             markerUtils.drawCPdata({searchInTree:false});            
         }
     }

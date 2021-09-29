@@ -92,7 +92,7 @@ markerUtils.removeMarkerByBarcode = function (barcode) {
 
 markerUtils.drawCPdata= function(options){
     //pick up the property from the UI
-    if(!CPDataUtils._drawCPdata){
+    if(!dataUtils.data["morphology"]._drawCPdata){
         CPDataUtils.removeCPdata();
         return 0;
     }
@@ -113,7 +113,7 @@ markerUtils.drawCPdata= function(options){
         return d[yselector];
     };
     
-    if(!CPDataUtils[cpop + "_tree"])
+    if(!dataUtils.data["morphology"][ + "_tree"])
         console.log("CP tree does not exist");
     
     //make sure there is a group to draw into
@@ -132,7 +132,7 @@ markerUtils.drawCPdata= function(options){
     //what do we draw?
     var data=[];
 
-    var msize=CPDataUtils._markersize;
+    var msize=dataUtils.data["morphology"]._markersize;
     var searchInTree=options.searchInTree || false;
     if(searchInTree || false){
         data=CPDataUtils.arrayOfElementsInBox(options.xmin, options.ymin, options.xmax, options.ymax, 
@@ -140,7 +140,7 @@ markerUtils.drawCPdata= function(options){
         overlayUtils._d3nodes[svggroupname].attr("drawn")!="treedata"
     }else{
         msize *=1.5;
-        data=CPDataUtils[cpop+"_subsampled_data"];
+        data=dataUtils.data["morphology"][+"_subsampled_data"];
         overlayUtils._d3nodes[svggroupname].attr("drawn")!="subsampled"
     }
      
@@ -151,7 +151,7 @@ markerUtils.drawCPdata= function(options){
         var interpcolorat=(property-minproperty)/maxproperty;
         var color="#0000ff";
         if(interpFunction=="ownColorFromColumn"){
-            var color=CPDataUtils._ownColorLut[property.toString()];
+            var color=dataUtils.data["morphology"]._ownColorLut[property.toString()];
         }else{
             var color=d3[interpFunction](interpcolorat);
         }
@@ -234,7 +234,7 @@ markerUtils.drawAllFromNonDownsampled = function () {
     var op = tmapp["object_prefix"];
     //create G group for these barcodes
 
-    dataUtils[op + "_data"].forEach(function (arr) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (arr) {
         markerUtils.drawAllFromNonDownsampledBarcode(arr.key);
     });
 
@@ -283,7 +283,7 @@ markerUtils.drawAllFromBarcode = function (barcode) {
 
     var symbolIndex = document.getElementById(barcode + "-shape-" + op).value;
 
-    dataUtils._subsampledBarcodes[barcode].forEach(function (b) {
+    dataUtils.data["gene"]._subsampledBarcodes[barcode].forEach(function (b) {
         if(markerUtils._uniqueColor && markerUtils._uniqueColorSelector){
             var colarr=b[markerUtils._uniqueColorSelector].replace("[","")
             colarr=colarr.replace("]","")
@@ -313,10 +313,10 @@ markerUtils.drawAllFromList = function (list) {
 
     //find if we are using gene name or barcode as key
     key=undefined;
-    if(dataUtils._nameAndLetters.drawGeneName && !dataUtils._nameAndLetters.drawGeneLetters){
+    if(dataUtils.data["gene"]._nameAndLetters.drawGeneName && !dataUtils.data["gene"]._nameAndLetters.drawGeneLetters){
         //the key is GENE NAME  now
         key=list[0].gene_name;
-    }else if(dataUtils._nameAndLetters.drawGeneLetters){
+    }else if(dataUtils.data["gene"]._nameAndLetters.drawGeneLetters){
         //if Barcode (gene letters) is on then we rather use this
         key = list[0].letters;
     }
@@ -404,7 +404,7 @@ markerUtils.markerBoxToggle = function (barcodeBox) {
  * clicking the box invokes the drawing of the marker or erase. 
  * Selects a color based on the barcode letters so that the color are different versions of 
  * the four corners of Ycbcr. Chooses a random shape
- * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
+ * @param {Object} barObject coming from dataUtils.data["gene"][op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
  * options.drawGeneName is there and it is true it will draw the column "name" and omit it otherwise
  * @returns {htmlnode} The nicely formated row for our markerUi table
@@ -495,7 +495,7 @@ markerUtils.markerUI = function (barObject,options) {
  * clicking the box invokes the drawing of the marker or erase. 
  * Selects a color based on the barcode letters so that the color are different versions of 
  * the four corners of Ycbcr. Chooses a random shape
- * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
+ * @param {Object} barObject coming from dataUtils.data["gene"][op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
  * options.drawGeneName is there and it is true it will draw the column "name" and omit it otherwise
  * @returns {htmlnode} The nicely formated row for our markerUi table
@@ -530,7 +530,7 @@ markerUtils.markerUIAll = function (options) {
         row.appendChild(name);
     }
     var length = 0;
-    dataUtils[op + "_data"].forEach(function (barcode) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
         length += barcode.values.length;
     });
     var amount = HTMLElementUtils.createElement({ type: "td", innerText: length });
@@ -577,17 +577,17 @@ markerUtils.printBarcodeUIs = function (options) {
     }
     dataUtils.sortDataAndDownsample();
     //this is causing weird behaviour sometims it creates the name column sometimes no
-    var example = dataUtils[op + "_data"][0].values[0];
+    var example = dataUtils.data["gene"][op + "_data"][0].values[0];
     //so instead of using an example check for the keys and find if a gene_name exists
     //or maybe if it is selected in the interface adn a name is expected
 
-    var options=dataUtils._nameAndLetters;
+    var options=dataUtils.data["gene"]._nameAndLetters;
 
-    if(dataUtils._nameAndLetters.drawGeneName){
+    if(dataUtils.data["gene"]._nameAndLetters.drawGeneName){
         options.drawGeneName=true;
         headers.unshift("Gene");
     }
-    if(dataUtils._nameAndLetters.drawGeneLetters){
+    if(dataUtils.data["gene"]._nameAndLetters.drawGeneLetters){
         options.drawGeneLetters=true;
         headers.unshift("Barcode");
     }
@@ -643,7 +643,7 @@ markerUtils.printBarcodeUIs = function (options) {
     var row = markerUtils.markerUIAll(options);
     tblBody.appendChild(row);
 
-    dataUtils[op + "_data"].forEach(function (barcode) {
+    dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
         var row = markerUtils.markerUI(barcode,options);
         tblBody.appendChild(row);
     });
@@ -715,7 +715,7 @@ markerUtils.drawAllMarkers = function () {
         }
     }
 
-    Object.keys(dataUtils[op + "_barcodeGarden"]).forEach(function (b) {
+    Object.keys(dataUtils.data["gene"][op + "_barcodeGarden"]).forEach(function (b) {
         markerUtils.drawAllFromBarcode(b);
         document.getElementById(b + "-checkbox-" + op).checked = true;
     });
@@ -723,7 +723,7 @@ markerUtils.drawAllMarkers = function () {
 }
 /** 
  * Checkbox to know if barcode from it should be drawn or removed 
- * @param {d3.quadtree} quadtree Barcode tree from the garden. dataUtils[op+_barcodeGarden] 
+ * @param {d3.quadtree} quadtree Barcode tree from the garden. dataUtils.data["gene"][op+_barcodeGarden] 
  * @param {Number} x0 leftmost coordinate  
  * @param {Number} y0 topmost coordinate
  * @param {Number} x3 rightmost coordinate
@@ -817,7 +817,7 @@ markerUtils.drawBarcodeByView = function (barcode) {
     var markersInViewportBounds = []
     if (percentage < overlayUtils._percentageForSubsample) {
         markersInViewportBounds = markerUtils.arrayOfMarkersInBox(
-            dataUtils[op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
+            dataUtils.data["gene"][op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
         );
 
         //console.log(markersInViewportBounds.length);
@@ -830,8 +830,8 @@ markerUtils.drawBarcodeByView = function (barcode) {
 
         //console.log("percentage bigger than " + overlayUtils._percentageForSubsample);
         //if the percentage of image I see is bigger than a threshold then use the predownsampled markers
-        if (dataUtils._subsampledBarcodes[barcode]) {
-            markerUtils.drawAllFromList(dataUtils._subsampledBarcodes[barcode]);
+        if (dataUtils.data["gene"]._subsampledBarcodes[barcode]) {
+            markerUtils.drawAllFromList(dataUtils.data["gene"]._subsampledBarcodes[barcode]);
         } else {
             markerUtils.drawAllFromBarcode(barcode);
         }
@@ -870,7 +870,7 @@ markerUtils.addPiechartLegend = function () {
         sectors = markerUtils._uniquePiechartSelector.split(";");
     }
     else {
-        numSectors = dataUtils[op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
+        numSectors = dataUtils.data["gene"][op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
         for(var i = 0; i < numSectors; i++) {
             sectors.push("Sector " + (i+1));
         }
@@ -900,7 +900,7 @@ markerUtils.makePiechartTable = function (barcode) {
         sectors = markerUtils._uniquePiechartSelector.split(";");
     }
     else {
-        numSectors = dataUtils[op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
+        numSectors = dataUtils.data["gene"][op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
         for(var i = 0; i < numSectors; i++) {
             sectors.push("Sector " + (i+1));
         }
