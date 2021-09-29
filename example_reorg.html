@@ -108,7 +108,7 @@
                                                                 var reader = new FileReader();
                                                                 reader.onloadend = function (evt) {
                                                                     var dataUrl = evt.target.result;
-                                                                    dataUtils.readCSV(dataUrl);
+                                                                    dataUtils.readCSV("gene",dataUrl);
                                                                 };
                                                                 reader.readAsDataURL(file);
                                                             }
@@ -263,7 +263,7 @@
                                                                 var reader = new FileReader();
                                                                 reader.onloadend = function (evt) {
                                                                     var dataUrl = evt.target.result;
-                                                                    CPDataUtils.readCSV(dataUrl);
+                                                                    dataUtils.readCSV("morphology",dataUrl);
                                                                 };
                                                                 reader.readAsDataURL(file);
                                                             }

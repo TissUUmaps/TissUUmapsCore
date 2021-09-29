@@ -47,20 +47,19 @@ dataUtils = {
     }
 }
 
+dataUtils.setExpectedCSV = function(data_id,expectedCSV){
+    if(data_id.includes("gene"))
+        {dataUtils.data["gene"]._expectedCSV = expectedCSV;}
+    else if(data_id.includes("morphology"))
+        {dataUtils.data["morphology"]._expectedCSV = expectedCSV;}
+}
+
+
 dataUtils.processRawData = function(data_id){
     if(data_id.includes("gene"))
         {dataUtils.processISSRawData();}
     else if(data_id.includes("morphology"))
         {dataUtils.processRawMorphologyData();}
-
-}
-
-dataUtils.readCSV = function(data_id){
-    if(data_id.includes("gene"))
-        {dataUtils.readGeneCSV();}
-    else if(data_id.includes("morphology"))
-        {dataUtils.readMorphologyCSV();}
-
 }
 
 /** 
@@ -214,11 +213,42 @@ dataUtils.processISSRawData = function () {
     }
 }
 
-/** 
-* Set expected headers
-*/
-dataUtils.setExpectedCSV = function(expectedCSV){
-    dataUtils.data["gene"]._expectedCSV = expectedCSV;
+ dataUtils.processRawMorphologyData = function () {
+    
+    var cpop="CP";
+    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
+    if(progressParent == null){
+        console.log("No progress bar present.")
+    }else{
+        progressParent.style.visibility="hidden";
+        progressParent.style.display="none";
+    }
+    var CPProperty = document.getElementById(cpop+"_property_header");
+    var propertyselector=CPProperty.value;
+    var CPX = document.getElementById(cpop+"_X_header");
+    var xselector=CPX.value;
+    var CPY = document.getElementById(cpop+"_Y_header");
+    var yselector=CPY.value;
+    var CPLut = document.getElementById(cpop+"_colorscale");
+    var interpFunction=CPLut.value;
+    
+    var x = function (d) {
+        return d[xselector];
+    };
+    var y = function (d) {
+        return d[yselector];
+    };
+    if(!dataUtils.data["gene"][cpop + "_tree"])
+        dataUtils.data["gene"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["gene"][cpop + "_rawdata"]);  
+    dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
+    markerUtils.drawdata({searchInTree:false}); //mandatory options obj
+    
+    if (document.getElementById("ISS_globalmarkersize")) {
+        document.getElementById("ISS_globalmarkersize").style.display = "block";
+    }
+    if (window.hasOwnProperty("glUtils")) {
+        glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing
+    }
 }
 
 /** 
@@ -370,6 +400,14 @@ dataUtils.XHRCSV = function (thecsv) {
     
 }
 
+dataUtils.readCSV = function(data_id,thecsv){
+    if(data_id.includes("gene"))
+        {dataUtils.readGeneCSV(thecsv);}
+    else if(data_id.includes("morphology"))
+        {dataUtils.readMorphologyCSV(thecsv);}
+
+}
+
 /** 
 * @param {File} thecsv 
 * @return {Array} The csv headers.
@@ -391,6 +429,48 @@ dataUtils.readGeneCSV = function (thecsv) {
             dataUtils.showMenuCSV();
         }
     );
+}
+
+
+dataUtils.readMorphologyCSV = function (thecsv) {
+    var cpop = "CP";//tmapp["object_prefix"];
+    dataUtils.data["morphology"][ + "_rawdata"] = {};
+    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
+    dataUtils.data["morphology"]._CSVStructure[cpop + "_csv_header"] = null;
+
+    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
+    progressParent.style.visibility="visible";
+    progressParent.style.display="block";
+    //console.log(progressParent)
+    var progressBar=interfaceUtils.getElementById("ISS_CP_csv_progress");
+    var fakeProgress = 0;
+
+    var request = d3.csv(
+        thecsv,
+        function (d) { return d; },
+        function (rows) {
+            progressBar.style.width = "100%";
+            dataUtils.data["morphology"][ + "_rawdata"] = rows;
+            CPDataUtils.loadFromRawData();
+        }
+    ).on("progress", function(pe){
+        //update progress bar
+        if (pe.lengthComputable) {
+            var maxsize = pe.total;
+            var prog=pe.loaded;
+            var perc=prog/maxsize*100;
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+            //console.log(perc);
+        }
+        else {
+            fakeProgress += 1;
+            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
+            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+        }
+    });;
 }
     
 /** 
@@ -484,123 +564,36 @@ dataUtils.sortDataAndDownsample = function () {
     });
 }
 
-/** 
- * From the interface, get the key that will be used for nesting the raw data 
- * and making the quadtrees*/
-dataUtils.processRawMorphologyData = function () {
-    
-    var cpop="CP";
-    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
-    if(progressParent == null){
-        console.log("No progress bar present.")
-    }else{
-        progressParent.style.visibility="hidden";
-        progressParent.style.display="none";
-    }
-    var CPProperty = document.getElementById(cpop+"_property_header");
-    var propertyselector=CPProperty.value;
-    var CPX = document.getElementById(cpop+"_X_header");
-    var xselector=CPX.value;
-    var CPY = document.getElementById(cpop+"_Y_header");
-    var yselector=CPY.value;
-    var CPLut = document.getElementById(cpop+"_colorscale");
-    var interpFunction=CPLut.value;
-    
-    var x = function (d) {
-        return d[xselector];
-    };
-    var y = function (d) {
-        return d[yselector];
-    };
-    if(!dataUtils.data["gene"][cpop + "_tree"])
-        dataUtils.data["gene"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["gene"][cpop + "_rawdata"]);  
-    dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
-    markerUtils.drawdata({searchInTree:false}); //mandatory options obj
-    
-    if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
-    }
-    if (window.hasOwnProperty("glUtils")) {
-        glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing
-    }
-}
-
 CPDataUtils={};
 
-/** 
-* Set expected headers
-*/
-CPDataUtils.setExpectedCSV = function(expectedCSV){
-    dataUtils.data["morphology"]._expectedCSV = expectedCSV;
-}
 
-dataUtils.readMorphologyCSV = function (thecsv) {
-    var cpop = "CP";//tmapp["object_prefix"];
-    dataUtils.data["morphology"][ + "_rawdata"] = {};
-    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
-    dataUtils.data["morphology"]._CSVStructure[cpop + "_csv_header"] = null;
-
-    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
-    progressParent.style.visibility="visible";
-    progressParent.style.display="block";
-    //console.log(progressParent)
-    var progressBar=interfaceUtils.getElementById("ISS_CP_csv_progress");
-    var fakeProgress = 0;
-
-    var request = d3.csv(
-        thecsv,
-        function (d) { return d; },
-        function (rows) {
-            progressBar.style.width = "100%";
-            dataUtils.data["morphology"][ + "_rawdata"] = rows;
-            CPDataUtils.loadFromRawData();
-        }
-    ).on("progress", function(pe){
-        //update progress bar
-        if (pe.lengthComputable) {
-            var maxsize = pe.total;
-            var prog=pe.loaded;
-            var perc=prog/maxsize*100;
-            perc=perc.toString()+"%"
-            progressBar.style.width = perc;
-            //console.log(perc);
-        }
-        else {
-            fakeProgress += 1;
-            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
-            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
-            perc=perc.toString()+"%"
-            progressBar.style.width = perc;
-        }
-    });;
-}
 
 CPDataUtils.loadFromRawData = function () {
     var cpop = "CP";//tmapp["object_prefix"];
-    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
+    //dataUtils.data["morphology"][ + "_rawdata_stats"]={};
     var csvheaders = Object.keys(dataUtils.data["morphology"][ + "_rawdata"][0]);
     dataUtils.data["morphology"]._CSVStructure=csvheaders;
 
-    var datum=dataUtils.data["morphology"][ + "_rawdata"][1];
+    //var datum=dataUtils.data["morphology"][cpop + "_rawdata"][1];
 
-    var numericalheaders=[];
+    //var numericalheaders=[];
 
-    var rg=RegExp('^[0-9]*[.0-9]*$');
+    //var rg=RegExp('^[0-9]*[.0-9]*$');
     //Check which headers could require stats:
-    csvheaders.forEach(function(h){
+    /*csvheaders.forEach(function(h){
         if(rg.test(datum[h])){
             //if it is not nan it means it is a number...
             numericalheaders.push(h);
-            dataUtils.data["morphology"][ + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
+            dataUtils.data["morphology"][cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
         }
     });
 
     dataUtils.data["morphology"][ + "_rawdata"].forEach(function(d){
         numericalheaders.forEach(function(nh){
-            if(d[nh]>dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]=d[nh];
-            if(d[nh]<dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]=d[nh];                    
+            if(d[nh]>dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["max"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]=d[nh];
+            if(d[nh]<dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["min"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]=d[nh];                    
         }); 
-    });
+    });*/
 
     var CPKey = document.getElementById(cpop+"_key_header");
     var CPProperty = document.getElementById(cpop+"_property_header");
@@ -635,7 +628,7 @@ CPDataUtils.loadFromRawData = function () {
     //create tree, full and subsampled array
     var length=dataUtils.data["morphology"][ + "_rawdata"].length;
     var amount=Math.floor(length*dataUtils.data["morphology"]._subsamplingfactor);
-    dataUtils.data["morphology"][ + "_subsampled_data"]=CPDataUtils.randomSamplesFromList(amount,dataUtils.data["morphology"][ + "_rawdata"]);
+    dataUtils.data["morphology"][ + "_subsampled_data"]=dataUtils.randomSamplesFromList(amount,dataUtils.data["morphology"][ + "_rawdata"]);
 
     //create listener for change of property
     var changeProperty=function(){
@@ -659,32 +652,13 @@ CPDataUtils.loadFromRawData = function () {
 /** 
  * Remove the cp data from the view
  */
-CPDataUtils.removeCPdata=function(){
+dataUtils.removeMorphologydata=function(){
     var cpop = "CP";//tmapp["object_prefix"];
     for(d3nodename in overlayUtils._d3nodes){
         if(d3nodename.includes(cpop+"_prop_")){
             overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
         }
     }
-}
-
-/** 
- * subsamples the full list from a barcode so that in the lower resolutions only a significant portion
- * is drawn and we don't wait and kill our browser  
- * @param {Number} amount needed amount of barcodes
- * @param {data[]} list A list */
-CPDataUtils.randomSamplesFromList = function (amount, list) {
-    //var cpop=tmapp["object_prefix"];
-    if(amount >= list.length) return list;
-
-    for(var i=0;i<amount;i++){
-      var index=Math.floor(Math.random() * (list.length - i + 0-1)) +i;
-      var temp=list[i];
-      list[i]=list[index];
-      list[index]=temp;
-    }
-   
-    return list.slice(0,amount);
 }
 
 /** 
