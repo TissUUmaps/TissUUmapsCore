@@ -55,6 +55,14 @@ dataUtils.processRawData = function(data_id){
 
 }
 
+dataUtils.readCSV = function(data_id){
+    if(data_id.includes("gene"))
+        {dataUtils.readGeneCSV();}
+    else if(data_id.includes("morphology"))
+        {dataUtils.readMorphologyCSV();}
+
+}
+
 /** 
 * From the interface, get the key that will be used for nesting the raw data 
 * and making my lovely quadtrees */
@@ -201,7 +209,8 @@ dataUtils.processISSRawData = function () {
         markerUtils.addPiechartLegend();
     }
     else {
-        interfaceUtils.getElementById("piechartLegend").style.display="none";
+        if(interfaceUtils.getElementById("piechartLegend"))
+            interfaceUtils.getElementById("piechartLegend").style.display="none";
     }
 }
 
@@ -367,7 +376,7 @@ dataUtils.XHRCSV = function (thecsv) {
 * This reads the CSV and stores the raw data and sets the headers 
 * in the interface and at [op + "_csv_header"]
 * Later on it should be nested according to the main criteria */
-dataUtils.readCSV = function (thecsv) {
+dataUtils.readGeneCSV = function (thecsv) {
     var op = tmapp["object_prefix"];
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
     panel.style.visibility="hidden"; 
@@ -525,7 +534,7 @@ CPDataUtils.setExpectedCSV = function(expectedCSV){
     dataUtils.data["morphology"]._expectedCSV = expectedCSV;
 }
 
-CPDataUtils.readCSV = function (thecsv) {
+dataUtils.readMorphologyCSV = function (thecsv) {
     var cpop = "CP";//tmapp["object_prefix"];
     dataUtils.data["morphology"][ + "_rawdata"] = {};
     dataUtils.data["morphology"][ + "_rawdata_stats"]={};
