@@ -8,7 +8,6 @@
 * @namespace dataUtils
 * @property {Object} dataUtils.data["gene"]._expectedCSV - Expected csv structure
 * @property {Object} dataUtils.data["gene"]._subsampledBarcodes - Containing the subsamples barcode trees to display
-* @property {Array}  dataUtils.data["gene"]._barcodesByAmount - Sorted list of arrays of the data
 * @property {Number} dataUtils.data["gene"]._maximumAmountInLowerRes - Maximum amount of points to display in low res
 * @property {Object} dataUtils.data["gene"]._nameAndLetters - Contains two bools drawGeneName and drawGeneLetters to know if and which to display between barcode or gene name
 * @property {Object} dataUtils.data["gene"]._drawOptions - Options for markerUtils.printBarcodeUIs */
@@ -19,7 +18,6 @@ dataUtils = {
             _CSVStructure: { headers: ["barcode", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
             _expectedCSV: { "group": "macro_cluster", "name": "", "X_col": "global_X_pos", "Y_col": "global_Y_pos", "key": "" },
             _subsampledBarcodes: {},
-            _barcodesByAmount: [],
             _maximumAmountInLowerRes: 5000,
             _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
             _drawOptions: { randomColorForMarker: false },
@@ -33,7 +31,6 @@ dataUtils = {
             _d3LUTs:["ownColorFromColumn","interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys", "interpolatePurples", "interpolateReds", "interpolateOranges"],
             _subsampledItems: {},
             _ownColorLut:{"class":"hexcolor"},
-            _barcodesByAmount: [],
             _subsamplingRate: 100,
             _minimumAmountToDisplay: 500,
             _markersize:0.0008,
@@ -213,7 +210,7 @@ dataUtils.processISSRawData = function () {
     }
 }
 
- dataUtils.processRawMorphologyData = function () {
+dataUtils.processRawMorphologyData = function () {
     
     var cpop="CP";
     var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
@@ -238,10 +235,10 @@ dataUtils.processISSRawData = function () {
     var y = function (d) {
         return d[yselector];
     };
-    if(!dataUtils.data["gene"][cpop + "_tree"])
-        dataUtils.data["gene"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["gene"][cpop + "_rawdata"]);  
+    if(!dataUtils.data["morphology"][cpop + "_tree"])
+        dataUtils.data["morphology"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["morphology"][cpop + "_rawdata"]);  
     dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
-    markerUtils.drawdata({searchInTree:false}); //mandatory options obj
+    //markerUtils.drawdata({searchInTree:false}); //mandatory options obj
     
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").style.display = "block";
@@ -251,9 +248,18 @@ dataUtils.processISSRawData = function () {
     }
 }
 
+dataUtils.createMenuFromCSV = function(data_id){
+
+    if(data_id.includes("gene"))
+        {dataUtils.createMenuFromGeneCSV();}
+    else if(data_id.includes("morphology"))
+        {dataUtils.createMenuFromMorphologyCSV();}
+
+}
+
 /** 
 * Show the menu do select the CSV headers that contain the information to display*/
-dataUtils.showMenuCSV = function(){
+dataUtils.createMenuFromGeneCSV = function(){
     var op = tmapp["object_prefix"];
     var csvheaders = Object.keys(dataUtils.data["gene"][op + "_rawdata"][0]);
     dataUtils.data["gene"]._CSVStructure[op + "_csv_header"] = csvheaders;
@@ -301,6 +307,88 @@ dataUtils.showMenuCSV = function(){
         },500);
     }
 }
+
+dataUtils.createMenuFromMorphologyCSV = function () {
+    var cpop = "CP";//tmapp["object_prefix"];
+    //dataUtils.data["morphology"][ cpop + "_rawdata_stats"]={};
+    var csvheaders = Object.keys(dataUtils.data["morphology"][ cpop + "_rawdata"][0]);
+    dataUtils.data["morphology"]._CSVStructure=csvheaders;
+
+    //var datum=dataUtils.data["morphology"][cpop + "_rawdata"][1];
+
+    //var numericalheaders=[];
+
+    //var rg=RegExp('^[0-9]*[.0-9]*$');
+    //Check which headers could require stats:
+    /*csvheaders.forEach(function(h){
+        if(rg.test(datum[h])){
+            //if it is not nan it means it is a number...
+            numericalheaders.push(h);
+            dataUtils.data["morphology"][cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
+        }
+    });
+
+    dataUtils.data["morphology"][ cpop + "_rawdata"].forEach(function(d){
+        numericalheaders.forEach(function(nh){
+            if(d[nh]>dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["max"]) dataUtils.data["morphology"][ cpop + "_rawdata_stats"][nh]["max"]=d[nh];
+            if(d[nh]<dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["min"]) dataUtils.data["morphology"][ cpop + "_rawdata_stats"][nh]["min"]=d[nh];                    
+        }); 
+    });*/
+
+    var CPKey = document.getElementById(cpop+"_key_header");
+    var CPProperty = document.getElementById(cpop+"_property_header");
+    var CPX = document.getElementById(cpop+"_X_header");
+    var CPY = document.getElementById(cpop+"_Y_header");
+    var CPLut = document.getElementById(cpop+"_colorscale");
+
+    dataUtils.data["morphology"]._d3LUTs.forEach(function(lut){
+        var option = document.createElement("option");
+        option.value = lut;
+        option.text = lut.replace("interpolate","");
+        CPLut.appendChild(option);
+    });
+        
+
+    [CPKey, CPProperty, CPX, CPY].forEach(function (node) {
+        node.innerHTML = "";
+        var option = document.createElement("option");
+        option.value = "null";
+        option.text = "-----";
+        node.appendChild(option);
+        csvheaders.forEach(function (head) {
+            var option = document.createElement("option");
+            option.value = head;
+            option.text = head;
+            node.appendChild(option);
+        });
+    });
+    var panel = document.getElementById(cpop+"_csv_headers");
+    panel.style = "";
+
+    //create tree, full and subsampled array
+    var length=dataUtils.data["morphology"][ cpop + "_rawdata"].length;
+    var amount=Math.floor(length*dataUtils.data["morphology"]._subsamplingfactor);
+    dataUtils.data["morphology"][ cpop + "_subsampled_data"]=dataUtils.randomSamplesFromList(amount,dataUtils.data["morphology"][ cpop + "_rawdata"]);
+
+    //create listener for change of property
+    var changeProperty=function(){
+        //find all CP nodes and remove them
+        for(d3nodename in overlayUtils._d3nodes){
+            if(d3nodename.includes(cpop+"_prop_")){
+                overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
+            }
+        }
+        markerUtils.drawCPdata({searchInTree:false});
+    }
+    CPProperty.addEventListener("change", changeProperty);
+    
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["key_header"])) CPKey.value = dataUtils.data["morphology"]._expectedCSV["key_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["property_header"])) CPProperty.value = dataUtils.data["morphology"]._expectedCSV["property_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["X_header"])) CPX.value = dataUtils.data["morphology"]._expectedCSV["X_header"];
+    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["Y_header"])) CPY.value = dataUtils.data["morphology"]._expectedCSV["Y_header"];
+    CPLut.value = "interpolateRainbow";
+}
+
 
 /** 
 * Creeate the dataUtils.data["gene"][op + "_barcodeGarden"] ("Garden" as opposed to "forest")
@@ -368,7 +456,7 @@ dataUtils.XHRCSV = function (thecsv) {
             // What do when the request is successful
             progressBar.style.width = "100%";
             dataUtils.data["gene"][op + "_rawdata"] = d3.csvParse(xhr.responseText);
-            dataUtils.showMenuCSV();
+            dataUtils.createMenuFromCSV("gene");
             
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
@@ -426,7 +514,7 @@ dataUtils.readGeneCSV = function (thecsv) {
         function (d) { return d; },
         function (rows) {
             dataUtils.data["gene"][op + "_rawdata"] = rows;
-            dataUtils.showMenuCSV();
+            dataUtils.createMenuFromCSV("gene");
         }
     );
 }
@@ -434,8 +522,8 @@ dataUtils.readGeneCSV = function (thecsv) {
 
 dataUtils.readMorphologyCSV = function (thecsv) {
     var cpop = "CP";//tmapp["object_prefix"];
-    dataUtils.data["morphology"][ + "_rawdata"] = {};
-    dataUtils.data["morphology"][ + "_rawdata_stats"]={};
+    dataUtils.data["morphology"][ cpop + "_rawdata"] = {};
+    dataUtils.data["morphology"][ cpop + "_rawdata_stats"]={};
     dataUtils.data["morphology"]._CSVStructure[cpop + "_csv_header"] = null;
 
     var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
@@ -450,8 +538,8 @@ dataUtils.readMorphologyCSV = function (thecsv) {
         function (d) { return d; },
         function (rows) {
             progressBar.style.width = "100%";
-            dataUtils.data["morphology"][ + "_rawdata"] = rows;
-            CPDataUtils.loadFromRawData();
+            dataUtils.data["morphology"][cpop + "_rawdata"] = rows;
+            dataUtils.createMenuFromCSV("morphology");
         }
     ).on("progress", function(pe){
         //update progress bar
@@ -552,7 +640,7 @@ dataUtils.sortDataAndDownsample = function () {
     //total amount of barcodes
     var amountofbarcodes = dataUtils.data["gene"][op + "_data"].length;
     
-    dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
+    /*dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
         var normalized = (barcode.values.length - minamount) / maxamount;
         var downsize = dataUtils.data["gene"]._maximumAmountInLowerRes * Math.log(barcode.values.length) / Math.log(maxamount);
         if (downsize > barcode.values.length) { downsize = barcode.values.length; }
@@ -561,93 +649,10 @@ dataUtils.sortDataAndDownsample = function () {
     
     dataUtils.data["gene"]._barcodesByAmount.forEach(function (b) {
         dataUtils.randomMarkersFromBarcode(b.downsize, b.barcode);
-    });
+    });*/
 }
 
 CPDataUtils={};
-
-
-
-CPDataUtils.loadFromRawData = function () {
-    var cpop = "CP";//tmapp["object_prefix"];
-    //dataUtils.data["morphology"][ + "_rawdata_stats"]={};
-    var csvheaders = Object.keys(dataUtils.data["morphology"][ + "_rawdata"][0]);
-    dataUtils.data["morphology"]._CSVStructure=csvheaders;
-
-    //var datum=dataUtils.data["morphology"][cpop + "_rawdata"][1];
-
-    //var numericalheaders=[];
-
-    //var rg=RegExp('^[0-9]*[.0-9]*$');
-    //Check which headers could require stats:
-    /*csvheaders.forEach(function(h){
-        if(rg.test(datum[h])){
-            //if it is not nan it means it is a number...
-            numericalheaders.push(h);
-            dataUtils.data["morphology"][cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0}; 
-        }
-    });
-
-    dataUtils.data["morphology"][ + "_rawdata"].forEach(function(d){
-        numericalheaders.forEach(function(nh){
-            if(d[nh]>dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["max"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["max"]=d[nh];
-            if(d[nh]<dataUtils.data["morphology"][cpop + "_rawdata_stats"][nh]["min"]) dataUtils.data["morphology"][ + "_rawdata_stats"][nh]["min"]=d[nh];                    
-        }); 
-    });*/
-
-    var CPKey = document.getElementById(cpop+"_key_header");
-    var CPProperty = document.getElementById(cpop+"_property_header");
-    var CPX = document.getElementById(cpop+"_X_header");
-    var CPY = document.getElementById(cpop+"_Y_header");
-    var CPLut = document.getElementById(cpop+"_colorscale");
-
-    dataUtils.data["morphology"]._d3LUTs.forEach(function(lut){
-        var option = document.createElement("option");
-        option.value = lut;
-        option.text = lut.replace("interpolate","");
-        CPLut.appendChild(option);
-    });
-        
-
-    [CPKey, CPProperty, CPX, CPY].forEach(function (node) {
-        node.innerHTML = "";
-        var option = document.createElement("option");
-        option.value = "null";
-        option.text = "-----";
-        node.appendChild(option);
-        csvheaders.forEach(function (head) {
-            var option = document.createElement("option");
-            option.value = head;
-            option.text = head;
-            node.appendChild(option);
-        });
-    });
-    var panel = document.getElementById(cpop+"_csv_headers");
-    panel.style = "";
-
-    //create tree, full and subsampled array
-    var length=dataUtils.data["morphology"][ + "_rawdata"].length;
-    var amount=Math.floor(length*dataUtils.data["morphology"]._subsamplingfactor);
-    dataUtils.data["morphology"][ + "_subsampled_data"]=dataUtils.randomSamplesFromList(amount,dataUtils.data["morphology"][ + "_rawdata"]);
-
-    //create listener for change of property
-    var changeProperty=function(){
-        //find all CP nodes and remove them
-        for(d3nodename in overlayUtils._d3nodes){
-            if(d3nodename.includes(cpop+"_prop_")){
-                overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
-            }
-        }
-        markerUtils.drawCPdata({searchInTree:false});
-    }
-    CPProperty.addEventListener("change", changeProperty);
-    
-    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["key_header"])) CPKey.value = dataUtils.data["morphology"]._expectedCSV["key_header"];
-    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["property_header"])) CPProperty.value = dataUtils.data["morphology"]._expectedCSV["property_header"];
-    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["X_header"])) CPX.value = dataUtils.data["morphology"]._expectedCSV["X_header"];
-    if (csvheaders.includes(dataUtils.data["morphology"]._expectedCSV["Y_header"])) CPY.value = dataUtils.data["morphology"]._expectedCSV["Y_header"];
-    CPLut.value = "interpolateRainbow";
-}
 
 /** 
  * Remove the cp data from the view
@@ -663,7 +668,7 @@ dataUtils.removeMorphologydata=function(){
 
 /** 
 * Find all CP elements in a box  */
-CPDataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
+dataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
     var cpop = "CP";
 
     var xselector = options.xselector;
@@ -671,7 +676,7 @@ CPDataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
     
     var pointsInside = [];
     
-    dataUtils.data["morphology"][ + "_tree"].visit(function (node, x1, y1, x2, y2) {
+    dataUtils.data["morphology"][cpop + "_tree"].visit(function (node, x1, y1, x2, y2) {
         if (!node.length) {
             do {
                 var d = node.data;

@@ -390,7 +390,7 @@ glUtils.loadCPMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    const markerData = CPDataUtils["CP_rawdata"];
+    const markerData = dataUtils.data["morphology"]["CP_rawdata"];
     const numPoints = markerData.length;
     const propertyName = document.getElementById("CP_property_header").value;
     const xColumnName = document.getElementById("CP_X_header").value;

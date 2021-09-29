@@ -93,7 +93,7 @@ markerUtils.removeMarkerByBarcode = function (barcode) {
 markerUtils.drawCPdata= function(options){
     //pick up the property from the UI
     if(!dataUtils.data["morphology"]._drawCPdata){
-        CPDataUtils.removeCPdata();
+        dataUtils.removeMorphologydata();
         return 0;
     }
     var cpop="CP";
@@ -135,7 +135,7 @@ markerUtils.drawCPdata= function(options){
     var msize=dataUtils.data["morphology"]._markersize;
     var searchInTree=options.searchInTree || false;
     if(searchInTree || false){
-        data=CPDataUtils.arrayOfElementsInBox(options.xmin, options.ymin, options.xmax, options.ymax, 
+        data=dataUtils.arrayOfElementsInBox(options.xmin, options.ymin, options.xmax, options.ymax, 
                 {xselector:xselector,yselector:yselector});
         overlayUtils._d3nodes[svggroupname].attr("drawn")!="treedata"
     }else{
