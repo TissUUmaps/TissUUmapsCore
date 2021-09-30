@@ -1,3 +1,20 @@
+// Default variable overrides
+$primary:   #ad1d28;
+$danger:    #9f1daa; 
+$secondary: #1d6faa;
+$success:   #1daa9f;
+$info:      #1daa9f;
+$warning:   #1daa9f;
+$light:     #1daa9f;
+$dark:      #1daa9f;
+
+.navbar-dark {
+    background-color: $primary;
+}
+
+
+
+
 // IMPORTS
 @import "../vendor/bootstrap-5.0.2/scss/bootstrap";
 @import "../vendor/bootstrap-5.0.2/scss/functions";
@@ -11,6 +28,3 @@
 @import "../vendor/bootstrap-5.0.2/scss/grid";
 
 
-// Default variable overrides
-$body-bg: #000;
-$body-color: #111;
