@@ -142,11 +142,9 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
  overlayUtils.addLayerSlider = function() {
     if (document.getElementById("channelRangeInput") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "channelRange"
+        elt.className = "channelRange px-1 mx-1"
         elt.id = "channelRangeDiv"
         elt.style.zIndex = "100";
-        elt.style.paddingLeft = "5px";
-        elt.style.paddingBottom = "2px";
         var span = document.createElement('div');
         span.innerHTML = "Channel 1"
         span.id = "channelValue"

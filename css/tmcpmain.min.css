@@ -95,3 +95,12 @@ body {
     background-color: #888;
     color: white;
 }
+
+.tab-content {
+    overflow-y: scroll;
+}
+
+#channelRangeDiv {
+    background-color: white;
+    opacity: 70%;
+}
