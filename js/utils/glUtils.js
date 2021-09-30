@@ -86,7 +86,7 @@ glUtils._markersVS = `
             if (u_usePiechartFromMarker && v_color.a > 0.0) {
                 v_shapeSector = a_position.z / 16777215.0;
                 v_color.rgb = hex_to_rgb(a_position.w);
-                v_color.a = 8.0 / 255.0;  // Give markers a round shape
+                v_color.a = 16.0 / 255.0;  // Give markers a round shape
                 if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
                 if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
             }
