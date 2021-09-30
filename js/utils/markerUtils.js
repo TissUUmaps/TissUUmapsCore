@@ -31,8 +31,8 @@ markerUtils = {
     _uniquePiechartSelector:null, //a string with the name of the piechart data field in the CSV
     _startCullingAt: 9000,
     _checkBoxes: {},
-    _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],
-    _d3SymbolStrings: ["Cross", "Diamond", "Square", "Triangle", "Star", "Wye", "Circle"],
+    _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],  // Not used
+    _d3SymbolStrings: ["cross", "diamond", "square", "triangle up", "star", "clobber", "disc", "hbar", "vbar", "tailed arrow", "triangle down", "ring", "x", "arrow"],
     _colorsperkey:null,
     _startMarkersOn:false,
     _randomShape:true,
