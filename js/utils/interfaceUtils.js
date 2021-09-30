@@ -513,7 +513,7 @@ interfaceUtils.hideTabsExcept = function (a) {
     if (style.display === 'none') {
         menu.style.display = "block";
         main.style.width = "66.66666%";
-        main.style.maxWidth = "Calc(100% - 506px)";
+        main.style.maxWidth = "100%";
         btn.innerText = ">";
     }
     else {

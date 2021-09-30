@@ -14,6 +14,8 @@
 </head>
 
 <body>
+
+
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/">
@@ -42,8 +44,11 @@
         </div>
     </nav>
 
+
+
     <div class="container-fluid px-0">
         <div class="row mx-0">
+
             <!-- Row for viewer  -->
             <div class="col-8 px-0" id="ISS_viewer_container">
                 <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize
@@ -59,8 +64,9 @@
                         oninput="document.getElementById('ISS_globalmarkersize_label').innerHTML = this.value;"/>
                     <em class="range-label" id="ISS_globalmarkersize_label">100</em>
                 </div>
-                <div class="btn btn-secondary" id="ISS_collapse_btn">&gt;</div>
             </div>
+            <div class="btn btn-secondary" id="ISS_collapse_btn">&gt;</div>
+
             <div class="col-4 ISS_menu" id="ISS_menu">
                 <div class="row row-fullheight">
                     <!-- Level 0 tabs -->

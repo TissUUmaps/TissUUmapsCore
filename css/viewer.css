@@ -10,6 +10,7 @@ body {
 
 .ISS_menu {
   height: calc(100vh - 72px);
+  display: block;
   padding-left: 6px; }
 
 #ISS_markers {
@@ -72,7 +73,7 @@ body {
 #ISS_collapse_btn {
   display: block;
   position: absolute;
-  right: -2px;
+  right: 2px;
   height: calc(34vh - 72px);
   margin-top: 33vh;
   margin-bottom: 33vh;
@@ -83,7 +84,9 @@ body {
   padding: 0px;
   font-size: 11px;
   background-color: #888;
-  color: white; }
+  color: white; 
+  z-index: 1000;
+}
 
 .tab-content {
   overflow-y: scroll; }
