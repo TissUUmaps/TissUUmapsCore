@@ -1,0 +1,16 @@
+// IMPORTS
+@import "../vendor/bootstrap-5.0.2/scss/bootstrap";
+@import "../vendor/bootstrap-5.0.2/scss/functions";
+@import "../vendor/bootstrap-5.0.2/scss/variables";
+@import "../vendor/bootstrap-5.0.2/scss/mixins";
+@import "../vendor/bootstrap-5.0.2/scss/root";
+@import "../vendor/bootstrap-5.0.2/scss/reboot";
+@import "../vendor/bootstrap-5.0.2/scss/type";
+@import "../vendor/bootstrap-5.0.2/scss/images";
+@import "../vendor/bootstrap-5.0.2/scss/containers";
+@import "../vendor/bootstrap-5.0.2/scss/grid";
+
+
+// Default variable overrides
+$body-bg: #000;
+$body-color: #111;
