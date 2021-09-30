@@ -266,51 +266,7 @@ dataUtils._processRawData["GENE_DATA"] = function(data_id) {
     }
 }
 
-dataUtils.processRawMorphologyData = function () {
-    
-    var cpop="CP";
-    var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
-    if(progressParent == null){
-        console.log("No progress bar present.")
-    }else{
-        progressParent.style.visibility="hidden";
-        progressParent.style.display="none";
-    }
-    var CPProperty = document.getElementById(cpop+"_property_header");
-    var propertyselector=CPProperty.value;
-    var CPX = document.getElementById(cpop+"_X_header");
-    var xselector=CPX.value;
-    var CPY = document.getElementById(cpop+"_Y_header");
-    var yselector=CPY.value;
-    var CPLut = document.getElementById(cpop+"_colorscale");
-    var interpFunction=CPLut.value;
-    
-    var x = function (d) {
-        return d[xselector];
-    };
-    var y = function (d) {
-        return d[yselector];
-    };
-    if(!dataUtils.data["morphology"][cpop + "_tree"])
-        dataUtils.data["morphology"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["morphology"][cpop + "_rawdata"]);  
-
-    dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
-    //markerUtils.drawdata({searchInTree:false}); //mandatory options obj
-    
-    if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
-    }
-    if (window.hasOwnProperty("glUtils")) {
-        glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing
-    }
-}
-
-dataUtils.createMenuFromCSV = function(data_id){
-
-    if(data_id.includes("gene"))
-        {dataUtils.createMenuFromGeneCSV();}
-    else if(data_id.includes("morphology"))
-        {dataUtils.createMenuFromMorphologyCSV();}
+dataUtils._createMenuFromCSV["GENE_DATA"] = function(data_id) {
 
     let data_obj = dataUtils.data[data_id];
 
@@ -360,6 +316,8 @@ dataUtils.createMenuFromCSV = function(data_id){
             document.getElementById(op + "_bringmarkers_btn").click();
         },500);
     }
+
+
 }
 
 dataUtils._readCSV["GENE_DATA"] = function(data_id, thecsv) {
@@ -591,16 +549,6 @@ dataUtils.sortDataAndDownsample = function () {
     //total amount of barcodes
     var amountofbarcodes = data_obj[op + "_data"].length;
     
-    /*data_obj[op + "_data"].forEach(function (barcode) {
-        var normalized = (barcode.values.length - minamount) / maxamount;
-        var downsize = data_obj._maximumAmountInLowerRes * Math.log(barcode.values.length) / Math.log(maxamount);
-        if (downsize > barcode.values.length) { downsize = barcode.values.length; }
-        data_obj._barcodesByAmount.push({ "barcode": barcode.key, "amount": barcode.values.length, "normalized": normalized, "downsize": downsize });
-    });
-    
-    data_obj._barcodesByAmount.forEach(function (b) {
-        dataUtils.randomMarkersFromBarcode(b.downsize, b.barcode);
-    });*/
 }
 
 /** ----------------------------------------------------------------------
@@ -661,27 +609,6 @@ dataUtils._createMenuFromCSV["MORPHOLOGY_DATA"] = function(data_id) {
     //data_obj[ cpop + "_rawdata_stats"]={};
     var csvheaders = Object.keys(data_obj[ cpop + "_rawdata"][0]);
     data_obj._CSVStructure=csvheaders;
-
-    //var datum=data_obj[cpop + "_rawdata"][1];
-
-    //var numericalheaders=[];
-
-    //var rg=RegExp('^[0-9]*[.0-9]*$');
-    //Check which headers could require stats:
-    /*csvheaders.forEach(function(h){
-        if(rg.test(datum[h])){
-            //if it is not nan it means it is a number...
-            numericalheaders.push(h);
-            data_obj[cpop + "_rawdata_stats"][h]={"min":+Infinity,"max":-Infinity,"mean":0};
-        }
-    });
-
-    data_obj[ cpop + "_rawdata"].forEach(function(d){
-        numericalheaders.forEach(function(nh){
-            if(d[nh]>data_obj[cpop + "_rawdata_stats"][nh]["max"]) data_obj[ cpop + "_rawdata_stats"][nh]["max"]=d[nh];
-            if(d[nh]<data_obj[cpop + "_rawdata_stats"][nh]["min"]) data_obj[ cpop + "_rawdata_stats"][nh]["min"]=d[nh];
-        });
-    });*/
 
     var CPKey = document.getElementById(cpop+"_key_header");
     var CPProperty = document.getElementById(cpop+"_property_header");
@@ -822,9 +749,11 @@ dataUtils.arrayOfElementsInBox = function(x0, y0, x3, y3, options) {
     return pointsInside;
 }
 
+/** 
+ * Take the HTML input and read the file when it is changed, take the data type and the html dom id
+*/
 dataUtils.processEventForCSV = function(data_id,dom_id){
     //the dom id has to be of an input type 
-    //const obj = dataUtils.data[data_id]
     if(!dom_id.includes("#"))
         dom_id="#"+dom_id
     d3.select(dom_id)
@@ -835,7 +764,6 @@ dataUtils.processEventForCSV = function(data_id,dom_id){
                 reader.onloadend = function (evt) {
                     var dataUrl = evt.target.result;
                     dataUtils.readCSV(data_id,dataUrl);
-                    //dataUtils.readCSV(obj._type,dataUrl);
                 };
                 reader.readAsDataURL(file);
             }
