@@ -1,7 +1,7 @@
 // Default variable overrides
 $primary:   #ad1d28;
 $danger:    #9f1daa;
-$secondary: #1d6faa;
+$secondary: #ad1d28;
 $success:   #1daa9f;
 $info:      #1daa9f;
 $warning:   #1daa9f;
@@ -15,7 +15,10 @@ $navbar-padding-y: 0;
 
 .overlay-slider, .filterInput {
     width: 100px;
+    color: $primary;
+    background-color: $primary;
 }
+
 
 // IMPORTS
 @import "../vendor/bootstrap-5.1.1/scss/bootstrap";
