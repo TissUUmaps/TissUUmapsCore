@@ -36,7 +36,7 @@
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" id="project_title" href="#"> Default title</a>
+                        <a class="nav-link active" aria-current="page" id="project_title" href="#"> Default title</a>
                     </li>
                 </ul>
             </div>
@@ -52,7 +52,7 @@
                 <div id="ISS_viewer" class="ISS_viewer">
                 </div>
                 <!-- Global marker size slider -->
-                <div id="ISS_globalmarkersize">
+                <!--<div id="ISS_globalmarkersize">
                     <label>Marker size</label><br>
                     <input class="form-control" type="range"
                         id="ISS_globalmarkersize_text"
@@ -60,23 +60,23 @@
                         oninput="document.getElementById('ISS_globalmarkersize_label').innerHTML = this.value;"/>
                     <em class="range-label" id="ISS_globalmarkersize_label">100</em>
                 </div>
-                <div class="btn btn-secondary" id="ISS_collapse_btn">&gt;</div>
+                <div class="btn btn-secondary" id="ISS_collapse_btn">&gt;</div>-->
             </div>
             <div class="col-4 ISS_menu" id="ISS_menu">
                 <div class="row row-fullheight">
                     <!-- Level 0 tabs -->
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
-                            <a href="#markers-iss-gui" data-toggle="tab" aria-expanded="true" class="nav-link active" id="title-tab-markers">Gene expression</a>
+                            <a href="#markers-iss-gui" data-bs-toggle="tab" aria-expanded="true" class="nav-link active" id="title-tab-markers">Gene expression</a>
                         </li>
                         <li>
-                            <a href="#markers-cp-gui" data-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-CPmarkers">Cell morphology</a>
+                            <a href="#markers-cp-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-CPmarkers">Cell morphology</a>
                         </li>
                         <li>
-                            <a href="#markers-regions-gui" data-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-regions">Regions</a>
+                            <a href="#markers-regions-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-regions">Regions</a>
                         </li>
                         <li>
-                            <a href="#image-gui" data-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-image">Image layers</a>
+                            <a href="#image-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-image">Image layers</a>
                         </li>
                     </ul>
 
@@ -349,13 +349,13 @@
                                         <!-- Tabs 1.3.0 region subtabs -->
                                         <ul class="nav nav-tabs">
                                             <li class="nav-item">
-                                                <a href="#markers-regions-project-gui" data-toggle="tab" aria-expanded="false" class="nav-link active">Regions</a>
+                                                <a href="#markers-regions-project-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">Regions</a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="#markers-regions-import-gui" data-toggle="tab" aria-expanded="false" class="nav-link">Import</a>
+                                                <a href="#markers-regions-import-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link">Import</a>
                                             </li>
                                             <li class="nav-item">
-                                                <a href="#markers-regions-export-gui" data-toggle="tab" aria-expanded="false" class="nav-link">Export</a>
+                                                <a href="#markers-regions-export-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link">Export</a>
                                             </li>
                                         </ul>
                                         <div id="markers-region-subtabs" class="tab-content extended-height">
@@ -461,11 +461,11 @@
                         <div class="tab-pane" id="image-gui">
                             <div class="panel panel-default">
                                 <div class="panel-body">
-                                    <div class="row" id="image-overlay-panel">
+                                    <div class="row overflow-auto" id="image-overlay-panel">
                                     </div>
-                                    <div class="row">
-                                        <a href="#filterSettings" data-toggle="collapse" aria-expanded="false">[Filter settings]</a>
-                                    </div>
+                                    <a class="btn btn-primary" href="#filterSettings" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="filterSettings">
+                                        Filter settings
+                                    </a>
                                     <div class="row collapse" id="filterSettings">
                                     </div>
                                 </div>
