@@ -364,51 +364,6 @@ overlayUtils.modifyDisplayIfAny = function () {
 
     var portion = (xmax - xmin) * (ymax - ymin);
     var percentage = portion / total;
-
-
-
-    //get barcodes that are checked to draw
-    for (var barcode in markerUtils._checkBoxes) {
-        if (tmapp["hideSVGMarkers"]) continue;  // We are using WebGL instead for the drawing
-
-        /*
-        if (markerUtils._checkBoxes[barcode].checked) {
-            var markersInViewportBounds = []
-            if (percentage < overlayUtils._percentageForSubsample) {
-                //console.log("percentage less than " + overlayUtils._percentageForSubsample);
-                markersInViewportBounds = markerUtils.arrayOfMarkersInBox(
-                    dataUtils.data["gene"][op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
-                );
-
-                //console.log(markersInViewportBounds.length);
-                var drawThese = dataUtils.randomSamplesFromList(markerUtils.startCullingAt, markersInViewportBounds);
-
-                //console.log(drawThese.length);
-                markerUtils.drawAllFromList(drawThese);
-
-            } else {
-                //if the percentage of image I see is bigger than a threshold then use the predownsampled markers
-                if (dataUtils.data["gene"]._subsampledBarcodes[barcode]) {
-                    markerUtils.drawAllFromList(dataUtils.data["gene"]._subsampledBarcodes[barcode]);
-                } else {
-                    markerUtils.drawAllFromBarcode(barcode);
-                }
-            }
-        } */
-    }
-
-    //if anything from cpdata exists
-    var cpop="CP";
-    if(CPDataUtils.hasOwnProperty(cpop+"_rawdata")){ //I need to put a button here to draw or remove
-        //Zoom of 1 means all image is visible so low res. Bigger than 1 means zooming in.
-        if (currentZoom > overlayUtils._zoomForSubsample) {            
-            markerUtils.drawCPdata({searchInTree:true,xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax});
-        } else {
-            console.log("subsample");
-            //I create the subsampled one already when I read de CP csv, in dataUtils.data["morphology"][ + "_subsampled_data"]     
-            markerUtils.drawCPdata({searchInTree:false});            
-        }
-    }
 }
 
 /**

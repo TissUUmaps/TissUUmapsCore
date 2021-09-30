@@ -101,32 +101,11 @@ tmapp.init = function () {
         }
     };
 
-    //delay the scroll and the panning options so that there is a bit more time to calcualte which 
-    //markers to plot and where and how many
-    var isScrolling;
-    var scroll_handler = function (event) {
-
-        // Clear our timeout throughout the scroll
-        window.clearTimeout(isScrolling);
-        // Set a timeout to run after scrolling ends
-        isScrolling = setTimeout(function () {
-
-            // Run the callback
-            console.log('Scrolling has stopped.');
-            //
-            overlayUtils.modifyDisplayIfAny();
-
-        }, tmapp._scrollDelay);
-    }
-
-
     //OSD handlers are not registered manually they have to be registered
     //using MouseTracker OSD objects 
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-        //element: this.fixed_svgov.node().parentNode, 
         element: tmapp[vname].canvas,
-        clickHandler: click_handler,
-        scrollHandler: scroll_handler
+        clickHandler: click_handler
     }).setTracking(true);
 
     elt = document.getElementById("ISS_globalmarkersize");

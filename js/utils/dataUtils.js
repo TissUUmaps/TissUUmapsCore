@@ -650,7 +650,6 @@ dataUtils._createMenuFromCSV["MORPHOLOGY_DATA"] = function(data_id) {
                 overlayUtils._d3nodes[d3nodename].selectAll("*").remove();
             }
         }
-        markerUtils.drawCPdata({searchInTree:false});
     }
     CPProperty.addEventListener("change", changeProperty);
 
@@ -658,6 +657,7 @@ dataUtils._createMenuFromCSV["MORPHOLOGY_DATA"] = function(data_id) {
     if (csvheaders.includes(data_obj._expectedCSV["property_header"])) CPProperty.value = data_obj._expectedCSV["property_header"];
     if (csvheaders.includes(data_obj._expectedCSV["X_header"])) CPX.value = data_obj._expectedCSV["X_header"];
     if (csvheaders.includes(data_obj._expectedCSV["Y_header"])) CPY.value = data_obj._expectedCSV["Y_header"];
+    
     CPLut.value = "interpolateRainbow";
 }
 
