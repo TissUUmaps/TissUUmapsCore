@@ -3,11 +3,16 @@
   background-color: #ad1d28;
 }
 
+<<<<<<< Updated upstream
 .overlay-slider, .filterInput {
   width: 100px;
   color: #ad1d28;
   background-color: #ad1d28;
 }
+=======
+.overlay-slider {
+  width: 100px; }
+>>>>>>> Stashed changes
 
 /*!
  * Bootstrap v5.1.1 (https://getbootstrap.com/)

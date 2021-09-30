@@ -272,12 +272,17 @@
             }
         }
         select = HTMLElementUtils.inputTypeCheckbox(selectParams);
+        select.classList.add("form-check-input");
         settingsPanel.appendChild(select);
         var label = document.createElement("label");
+        label.classList.add("form-check-label");
         label.setAttribute("for", "filterCheck_" + filter);
         label.innerHTML = "&nbsp;" + filter;
-        settingsPanel.appendChild(label);
-        settingsPanel.appendChild(document.createElement("br"));
+        var form = document.createElement("div");
+        form.classList.add("form-check");
+        form.appendChild(select);
+        form.appendChild(label);
+        settingsPanel.appendChild(form);
     }
     modeParams = {
         eventListeners:{
@@ -363,7 +368,6 @@ filterUtils.getFilterFunction = function(filterName) {
  * Set html ranges and checkboxes from filter items
  *  */
  filterUtils.setRangesFromFilterItems = function() {
-
     var op = tmapp["object_prefix"];
     for (const layer in filterUtils._filterItems) {
         for(var filterIndex=0;filterIndex<filterUtils._filterItems[layer].length;filterIndex++) {
@@ -374,7 +378,6 @@ filterUtils.getFilterFunction = function(filterName) {
                     filterRange.value = item.value;
                 else if (filterRange.type == "checkbox")
                     filterRange.checked = item.value;
-                
             }
         }
     };
