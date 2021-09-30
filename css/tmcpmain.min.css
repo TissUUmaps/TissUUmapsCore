@@ -1,15 +1,16 @@
 body {
-    overflow:hidden;
+    overflow: hidden;
 }
+
 .ISS_viewer{
-    position:absolute;
-    height:calc(100vh - 72px);
-    width:calc(100% - 14px);
-	background-color:#676767;
+    position: absolute;
+    height: calc(100vh - 72px);
+    width: inherit;
+    background-color: #676767;
 }
 
 .ISS_menu{
-    height:calc(100vh - 72px);
+    height: calc(100vh - 72px);
     padding-left:6px;
 }
 
