@@ -1,6 +1,6 @@
 // Default variable overrides
 $primary:   #ad1d28;
-$danger:    #9f1daa; 
+$danger:    #9f1daa;
 $secondary: #1d6faa;
 $success:   #1daa9f;
 $info:      #1daa9f;
@@ -12,19 +12,11 @@ $dark:      #1daa9f;
     background-color: $primary;
 }
 
-
-
-
 // IMPORTS
 @import "../vendor/bootstrap-5.1.1/scss/bootstrap";
 @import "../vendor/bootstrap-5.1.1/scss/functions";
 @import "../vendor/bootstrap-5.1.1/scss/variables";
-@import "../vendor/bootstrap-5.1.1/scss/mixins";
-@import "../vendor/bootstrap-5.1.1/scss/root";
 @import "../vendor/bootstrap-5.1.1/scss/reboot";
 @import "../vendor/bootstrap-5.1.1/scss/type";
-@import "../vendor/bootstrap-5.1.1/scss/images";
-@import "../vendor/bootstrap-5.1.1/scss/containers";
 @import "../vendor/bootstrap-5.1.1/scss/grid";
-
 
