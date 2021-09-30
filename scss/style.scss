@@ -11,6 +11,11 @@ $dark:      #1daa9f;
 .navbar-dark {
     background-color: $primary;
 }
+$navbar-padding-y: 0;
+
+.overlay-slider, .filterInput {
+    width: 100px;
+}
 
 // IMPORTS
 @import "../vendor/bootstrap-5.1.1/scss/bootstrap";

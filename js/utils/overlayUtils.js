@@ -80,6 +80,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     td_visible.style.minWidth = "100px";
 
     var opacity = document.createElement("input");
+    opacity.classList.add("overlay-slider");
     opacity.type = "range";
     opacity.setAttribute("min", "0");
     opacity.setAttribute("max", "1");
@@ -151,6 +152,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         span.style.maxWidth="200px";
         span.style.overflow="hidden";
         var channelRange = document.createElement("input");
+        channelRange.classList.add("overlay-slider");
         channelRange.type = "range";
         channelRange.style.width = "200px";
         channelRange.id = "channelRangeInput";
