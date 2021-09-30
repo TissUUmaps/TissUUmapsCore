@@ -237,6 +237,7 @@ dataUtils.processRawMorphologyData = function () {
     };
     if(!dataUtils.data["morphology"][cpop + "_tree"])
         dataUtils.data["morphology"][cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(dataUtils.data["morphology"][cpop + "_rawdata"]);  
+
     dataUtils.data["morphology"]._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
     //markerUtils.drawdata({searchInTree:false}); //mandatory options obj
     
@@ -553,7 +554,7 @@ dataUtils.readMorphologyCSV = function (thecsv) {
         }
         else {
             fakeProgress += 1;
-            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
+            //console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))));
             var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
             perc=perc.toString()+"%"
             progressBar.style.width = perc;
@@ -690,4 +691,25 @@ dataUtils.arrayOfElementsInBox = function (x0, y0, x3, y3, options) {
         return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
     });
     return pointsInside;
+}
+
+
+dataUtils.processEventForCSV = function(data_id,dom_id){
+    //the dom id has to be of an input type 
+    //const obj = dataUtils.data[data_id]
+    if(!dom_id.includes("#"))
+        dom_id="#"+dom_id
+    d3.select(dom_id)
+        .on("change", function () {
+            var file = d3.event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function (evt) {
+                    var dataUrl = evt.target.result;
+                    dataUtils.readCSV(data_id,dataUrl);
+                    //dataUtils.readCSV(obj._type,dataUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 }

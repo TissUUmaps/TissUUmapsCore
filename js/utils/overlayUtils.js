@@ -365,10 +365,13 @@ overlayUtils.modifyDisplayIfAny = function () {
     var portion = (xmax - xmin) * (ymax - ymin);
     var percentage = portion / total;
 
+
+
     //get barcodes that are checked to draw
     for (var barcode in markerUtils._checkBoxes) {
         if (tmapp["hideSVGMarkers"]) continue;  // We are using WebGL instead for the drawing
 
+        /*
         if (markerUtils._checkBoxes[barcode].checked) {
             var markersInViewportBounds = []
             if (percentage < overlayUtils._percentageForSubsample) {
@@ -391,7 +394,7 @@ overlayUtils.modifyDisplayIfAny = function () {
                     markerUtils.drawAllFromBarcode(barcode);
                 }
             }
-        } 
+        } */
     }
 
     //if anything from cpdata exists

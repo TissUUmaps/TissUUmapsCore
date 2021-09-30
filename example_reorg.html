@@ -100,20 +100,6 @@
                                                 <label id="label_ISS_csv" for="ISS_csv">Import gene expression from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="ISS_csv" name="ISS_csv"
                                                     accept=".csv,.tsv,.txt">
-                                                <script type="text/javascript">
-                                                    d3.select("#ISS_csv")
-                                                        .on("change", function () {
-                                                            var file = d3.event.target.files[0];
-                                                            if (file) {
-                                                                var reader = new FileReader();
-                                                                reader.onloadend = function (evt) {
-                                                                    var dataUrl = evt.target.result;
-                                                                    dataUtils.readCSV("gene",dataUrl);
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            }
-                                                        });
-                                                </script>
                                             </div>
                                         </div>
                                     </div>
@@ -255,20 +241,6 @@
                                                 <label id="label_CP_csv" for="CP_csv">Import cell morphology from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="CP_csv" name="CP_csv"
                                                     accept=".csv,.tsv,.txt">
-                                                <script type="text/javascript">
-                                                    d3.select("#CP_csv")
-                                                        .on("change", function () {
-                                                            var file = d3.event.target.files[0];
-                                                            if (file) {
-                                                                var reader = new FileReader();
-                                                                reader.onloadend = function (evt) {
-                                                                    var dataUrl = evt.target.result;
-                                                                    dataUtils.readCSV("morphology",dataUrl);
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            }
-                                                        });
-                                                </script>
                                             </div>
                                         </div>
                                     </div>
@@ -499,9 +471,9 @@
     document.getElementById("project_title").innerText = "Project title";
     // ----------
     $(document).ready(function () {
-        tmapp.fixed_file = "data/breastcancer/fluo.dzi";
-        tmapp.slideFilename = "Fluo";
-	    tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
+        tmapp.fixed_file = "data/hackathon/R1_DAPI.tif.dzi";
+        //tmapp.slideFilename = "Fluo";
+	    //tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
         //tmapp.mpp = 0.33;
         
         /*HTMLElementUtils.createDLButtonMarkers(

@@ -388,6 +388,7 @@ markerUtils.drawAllFromList = function (list) {
 markerUtils.markerBoxToggle = function (barcodeBox) {
     if (tmapp["hideSVGMarkers"]) return;  // We are using WebGL instead for the drawing
 
+    /*
     if (barcodeBox.is(':checked')) {
         //console.log(barcodeBox[0].attributes.barcode.value, "checked");
         //get the correct overlay, fixed or moving
@@ -396,7 +397,7 @@ markerUtils.markerBoxToggle = function (barcodeBox) {
     } else {
         markerUtils.removeMarkerByBarcode(barcodeBox[0].attributes.barcode.value);
         console.log("not checked");
-    }
+    }*/
 }
 
 /** 

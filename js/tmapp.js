@@ -34,6 +34,10 @@ tmapp.registerActions = function () {
     interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
     interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
     interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { dataUtils.processRawData("morphology_data") },false);
+    
+    dataUtils.processEventForCSV("morphology",cpop + '_csv');
+    dataUtils.processEventForCSV("gene",op + '_csv');
+    
     var navtabs=document.getElementsByClassName("nav-tabs")[0];
     var uls=navtabs.getElementsByTagName("ul");
     for(var i=0;i<uls.length;i++){
