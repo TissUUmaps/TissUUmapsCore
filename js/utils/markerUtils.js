@@ -383,24 +383,6 @@ markerUtils.drawAllFromList = function (list) {
 }
 
 /** 
- * Checkbox to know if barcode from it should be drawn or removed 
- * @param {htmlnode} barcodeBox Checkbox to know if barcode from it should be drawn or removed  */
-markerUtils.markerBoxToggle = function (barcodeBox) {
-    if (tmapp["hideSVGMarkers"]) return;  // We are using WebGL instead for the drawing
-
-    /*
-    if (barcodeBox.is(':checked')) {
-        //console.log(barcodeBox[0].attributes.barcode.value, "checked");
-        //get the correct overlay, fixed or moving
-        //markerUtils.drawAllFromBarcode(barcodeBox[0].attributes.barcode.value);
-        markerUtils.drawBarcodeByView(barcodeBox[0].attributes.barcode.value);
-    } else {
-        markerUtils.removeMarkerByBarcode(barcodeBox[0].attributes.barcode.value);
-        console.log("not checked");
-    }*/
-}
-
-/** 
  * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
  * clicking the box invokes the drawing of the marker or erase. 
  * Selects a color based on the barcode letters so that the color are different versions of 
@@ -422,7 +404,6 @@ markerUtils.markerUI = function (barObject,options) {
         id: barObject.key.replace(/\W/g, '') + "-checkbox-" + op,
         extraAttributes: { barcode: barObject.key },
         eventListeners: { click: function () {
-            markerUtils.markerBoxToggle($(this));
             document.getElementById("AllMarkers-checkbox-" + op).checked = false;
         }}
     });

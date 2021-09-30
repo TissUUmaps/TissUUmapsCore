@@ -590,8 +590,6 @@ dataUtils._processRawData["MORPHOLOGY_DATA"] = function(data_id) {
     };
     if(!data_obj[cpop + "_tree"])
         data_obj[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(data_obj[cpop + "_rawdata"]);
-    data_obj._drawdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
-    //markerUtils.drawdata({searchInTree:false}); //mandatory options obj
 
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").style.display = "block";
