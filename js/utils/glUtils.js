@@ -885,7 +885,7 @@ glUtils.updateMarkerScale = function() {
     const globalMarkerSize = Number(document.getElementById("ISS_globalmarkersize_text").value);
     // Clamp the scale factor to avoid giant markers and slow rendering if the
     // user inputs a very large value (say 10000 or something)
-    glUtils._markerScale = Math.max(0.01, Math.min(5.0, globalMarkerSize / 100.0));
+    glUtils._markerScale = Math.max(0.01, Math.min(20.0, globalMarkerSize / 25.0));
 }
 
 
