@@ -180,6 +180,7 @@ tmapp.options_osd = {
 
 $( document ).ready(function() {
     let ISS_viewer = document.getElementById("ISS_viewer");
+    let ISS_viewer_container = document.getElementById("ISS_viewer_container");
     let ISS_menu = document.getElementById("ISS_menu");
     let full_ui = document.getElementById("main-ui");
 
@@ -221,4 +222,11 @@ $( document ).ready(function() {
             ISS_menu.classList.add("navbar-visible");
         }
     });
+
+    ISS_viewer_container.addEventListener("keypress", (event) => {
+        if (event.key === '0') {
+            interfaceUtils.toggleRightPanel();
+        }
+    });
 });
+
