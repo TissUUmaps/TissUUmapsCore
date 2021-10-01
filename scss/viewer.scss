@@ -35,15 +35,6 @@ body {
     display:inline-block;
 }
 
-.row-fullheight {
-    height:100%;
-    display:flex;
-    flex-flow:column;
-}
-.extended-height {
-    flex: 1 0 0;
-}
-
 .openseadragon-canvas svg {
     z-index:11;
 }
@@ -92,7 +83,8 @@ body {
     z-index: 100;
 }
 
-.tab-content {
+.tab-content:not(#markers-region-subtabs) {
+    height: 100vh !important;
     overflow-y: scroll;
 }
 

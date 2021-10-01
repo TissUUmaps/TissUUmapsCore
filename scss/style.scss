@@ -21,7 +21,7 @@ $navbar-padding-y: 0;
     background-color: white;
 }
 
-.tab-pane:not(#markers-regions-gui) {
+.tab-pane:not(#markers-regions-gui):not(#image-gui) {
     margin: 5px 0 0 5px;
 }
 
