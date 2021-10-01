@@ -7,6 +7,9 @@
 .ISS_menu {
   background-color: white; }
 
+.tab-pane:not(#markers-regions-gui) {
+  margin: 5px 0 0 5px; }
+
 /*!
  * Bootstrap v5.1.1 (https://getbootstrap.com/)
  * Copyright 2011-2021 The Bootstrap Authors
