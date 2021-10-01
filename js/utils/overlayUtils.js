@@ -147,7 +147,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
  overlayUtils.addLayerSlider = function() {
     if (document.getElementById("channelRangeInput") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "channelRange px-1 mx-1"
+        elt.className = "channelRange px-1 mx-1 rounded-3"
         elt.id = "channelRangeDiv"
         elt.style.zIndex = "100";
         var span = document.createElement('div');
@@ -156,7 +156,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         span.style.maxWidth="200px";
         span.style.overflow="hidden";
         var channelRange = document.createElement("input");
-        channelRange.classList.add("overlay-slider");
+        channelRange.classList.add("form-range");
         channelRange.type = "range";
         channelRange.style.width = "200px";
         channelRange.id = "channelRangeInput";

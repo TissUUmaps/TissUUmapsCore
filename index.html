@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark border-bottom border-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/">
                 <img src="misc/uulogowhitetuum.png" width="166" height="40" alt="Uppsala University Logotype">
@@ -94,7 +94,7 @@
                                         </div>
                                     </div>
                                      <!-- 1.1.1 Row of file selection -->
-                                     <div class="row" id="ISS_data_panel">
+                                     <div class="row my-2" id="ISS_data_panel">
                                          <div class="col-12">
                                             <div id="ISS_input_csv">
                                                 <label id="label_ISS_csv" for="ISS_csv">Import markers from CSV file:</label>
@@ -118,93 +118,93 @@
                                         </div>
                                     </div>
                                     <!-- 1.2 Row header selection -->
-                                    <div class="row d-none" id="ISS_csv_headers">
-                                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <div class="row my-2 d-none" id="ISS_csv_headers">
+                                        <div class="col-12">
                                             <div class="row">
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <label for="ISS_barcode_header">Barcode
-                                                        column</label>
+                                                <div class="col-6">
+                                                    <label for="ISS_barcode_header">Barcode column</label>
                                                 </div>
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <select class="custom-select"
-                                                        id="ISS_barcode_header">
-                                                        <option value="null"> </option>
+                                                <div class="col-6">
+                                                    <select class="form-select form-select-sm" id="ISS_barcode_header">
+                                                        <option value="null"></option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                                <div class="col-6">
                                                     <label for="ISS_name_header">Name column</label>
                                                 </div>
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <select class="custom-select" id="ISS_name_header">
+                                                <div class="col-6">
+                                                    <select class="form-select form-select-sm" id="ISS_name_header">
                                                         <option value="null"></option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                                <div class="col-6">
                                                     <label for="ISS_X_header">X column</label>
                                                 </div>
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <select class="custom-select" id="ISS_X_header">
+                                                <div class="col-6">
+                                                    <select class="form-select form-select-sm" id="ISS_X_header">
                                                         <option value="null"></option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                                <div class="col-6">
                                                     <label for="ISS_Y_header">Y column</label>
                                                 </div>
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <select class="custom-select" id="ISS_Y_header">
+                                                <div class="col-6">
+                                                    <select class="form-select form-select-sm" id="ISS_Y_header">
                                                         <option value="null"></option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                                <div class="col-6">
                                                     <label for="ISS_key_header">Key</label>
                                                 </div>
-                                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                    <select class="custom-select" id="ISS_key_header">
+                                                <div class="col-6">
+                                                    <select class="form-select form-select-sm" id="ISS_key_header">
                                                         <option value="letters">Barcode</option>
                                                         <option value="gene_name">Name</option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <a href="#advancedSettings" data-toggle="collapse" aria-expanded="false">[Advanced settings]</a>
+                                                <button class="btn btn-secondary" data-bs-target="#advancedSettings" data-bs-toggle="collapse" aria-expanded="false">Advanced settings</button>
                                             </div>
-                                            <div id="advancedSettings" class="collapse">
-                                                <div class="row">
-                                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                        <label for="ISS_color_header">Color (only if one color per marker)</label>
-                                                    </div>
-                                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                        <select class="custom-select" id="ISS_color_header">
-                                                            <option value="null"></option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                            <label for="ISS_scale_header">Scale (only if one scale per marker)</label>
+                                            <div id="advancedSettings" class="collapse my-2">
+                                                <div class="card card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <label for="ISS_color_header">Color (only if one color per marker)</label>
                                                         </div>
-                                                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                            <select class="custom-select" id="ISS_scale_header">
+                                                        <div class="col-6">
+                                                            <select class="form-select form-select-sm" id="ISS_color_header">
                                                                 <option value="null"></option>
                                                             </select>
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                        <label for="ISS_piechart_header">Pie-Charts</label>
-                                                    </div>
-                                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                                        <select class="custom-select" id="ISS_piechart_header">
-                                                            <option value="null"></option>
-                                                        </select>
+                                                        <div class="col-6">
+                                                                <label for="ISS_scale_header">Scale (only if one scale per marker)</label>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <select class="form-select form-select-sm" id="ISS_scale_header">
+                                                                    <option value="null"></option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                            <label for="ISS_piechart_header">Pie-Charts</label>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <select class="form-select form-select-sm" id="ISS_piechart_header">
+                                                                <option value="null"></option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -221,14 +221,14 @@
                                         </div>
                                     </div>
                                     <!-- 1.3 Row for barcode search -->
-                                    <div class="row d-none" id="ISS_searchmarkers_row">
+                                    <div class="row my-2 d-none" id="ISS_searchmarkers_row">
                                         <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
                                             <label for="ISS_search">Filter:</label>
                                             <input class="form-control" type="text" id="ISS_search">
                                         </div>
                                     </div>
                                     <!-- 1.4 Row for markers -->
-                                    <div class="row extended-height" id="ISS_markers">
+                                    <div class="row my-2 extended-height" id="ISS_markers">
 
                                     </div>
                                 </div>
@@ -356,7 +356,7 @@
                                 <div class="panel-body">
                                     <div class="row overflow-auto" id="image-overlay-panel">
                                     </div>
-                                    <div class="mt-2">
+                                    <div class="mx-4 mt-2">
                                         <a class="btn btn-primary" href="#filterSettings" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="filterSettings">
                                             Filter settings
                                         </a>
