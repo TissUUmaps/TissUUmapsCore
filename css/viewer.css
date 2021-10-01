@@ -4,12 +4,15 @@ body {
 
 .ISS_viewer {
   position: absolute;
-  height: calc(100vh - 50px);
   width: inherit;
+  height: 100vh;
   background-color: #676767; }
 
+.ISS_viewer.navbar-visible, .ISS_menu.navbar-visible {
+  height: calc(100vh - 50px) !important; }
+
 .ISS_menu {
-  height: calc(100vh - 50px);
+  height: 100vh;
   padding-left: 6px; }
 
 #ISS_markers {

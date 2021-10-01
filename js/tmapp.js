@@ -177,3 +177,33 @@ tmapp.options_osd = {
     maxImageCacheCount:500,
     imageSmoothingEnabled:false
 }
+
+$( document ).ready(function() {
+    let ISS_viewer = document.getElementById("ISS_viewer");
+    let ISS_menu = document.getElementById("ISS_menu");
+    let full_ui = document.getElementById("main-ui");
+
+    ISS_viewer.addEventListener('dblclick', function (e) {
+        // Open in fullscreen if double clicked
+        if (full_ui.requestFullscreen) {
+            full_ui.requestFullscreen();
+        } else if (full_ui.webkitRequestFullscreen) { /* Safari */
+            full_ui.webkitRequestFullscreen();
+        } else if (full_ui.msRequestFullscreen) { /* IE11 */
+            full_ui.msRequestFullscreen();
+        }
+    });
+
+    full_ui.addEventListener('fullscreenchange', (event) => {
+        // document.fullscreenElement will point to the element that
+        // is in fullscreen mode if there is one. If not, the value
+        // of the property is null.
+        if (document.fullscreenElement) {
+            ISS_viewer.classList.remove("navbar-visible");
+            ISS_menu.classList.remove("navbar-visible");
+        } else {
+            ISS_viewer.classList.add("navbar-visible");
+            ISS_menu.classList.add("navbar-visible");
+        }
+    });
+});
