@@ -185,12 +185,27 @@ $( document ).ready(function() {
 
     ISS_viewer.addEventListener('dblclick', function (e) {
         // Open in fullscreen if double clicked
-        if (full_ui.requestFullscreen) {
-            full_ui.requestFullscreen();
-        } else if (full_ui.webkitRequestFullscreen) { /* Safari */
-            full_ui.webkitRequestFullscreen();
-        } else if (full_ui.msRequestFullscreen) { /* IE11 */
-            full_ui.msRequestFullscreen();
+        let bIsFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+        if (!bIsFullscreen) {
+            if (full_ui.requestFullscreen) {
+                full_ui.requestFullscreen();
+            } else if (full_ui.webkitRequestFullscreen) {
+                full_ui.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            } else if (full_ui.msRequestFullscreen) {
+                full_ui.msRequestFullscreen();
+            } else if (full_ui.webkitRequestFullscreen) {
+                full_ui.mozRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen()
+            } else if (document.webkitCancelFullScreen) {
+                document.webkitCancelFullScreen();
+            } else if (document.webkitCancelFullScreen) {
+                document.msCancelFullScreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen()
+            }
         }
     });
 
