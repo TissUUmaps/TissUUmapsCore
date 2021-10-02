@@ -170,7 +170,10 @@ dataUtils.processISSRawData = function () {
         markerUtils.addPiechartLegend();
     }
     else {
-        document.getElementById("piechartLegend").classList.add("d-none");
+        let piechartLegend = document.getElementById("piechartLegend")
+        if (piechartLegend !== null) {
+            piechartLegend.classList.add("d-none");
+        }
     }
 }
 
