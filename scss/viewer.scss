@@ -53,19 +53,32 @@ body {
     display:None;
     text-align:center;
 }
+
 #ISS_drawregions_btn.btn-primary:before {
     content:"☑";
     font-size:20px;
     line-height: 14px;
 }
+
 #ISS_drawregions_btn.btn-secondary:before {
     content:"☐";
     font-size:20px;
     line-height: 14px;
 }
+
 #ISS_table {
-    user-select:none;
+    user-select: none;
+    font-size: 13px;
 }
+
+#ISS_table input[type=color] {
+    padding: 3px 3px 3px 3px;
+}
+
+#ISS_table td {
+    vertical-align: middle;
+}
+
 #ISS_collapse_btn {
     display: block;
     position: absolute;

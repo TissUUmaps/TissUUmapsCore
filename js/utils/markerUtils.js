@@ -1,21 +1,21 @@
 /**
  * @namespace markerUtils
  * @classdesc Work with anything that has to do with markers, take options from the interface
-  about markers, and create markers  
+  about markers, and create markers
    * @property {Bool}     markerUtils._drawPaths -draw D3 symbols (true)  or a D3 rect (false)
-   * @property {Number}     markerUtils._globalMarkerSize - 
+   * @property {Number}     markerUtils._globalMarkerSize -
    * @property {Number}   markerUtils._uniqueColor - Keep then number of drawn regions and also let them be the id, 
-   * @property {String} markerUtils._uniqueColorSelector - 
+   * @property {String} markerUtils._uniqueColorSelector -
    * @property {Bool} markerUtils._uniqueScale -
    * @property {String} markerUtils._uniqueScaleSelector -
    * @property {Bool} markerUtils._uniquePiechart -
    * @property {String} markerUtils._uniquePiechartSelector -
-   * @property {Number}   markerUtils._startCullingAt - 
-   * @property {Obj}   markerUtils._checkBoxes - 
-   * @property {Array(String)}   markerUtils._d3Symbols -  
-   * @property {Array(String)}   markerUtils._d3SymbolStrings - 
-   * * @property {Object}  markerUtils._colorsperkey - load colors per key if known previously 
-   * 
+   * @property {Number}   markerUtils._startCullingAt -
+   * @property {Obj}   markerUtils._checkBoxes -
+   * @property {Array(String)}   markerUtils._d3Symbols -
+   * @property {Array(String)}   markerUtils._d3SymbolStrings -
+   * * @property {Object}  markerUtils._colorsperkey - load colors per key if known previously
+   *
 */
 
 markerUtils = {
@@ -41,7 +41,7 @@ markerUtils = {
     _headerNames:{"Barcode":"Barcode","Gene":"Gene"}
 }
 
-/** 
+/**
  * Draw a D3 symbol
  * @param {string} group d3 group where to put this marker at.
  * @param {sring} type [symbolCross, symbolDiamond, symbolSquare, symbolTriangle, symbolStar, symbolWye, symbolCircle]
@@ -63,7 +63,7 @@ markerUtils.drawSymbol = function (group, type, x, y, size, color, barcode, glob
 
 }
 
-/** 
+/**
  * Draw a D3 rect, rects are drawn faster in the svg engines
  * @param {Number} x x coordinate normalized by the width of the image
  * @param {Number} y y coordinate normalized by the width of the image... YES it is the width as well
@@ -79,7 +79,7 @@ markerUtils.drawd3rect = function (x, y, size, color, barcode) {
         .attr("x", Number(x)).attr("width", Number(size)).attr("y", Number(y)).attr("height", Number(size));
 }
 
-/** 
+/**
  * Remove the svg group that contains a certain barcode
  * @param {string} barcode Barcode to erase
  * */
@@ -112,10 +112,10 @@ markerUtils.drawCPdata= function(options){
     var y = function (d) {
         return d[yselector];
     };
-    
+
     if(!CPDataUtils[cpop + "_tree"])
         console.log("CP tree does not exist");
-    
+
     //make sure there is a group to draw into
     var svggroupname=cpop+"_prop_"+propertyselector+"_svgnode";
 
@@ -135,7 +135,7 @@ markerUtils.drawCPdata= function(options){
     var msize=CPDataUtils._markersize;
     var searchInTree=options.searchInTree || false;
     if(searchInTree || false){
-        data=CPDataUtils.arrayOfElementsInBox(options.xmin, options.ymin, options.xmax, options.ymax, 
+        data=CPDataUtils.arrayOfElementsInBox(options.xmin, options.ymin, options.xmax, options.ymax,
                 {xselector:xselector,yselector:yselector});
         overlayUtils._d3nodes[svggroupname].attr("drawn")!="treedata"
     }else{
@@ -143,7 +143,7 @@ markerUtils.drawCPdata= function(options){
         data=CPDataUtils[cpop+"_subsampled_data"];
         overlayUtils._d3nodes[svggroupname].attr("drawn")!="subsampled"
     }
-     
+
 
     overlayUtils._d3nodes[svggroupname].selectAll("*").remove();
     data.forEach(function(d){
@@ -164,13 +164,11 @@ markerUtils.drawCPdata= function(options){
         .attr("y", y-msize/2)
         .attr("height",msize);
     });
-    
-
 }
 
-/** 
+/**
  * Draws all the markers from a non downsambled version of the barcode. Mostly for checking purposes
- * and is only invoked by code in a console. 
+ * and is only invoked by code in a console.
  * @param {string} barcode */
 markerUtils.drawAllFromNonDownsampledBarcode = function (barcode) {
     var op = tmapp["object_prefix"];
@@ -224,9 +222,9 @@ markerUtils.drawAllFromNonDownsampledBarcode = function (barcode) {
     });
 }
 
-/** 
+/**
  * Draws all the markers from a all non downsambled version of all data. Mostly for
- * visualization  purposes and is only invoked by code in a console. 
+ * visualization  purposes and is only invoked by code in a console.
  * WILL TAKE A SUPER LONG TIME IF THE TOTAL AMOUNT OF BARCODES IS BIGGER THAN 50K
  *  */
 markerUtils.drawAllFromNonDownsampled = function () {
@@ -242,8 +240,8 @@ markerUtils.drawAllFromNonDownsampled = function () {
 
 
 
-/** 
- * Draws all the markers from a DOWNSAMPLED version of the barcode. Invoked when the OSDviewer 
+/**
+ * Draws all the markers from a DOWNSAMPLED version of the barcode. Invoked when the OSDviewer
  * covers a very big portion of the image meaning we are looking at a low resolution therefore
  * no need to draw all barcodes.
  * @param {string} barcode */
@@ -300,8 +298,8 @@ markerUtils.drawAllFromBarcode = function (barcode) {
     });
 }
 
-/** 
- * Draws all the markers from a precomputed LIST of a barcode. Invoked when the OSDviewer 
+/**
+ * Draws all the markers from a precomputed LIST of a barcode. Invoked when the OSDviewer
  * covers a very big portion of the image meaning we are looking at a low resolution therefore
  * no need to draw all barcodes.
  * @param {Array} list */
@@ -382,8 +380,8 @@ markerUtils.drawAllFromList = function (list) {
 
 }
 
-/** 
- * Checkbox to know if barcode from it should be drawn or removed 
+/**
+ * Checkbox to know if barcode from it should be drawn or removed
  * @param {htmlnode} barcodeBox Checkbox to know if barcode from it should be drawn or removed  */
 markerUtils.markerBoxToggle = function (barcodeBox) {
     if (tmapp["hideSVGMarkers"]) return;  // We are using WebGL instead for the drawing
@@ -399,12 +397,12 @@ markerUtils.markerBoxToggle = function (barcodeBox) {
     }
 }
 
-/** 
+/**
  * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
- * clicking the box invokes the drawing of the marker or erase. 
- * Selects a color based on the barcode letters so that the color are different versions of 
+ * clicking the box invokes the drawing of the marker or erase.
+ * Selects a color based on the barcode letters so that the color are different versions of
  * the four corners of Ycbcr. Chooses a random shape
- * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
+ * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)}
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
  * options.drawGeneName is there and it is true it will draw the column "name" and omit it otherwise
  * @returns {htmlnode} The nicely formated row for our markerUi table
@@ -419,6 +417,7 @@ markerUtils.markerUI = function (barObject,options) {
     var check = HTMLElementUtils.createElement({ type: "td" });
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: barObject.key.replace(/\W/g, '') + "-checkbox-" + op,
+        class: "form-check-input",
         extraAttributes: { barcode: barObject.key },
         eventListeners: { click: function () {
             markerUtils.markerBoxToggle($(this));
@@ -432,19 +431,34 @@ markerUtils.markerUI = function (barObject,options) {
 
     if(options.drawGeneLetters){
         var barcodeLetters=barObject.values[0].letters;
-        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML: "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+barcodeLetters+" </label>",
-            extraAttributes: { "title": barcodeLetters, "data-title":barcodeLetters } });
+        var lettersrow = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML: "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+barcodeLetters+" </label>",
+            extraAttributes: {
+                "title": barcodeLetters,
+                "data-title":barcodeLetters
+            }
+        });
         row.appendChild(lettersrow);
     }
 
     if(options.drawGeneName){
         var gn=barObject.values[0].gene_name;
-        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+gn+" </label>",
-            extraAttributes: { "title": gn, "data-title":gn } });
+        var name = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+gn+" </label>",
+            extraAttributes: {
+                "title": gn,
+                "data-title": gn
+            }
+        });
         row.appendChild(name);
     }
 
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: barObject.values.length });
+    var amount = HTMLElementUtils.createElement({
+        type: "td",
+        innerText: barObject.values.length
+    });
     row.appendChild(amount);
 
     if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
@@ -461,7 +475,14 @@ markerUtils.markerUI = function (barObject,options) {
         }
         thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
         var color = HTMLElementUtils.createElement({ type: "td" });
-        var colorinput = HTMLElementUtils.inputTypeColor({ id: barObject.key + "-color-" + op, extraAttributes: { value: thecolor } })
+        var colorinput = HTMLElementUtils.inputTypeColor({
+            id: barObject.key + "-color-" + op,
+            extraAttributes: {
+                value: thecolor
+            }
+        });
+        colorinput.classList.add("form-control");
+        colorinput.classList.add("form-control-color");
         color.appendChild(colorinput);
         row.appendChild(color);
 
@@ -472,10 +493,20 @@ markerUtils.markerUI = function (barObject,options) {
 
     if (!markerUtils._uniquePiechart) {
         var shape = HTMLElementUtils.createElement({ type: "td" });
-        var shapeParams = { random: markerUtils._randomShape, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
+        var shapeParams = {
+            random: markerUtils._randomShape,
+            id: barObject.key + "-shape-" + op,
+            class: "form-select form-select-sm",
+            "options": markerUtils._d3SymbolStrings
+        };
         var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
-        if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
-        else {shapeinput.selectedIndex = markerUtils._selectedShape}
+        if (shapeParams.random) {
+            var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0;
+            shapeinput.selectedIndex = rnd;
+        }
+        else {
+            shapeinput.selectedIndex = markerUtils._selectedShape
+        }
         shape.appendChild(shapeinput);
         row.appendChild(shape);
     }
@@ -490,19 +521,22 @@ markerUtils.markerUI = function (barObject,options) {
     return row;
 }
 
-/** 
+/**
  * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
- * clicking the box invokes the drawing of the marker or erase. 
- * Selects a color based on the barcode letters so that the color are different versions of 
+ * clicking the box invokes the drawing of the marker or erase.
+ * Selects a color based on the barcode letters so that the color are different versions of
  * the four corners of Ycbcr. Chooses a random shape
- * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
+ * @param {Object} barObject coming from dataUtils[op+_data] which looks like this {key: "AGGGC", values: Array(1234)}
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
  * options.drawGeneName is there and it is true it will draw the column "name" and omit it otherwise
  * @returns {htmlnode} The nicely formated row for our markerUi table
  * */
 markerUtils.markerUIAll = function (options) {
     var op = tmapp["object_prefix"];
-    var row = HTMLElementUtils.createElement({ type: "tr", id: "allbarcodes-tr" });
+    var row = HTMLElementUtils.createElement({
+        type: "tr",
+        id: "allbarcodes-tr"
+    });
 
     //var tdkey = HTMLElementUtils.createElement({ type: "td", innerText: barObject.key });
     //row.appendChild(tdkey);
@@ -510,30 +544,46 @@ markerUtils.markerUIAll = function (options) {
     var check = HTMLElementUtils.createElement({ type: "td" });
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: "AllMarkers-checkbox-" + op,
+        class: "form-check-input",
         eventListeners: { click: function () { 
             // TODO: Remove JQuery dependency here?
             $("#ISS_table input[type=checkbox]").prop("checked",$("#AllMarkers-checkbox-ISS").prop("checked"));
          } }
     });
-    
+
     check.appendChild(checkinput);
     row.appendChild(check);
     if(options.drawGeneLetters){
-        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
-            extraAttributes: { "title": "All", "data-title":"All" } });
+        var lettersrow = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: {
+                "title": "All",
+                "data-title":"All"
+            }
+        });
         row.appendChild(lettersrow);
     }
 
     if(options.drawGeneName){
-        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
-            extraAttributes: { "title": "All", "data-title":"All" } });
+        var name = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: {
+                "title": "All",
+                "data-title":"All"
+            }
+        });
         row.appendChild(name);
     }
     var length = 0;
     dataUtils[op + "_data"].forEach(function (barcode) {
         length += barcode.values.length;
     });
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: length });
+    var amount = HTMLElementUtils.createElement({
+        type: "td",
+        innerText: length
+    });
     row.appendChild(amount);
 
     if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
