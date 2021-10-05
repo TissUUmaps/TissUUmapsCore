@@ -63,6 +63,10 @@ tmapp.init = function () {
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+    // Disable keyboard hack
+    tmapp[vname].innerTracker.keyHandler = null;
+    tmapp[vname].innerTracker.keyDownHandler = null;
+    tmapp[vname].innerTracker.keyPressHandler = null;
 
     if(!tmapp.layers){
         tmapp.layers = [];
@@ -214,6 +218,7 @@ $( document ).ready(function() {
         toggleFullscreen();
     });
 
+    let full_ui = document.getElementById("main-ui");
     full_ui.addEventListener('fullscreenchange', (event) => {
         // document.fullscreenElement will point to the element that
         // is in fullscreen mode if there is one. If not, the value
@@ -228,8 +233,10 @@ $( document ).ready(function() {
     });
 
     ISS_viewer_container.addEventListener("keypress", (event) => {
-        if (event.key === '0') {
+        if (event.key === "0") {
             interfaceUtils.toggleRightPanel();
+        } else if (event.key === "f") {
+            toggleFullscreen();
         }
     });
 });
