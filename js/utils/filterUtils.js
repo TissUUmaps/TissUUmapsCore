@@ -302,14 +302,15 @@
     label.innerHTML = "Merging mode:&nbsp;";
     settingsPanel.appendChild(label);
     select = HTMLElementUtils.selectTypeDropDown(modeParams);
+    select.classList.add("form-select", "form-select-sm");
     select.value = filterUtils._compositeMode;
     filterUtils.setCompositeOperation();
     settingsPanel.appendChild(select);
     filterUtils.getFilterItems();
 }
 
-/** 
- * @param {Number} filterName 
+/**
+ * @param {Number} filterName
  * Get params for a given filter */
 filterUtils.getFilterParams = function(filterName) {
     filterParams = filterUtils._filters[filterName].params;
