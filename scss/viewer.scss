@@ -26,6 +26,11 @@ body {
     overflow-y: auto;
 }
 
+#ISS_marker_info {
+    z-index: 19;
+    pointer-events: none;
+}
+
 .navbar {
     border-radius: 0px !important;
 }
