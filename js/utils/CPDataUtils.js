@@ -38,7 +38,7 @@ CPDataUtils.processISSRawData = function () {
     var yselector=CPY.value;
     var CPLut = document.getElementById(cpop+"_colorscale");
     var interpFunction=CPLut.value;
-    
+
     var x = function (d) {
         return d[xselector];
     };
@@ -46,12 +46,12 @@ CPDataUtils.processISSRawData = function () {
         return d[yselector];
     };
     if(!CPDataUtils[cpop + "_tree"])
-        CPDataUtils[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(CPDataUtils[cpop + "_rawdata"]);  
+        CPDataUtils[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(CPDataUtils[cpop + "_rawdata"]);
     CPDataUtils._drawCPdata=!tmapp["hideSVGMarkers"];  // SVG markers should not be drawn when WebGL is used
     markerUtils.drawCPdata({searchInTree:false}); //mandatory options obj
-    
+
     if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
+        document.getElementById("ISS_globalmarkersize").classList.remove("d-none");
     }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing

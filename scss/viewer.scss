@@ -27,7 +27,7 @@ body {
 }
 
 .navbar {
-    border-radius: 0px !important; 
+    border-radius: 0px !important;
 }
 
 .range-label {
@@ -47,11 +47,8 @@ body {
     position: absolute;
     right: 10px;
     top: 10px;
-    background-color: rgba(255,255,255,0.85);
     z-index: 13;
-    padding: 4px;
-    display:None;
-    text-align:center;
+    text-align: center;
 }
 
 #ISS_drawregions_btn.btn-primary:before {
@@ -101,7 +98,8 @@ body {
     overflow-y: scroll;
 }
 
-#channelRangeDiv {
+.viewer-layer {
     background-color: white;
     opacity: 70%;
+    border-radius: .3rem;
 }

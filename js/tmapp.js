@@ -131,8 +131,10 @@ tmapp.init = function () {
 
     elt = document.getElementById("ISS_globalmarkersize");
     if (elt) {
-        tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
-        elt.style.display="None";
+        tmapp[vname].addControl(elt,{
+            anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT
+        });
+        elt.classList.add("d-none");
     }
 
     if (tmapp.mpp != 0) {

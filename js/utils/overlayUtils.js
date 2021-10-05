@@ -147,7 +147,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
  overlayUtils.addLayerSlider = function() {
     if (document.getElementById("channelRangeInput") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "channelRange px-1 mx-1 rounded-3"
+        elt.className = "channelRange px-1 mx-1 viewer-layer";
         elt.id = "channelRangeDiv"
         elt.style.zIndex = "100";
         var span = document.createElement('div');

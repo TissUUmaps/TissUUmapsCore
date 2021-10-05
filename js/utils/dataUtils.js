@@ -153,9 +153,9 @@ dataUtils.processISSRawData = function () {
         });
         dataUtils[op + "_processeddata"].push(obj);
     });
-    
+
     dataUtils.makeQuadTrees();
-    
+
     delete dataUtils[op + "_rawdata"];
     if (document.getElementById("ISS_globalmarkersize")) {
         document.getElementById("ISS_globalmarkersize").classList.remove("d-none");

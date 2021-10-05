@@ -53,13 +53,13 @@
                 <div id="ISS_viewer" class="ISS_viewer navbar-visible">
                 </div>
                 <!-- Global marker size slider -->
-                <div id="ISS_globalmarkersize">
-                    <label>Marker size</label><br>
-                    <input class="form-control " type="range"
+                <div id="ISS_globalmarkersize" class="px-1 mx-1 viewer-layer">
+                    <label class="form-label">Marker size: 
+                    <em class="form-label" id="ISS_globalmarkersize_label">100</em></label><br>
+                    <input class="form-range" type="range"
                         id="ISS_globalmarkersize_text"
                         value="100" min="0" max="500" step="10"
                         oninput="document.getElementById('ISS_globalmarkersize_label').innerHTML = this.value;"/>
-                    <em class="range-label" id="ISS_globalmarkersize_label">100</em>
                 </div>
             </div>
             <div class="btn btn-primary" id="ISS_collapse_btn">&#9654;</div>
