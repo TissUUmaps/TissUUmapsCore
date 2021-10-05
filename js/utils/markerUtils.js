@@ -896,13 +896,8 @@ markerUtils.addPiechartLegend = function () {
         return;
     if (document.getElementById("piechartLegend") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "piechartLegend"
+        elt.className = "piechartLegend px-1 mx-1 viewer-layer"
         elt.id = "piechartLegend"
-        elt.style.zIndex = "100";
-        elt.style.paddingLeft = "5px";
-        elt.style.paddingBottom = "2px";
-        elt.style.overflowY = "auto";
-        elt.style.maxHeight = "Calc(100vh - 245px)";
         tmapp['ISS_viewer'].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
     }
     elt = document.getElementById("piechartLegend");

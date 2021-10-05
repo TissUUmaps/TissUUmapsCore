@@ -51,6 +51,13 @@ body {
     text-align: center;
 }
 
+#piechartLegend {
+    left: 10px;
+    top: 10px;
+    overflow-y: auto;
+    max-height: calc(100vh - 245px);
+    z-index: 13;
+}
 #ISS_drawregions_btn.btn-primary:before {
     content:"☑";
     font-size:20px;
