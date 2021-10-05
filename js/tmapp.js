@@ -210,6 +210,28 @@ function toggleFullscreen() {
     }
 }
 
+function toggleNavbar(turn_on = null) {
+    let main_navbar = document.getElementsByTagName("nav")[0];
+    let ISS_viewer = document.getElementById("ISS_viewer");
+    let ISS_menu = document.getElementById("ISS_menu");
+
+    if (turn_on === true) {
+        main_navbar.classList.remove("d-none");
+        ISS_viewer.classList.add("navbar-visible");
+        ISS_menu.classList.add("navbar-visible");
+    } else if (turn_on === false) {
+        main_navbar.classList.add("d-none");
+        ISS_viewer.classList.remove("navbar-visible");
+        ISS_menu.classList.remove("navbar-visible");
+    } else if (turn_on === null) {
+        if (ISS_viewer.classList.contains("navbar-visible")) {
+            toggleNavbar(false);
+        } else {
+            toggleNavbar(true);
+        }
+    }
+}
+
 $( document ).ready(function() {
     let ISS_viewer = document.getElementById("ISS_viewer");
     let ISS_viewer_container = document.getElementById("ISS_viewer_container");
@@ -226,11 +248,9 @@ $( document ).ready(function() {
         // is in fullscreen mode if there is one. If not, the value
         // of the property is null.
         if (document.fullscreenElement) {
-            ISS_viewer.classList.remove("navbar-visible");
-            ISS_menu.classList.remove("navbar-visible");
+            toggleNavbar(false);
         } else {
-            ISS_viewer.classList.add("navbar-visible");
-            ISS_menu.classList.add("navbar-visible");
+            toggleNavbar(true);
         }
     });
 
