@@ -178,36 +178,40 @@ tmapp.options_osd = {
     imageSmoothingEnabled:false
 }
 
+function toggleFullscreen() {
+    let full_ui = document.getElementById("main-ui");
+    let bIsFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+    if (!bIsFullscreen) {
+        if (full_ui.requestFullscreen) {
+            full_ui.requestFullscreen();
+        } else if (full_ui.webkitRequestFullscreen) {
+            full_ui.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        } else if (full_ui.msRequestFullscreen) {
+            full_ui.msRequestFullscreen();
+        } else if (full_ui.webkitRequestFullscreen) {
+            full_ui.mozRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen()
+        } else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+            document.msCancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen()
+        }
+    }
+}
+
 $( document ).ready(function() {
     let ISS_viewer = document.getElementById("ISS_viewer");
     let ISS_viewer_container = document.getElementById("ISS_viewer_container");
     let ISS_menu = document.getElementById("ISS_menu");
-    let full_ui = document.getElementById("main-ui");
 
     ISS_viewer.addEventListener('dblclick', function (e) {
         // Open in fullscreen if double clicked
-        let bIsFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
-        if (!bIsFullscreen) {
-            if (full_ui.requestFullscreen) {
-                full_ui.requestFullscreen();
-            } else if (full_ui.webkitRequestFullscreen) {
-                full_ui.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-            } else if (full_ui.msRequestFullscreen) {
-                full_ui.msRequestFullscreen();
-            } else if (full_ui.webkitRequestFullscreen) {
-                full_ui.mozRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen()
-            } else if (document.webkitCancelFullScreen) {
-                document.webkitCancelFullScreen();
-            } else if (document.webkitCancelFullScreen) {
-                document.msCancelFullScreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen()
-            }
-        }
+        toggleFullscreen();
     });
 
     full_ui.addEventListener('fullscreenchange', (event) => {
