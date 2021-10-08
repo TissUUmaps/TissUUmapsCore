@@ -33,13 +33,13 @@ interfaceUtils.listen= function(domid,event,handler,debug){
 
 /** Get the region to be analyzed  */
 interfaceUtils.analyzeRegionUI = function (callingbutton) {
-	var op = tmapp["object_prefix"];
+    var op = tmapp["object_prefix"];
 
-	if (!dataUtils[op + "_barcodeGarden"]) {
-		alert("Load markers first");
-		return;
+    if (!dataUtils[op + "_barcodeGarden"]) {
+        alert("Load markers first");
+        return;
     }
-    
+
     var regionid = callingbutton[0].getAttribute("parentRegion");
     regionUtils.analyzeRegion(regionid);
 }
@@ -47,8 +47,8 @@ interfaceUtils.analyzeRegionUI = function (callingbutton) {
 
 /** Get the region to be filled  */
 interfaceUtils.fillRegionUI = function (callingbutton) {
-	var regionid = callingbutton[0].getAttribute("parentRegion");
-	regionUtils.fillRegion(regionid);
+    var regionid = callingbutton[0].getAttribute("parentRegion");
+    regionUtils.fillRegion(regionid);
 }
 
 /** Delete a RegionUI  */
@@ -57,12 +57,12 @@ interfaceUtils.deleteRegionUI = function(callingbutton) {
     regionUtils.deleteRegion(regionid);
 }
 
-/** 
- * @param {HTMLelement} callingbutton Button element containing parent region information 
+/**
+ * @param {HTMLelement} callingbutton Button element containing parent region information
  *  Get the info of the region that has to be changed */
 interfaceUtils.changeRegionUI = function (callingbutton) {
-	var regionid = callingbutton[0].getAttribute("parentRegion");
-	regionUtils.changeRegion(regionid);
+    var regionid = callingbutton[0].getAttribute("parentRegion");
+    regionUtils.changeRegion(regionid);
 }
 
 /** 

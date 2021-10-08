@@ -126,7 +126,7 @@ regionUtils.closePolygon = function () {
     regionUtils._isNewRegion = true;
     regionUtils.addRegion([[regionUtils._currentPoints]], regionid, hexcolor);
     regionUtils._currentPoints = null;
-    regionsobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionid].points)).attr("id", regionid + "poly")
+    regionsobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionid].points)).attr("id", regionid + "_poly")
         .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
         .style("stroke", hexcolor).style("fill", "none");
     
@@ -145,12 +145,9 @@ regionUtils.createImportedRegion = function (region) {
         console.log(region.id+" has length 0, recalculating length");
         region.len=region.points.length;
     }
-    regionsobj.append('path').attr("d", regionUtils.pointsToPath(region.points)).attr("id", region.id + "poly")
+    regionsobj.append('path').attr("d", regionUtils.pointsToPath(region.points)).attr("id", region.id + "_poly")
         .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
         .style("stroke", hexcolor).style("fill", "none");
-    /*regionsobj.append('polygon').attr("points", tempointarray).attr("id", region.id + "poly")
-        .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-        .style("stroke", hexcolor).style("fill", "none");*/
     regionUtils.regionUI(region.id);
     if (region.filled) {
         region.filled = false;
@@ -230,59 +227,165 @@ regionUtils.regionUI = function (regionid) {
     var op = tmapp["object_prefix"];
     var regionsPanel = document.getElementById("markers-regions-panel");
 
-    var rPanel = HTMLElementUtils.createPanel({ id: op + regionid + "panel", headingInnerText: regionid });
+    var rPanel = HTMLElementUtils.createElement({
+        type: "div",
+        id: op + regionid + "_panel",
+        headingInnerText: regionid,
+        extraAttributes: {
+            class: "card"
+        }
+    });
     regionsPanel.appendChild(rPanel);
+    var rpanelbody = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "card-body"
+        }
+    });
+    rPanel.appendChild(rpanelbody);
 
-    var rpanelbody = HTMLElementUtils.getFirstChildByClass(rPanel, "panel-body");
-    rpanelbody.setAttribute("style", "padding-top: 0px;");
-    var rpanelheading = HTMLElementUtils.getFirstChildByClass(rPanel, "panel-heading");
+    var rpanelheading = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "card-title"
+        }
+    });
+    rpanelbody.appendChild(rpanelheading);
+    var rpanelsubheading = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "card-subtitle mb-2 text-muted"
+        }
+    });
+    rpanelbody.appendChild(rpanelsubheading);
+    var rpanelcontent = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "card-body py-0"
+        }
+    });
+    rpanelbody.appendChild(rpanelcontent);
 
-    var form=HTMLElementUtils.createForm({extraAttributes: { class:"form-inline", onsubmit:"return false;"} });
-    var formgroupcolor= HTMLElementUtils.createElement({type:"div",extraAttributes: {style:"max-width: 20%;", class:"form-group"} });
-    var formgroupname= HTMLElementUtils.createElement({type:"div",extraAttributes: {style:"max-width: 30%;  padding:0px 3px 0px 3px;", class:"form-group"} });
-    var formgroupclass= HTMLElementUtils.createElement({type:"div",extraAttributes: { style:"max-width: 30%;  padding:0px 3px 0px 3px;",class:"form-group"} });
+    // Content of the card
+    var form = HTMLElementUtils.createForm({
+        extraAttributes: {
+            class:"form-inline",
+            onsubmit:"return false;"
+        }
+    });
+    rpanelcontent.appendChild(form);
+    var row1 = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "row my-1"
+        }
+    });
+    var row2 = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "row my-1"
+        }
+    });
+    var row3 = HTMLElementUtils.createElement({
+        type: "div",
+        extraAttributes: {
+            class: "row region-histogram my-1"
+        }
+    });
+    form.appendChild(row1);
+    form.appendChild(row2);
+    form.appendChild(row3);
 
-    var regioncolorinput = HTMLElementUtils.inputTypeColor({ id: regionid + "color_input" });
-    if (document.getElementById(regionid + "poly")) {
-        var regionpoly = document.getElementById(regionid + "poly");
+    var regioncolorinput = HTMLElementUtils.inputTypeColor({
+        id: regionid + "_color_input",
+        extraAttributes: {
+            class: "col-2 mx-1 form-control form-control-color"
+        }
+    });
+
+    if (document.getElementById(regionid + "_poly")) {
+        var regionpoly = document.getElementById(regionid + "_poly");
         regioncolorinput.setAttribute("value", regionpoly.getAttribute("polycolor"));
     } else if (regionUtils._regions[regionid].polycolor) {
         regioncolorinput.setAttribute("value", regionUtils._regions[regionid].polycolor);
     }
-    formgroupcolor.appendChild(regioncolorinput);
+    row1.appendChild(regioncolorinput);
 
-    var regionnametext = HTMLElementUtils.inputTypeText({ id: regionid + "name_ta", extraAttributes: { size:9, placeholder: "name",class:" input-sm form-control " } });
-    formgroupname.appendChild(regionnametext);
+    var regionnametext = HTMLElementUtils.inputTypeText({
+        id: regionid + "_name_ta",
+        extraAttributes: {
+            size:9,
+            placeholder: "name",
+            class: "col mx-1 input-sm form-control"
+        }
+    });
+    row1.appendChild(regionnametext);
 
-    var regionclasstext = HTMLElementUtils.inputTypeText({ id: regionid + "class_ta", extraAttributes: {size:9, placeholder: "class",class:" input-sm form-control " } });
-    formgroupclass.appendChild(regionclasstext);
-    
-    form.appendChild(formgroupcolor);
-    form.appendChild(formgroupname);
-    form.appendChild(formgroupclass);
+    var regionclasstext = HTMLElementUtils.inputTypeText({
+        id: regionid + "_class_ta",
+        extraAttributes: {
+            size: 9,
+            placeholder: "class",
+            class: "col mx-1 input-sm form-control"
+        }
+    });
+    row1.appendChild(regionclasstext);
 
     //button to set new features of region
-    var regionsetbutton = HTMLElementUtils.createButton({ id: regionid + "set_btn", innerText: "Set", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
-    regionsetbutton.addEventListener('click', function () { interfaceUtils.changeRegionUI($(this)); });
+    var regionsetbutton = HTMLElementUtils.createButton({
+        id: regionid + "_set_btn",
+        innerText: "Set",
+        extraAttributes: {
+            parentRegion: regionid,
+            class: "col btn btn-primary btn-sm form-control mx-1"
+        }
+    });
+    regionsetbutton.addEventListener('click', function () {
+        interfaceUtils.changeRegionUI($(this));
+    });
 
     //button to fill polygon
-    var regionsfillbutton = HTMLElementUtils.createButton({ id: regionid + "fill_btn", innerText: "Fill", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
-    regionsfillbutton.addEventListener('click', function () { interfaceUtils.fillRegionUI($(this)); });
+    var regionsfillbutton = HTMLElementUtils.createButton({
+        id: regionid + "_fill_btn",
+        innerText: "Fill",
+        extraAttributes: {
+            parentRegion: regionid,
+            class: "col btn btn-primary btn-sm form-control mx-1"
+        }
+    });
+    regionsfillbutton.addEventListener('click', function () {
+        interfaceUtils.fillRegionUI($(this));
+    });
 
-    var regionanalyzebutton = HTMLElementUtils.createButton({ id: regionid + "analyze_btn", innerText: "Analyze", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid, class:" btn btn-primary btn-sm form-control"} });
-    regionanalyzebutton.addEventListener('click', function () { interfaceUtils.analyzeRegionUI($(this)); });
-    
+    var regionanalyzebutton = HTMLElementUtils.createButton({
+        id: regionid + "_analyze_btn",
+        innerText: "Analyze",
+        extraAttributes: {
+            parentRegion: regionid,
+            class: "col btn btn-primary btn-sm form-control mx-1"
+        }
+    });
+    regionanalyzebutton.addEventListener('click', function () {
+        interfaceUtils.analyzeRegionUI($(this));
+    });
+
     //button to remove region
-    var regionsdeletebutton = HTMLElementUtils.createButton({ id: regionid + "delete_btn", innerText: "Delete region", extraAttributes: {style:"margin:0px 2px 0px 2px;", parentRegion: regionid,class:" btn btn-primary btn-sm form-control" } });
-    regionsdeletebutton.addEventListener('click', function () { interfaceUtils.deleteRegionUI($(this)); });
+    var regionsdeletebutton = HTMLElementUtils.createButton({
+        id: regionid + "_delete_btn",
+        innerText: "Delete",
+        extraAttributes: {
+            parentRegion: regionid,
+            class: "col btn btn-primary btn-sm form-control mx-1"
+        }
+    });
+    regionsdeletebutton.addEventListener('click', function () {
+        interfaceUtils.deleteRegionUI($(this));
+    });
 
-    
-    form.appendChild(regionsetbutton);
-    form.appendChild(regionanalyzebutton);
-    form.appendChild(regionsfillbutton);
-    form.appendChild(regionsdeletebutton);
-    
-    rpanelbody.appendChild(form);
+    row2.appendChild(regionsetbutton);
+    row2.appendChild(regionanalyzebutton);
+    row2.appendChild(regionsfillbutton);
+    row2.appendChild(regionsdeletebutton);
 
     var regionText = "";
     var rClass = null;
@@ -301,7 +404,10 @@ regionUtils.regionUI = function (regionid) {
     }
     regionText = rName;
 
-    if (rClass) regionText = regionText + " (" + rClass + ")";
+    if (rClass) {
+        regionText = regionText;
+        rpanelsubheading.innerHTML = rClass;
+    }
 
     rpanelheading.innerHTML = regionText;
 }
@@ -338,7 +444,7 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
     var imageWidth = OSDViewerUtils.getImageWidth();
     var countsInsideRegion = 0;
     var pointsInside=[];
-    regionPath=document.getElementById(regionid + "poly");
+    regionPath=document.getElementById(regionid + "_poly");
     var svgovname = tmapp["object_prefix"] + "_svgov";
     var svg = tmapp[svgovname]._svg;
     tmpPoint = svg.createSVGPoint();
@@ -358,7 +464,7 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
         }
         return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
     });
-    
+
     if (countsInsideRegion) {
         regionUtils._regions[regionid].barcodeHistogram.push({ "barcode": quadtree.treeName, "gene_name": quadtree.treeGeneName, "count": countsInsideRegion });
     }
@@ -383,7 +489,7 @@ regionUtils.fillRegion = function (regionid) {
     }else{
         regionUtils._regions[regionid].filled=!regionUtils._regions[regionid].filled;
     }
-    var newregioncolor = document.getElementById(regionid + "color_input").value;
+    var newregioncolor = document.getElementById(regionid + "_color_input").value;
     var d3color = d3.rgb(newregioncolor);
     var newStyle="";
     if(regionUtils._regions[regionid].filled){
@@ -393,18 +499,18 @@ regionUtils.fillRegion = function (regionid) {
     }else{
         newStyle = "stroke-width: " + regionUtils._polygonStrokeWidth.toString() + "; stroke: " + d3color.rgb().toString() + "; fill: none;";
     }
-    document.getElementById(regionid + "poly").setAttribute("style", newStyle);
+    document.getElementById(regionid + "_poly").setAttribute("style", newStyle);
 
 }
 /** 
  * @param {String} regionid String id of region to delete
  * Given a region id, deletes this region in the interface */
 regionUtils.deleteRegion = function (regionid) {
-    var regionPoly = document.getElementById(regionid + "poly")
+    var regionPoly = document.getElementById(regionid + "_poly")
     regionPoly.parentElement.removeChild(regionPoly);
     delete regionUtils._regions[regionid];
     var op = tmapp["object_prefix"];
-    var rPanel = document.getElementById(op + regionid + "panel");
+    var rPanel = document.getElementById(op + regionid + "_panel");
     rPanel.parentElement.removeChild(rPanel);
 }
 /** 
@@ -412,19 +518,19 @@ regionUtils.deleteRegion = function (regionid) {
  *  Change the region properties like color, class name or region name */
 regionUtils.changeRegion = function (regionid) {
     var op = tmapp["object_prefix"];
-    var newregioncolor = document.getElementById(regionid + "color_input").value;
+    var newregioncolor = document.getElementById(regionid + "_color_input").value;
     var d3color = d3.rgb(newregioncolor);
-    if (document.getElementById(regionid + "class_ta").value) {
-        regionUtils._regions[regionid].regionClass = document.getElementById(regionid + "class_ta").value;
+    if (document.getElementById(regionid + "_class_ta").value) {
+        regionUtils._regions[regionid].regionClass = document.getElementById(regionid + "_class_ta").value;
     } else {
         regionUtils._regions[regionid].regionClass = null;
     }
-    if (document.getElementById(regionid + "name_ta").value) {
-        regionUtils._regions[regionid].regionName = document.getElementById(regionid + "name_ta").value;
+    if (document.getElementById(regionid + "_name_ta").value) {
+        regionUtils._regions[regionid].regionName = document.getElementById(regionid + "_name_ta").value;
     } else {
         regionUtils._regions[regionid].regionName = regionid;
     }
-    var rPanel = document.getElementById(op + regionid + "panel");
+    var rPanel = document.getElementById(op + regionid + "_panel");
     var regionClass = "";
     if (regionUtils._regions[regionid].regionClass) regionClass = " (" + regionUtils._regions[regionid].regionClass + ")";
     HTMLElementUtils.getFirstChildByClass(rPanel, "panel-heading").innerHTML = regionUtils._regions[regionid].regionName + regionClass;
@@ -433,7 +539,7 @@ regionUtils.changeRegion = function (regionid) {
     regionUtils._regions[regionid].polycolor = newregioncolor;
     //console.log(newStyle);
 
-    document.getElementById(regionid + "poly").setAttribute("style", newStyle);
+    document.getElementById(regionid + "_poly").setAttribute("style", newStyle);
 
 }
 
@@ -442,7 +548,7 @@ regionUtils.changeRegion = function (regionid) {
  *  Change the panel to match the region properties */
 regionUtils.loadTextRegionUI = function (regionid) {
     var op = tmapp["object_prefix"];
-    var rPanel = document.getElementById(op + regionid + "panel");
+    var rPanel = document.getElementById(op + regionid + "_panel");
     var regionText = "";
     var rClass = null;
     var rName = null;
@@ -457,13 +563,14 @@ regionUtils.loadTextRegionUI = function (regionid) {
     }
     regionText = rName;
 
-    if (rClass) regionText = regionText + " (" + rClass + ")";
+    if (rClass) {
+        regionText = regionText;
+        HTMLElementUtils.getFirstChildByClass(rPanel, "card-subtitle").innerHTML = rClass;
+    }
 
     console.log(rName + rClass + regionText);
 
-    HTMLElementUtils.getFirstChildByClass(rPanel, "panel-heading").innerHTML = regionText;
-
-
+    HTMLElementUtils.getFirstChildByClass(rPanel, "card-title").innerHTML = regionText;
 }
 /** 
  *  regionUtils */
@@ -486,10 +593,10 @@ regionUtils.analyzeRegion = function (regionid) {
         }
         return copy;
     }
-    
+
     regionUtils._regions[regionid].associatedPoints=[];
     regionUtils._regions[regionid].barcodeHistogram=[];
-    
+
     console.log("analyzing "+regionid);
     var allkeys=Object.keys(dataUtils[op + "_barcodeGarden"]);
     for (var codeIndex in allkeys) {
@@ -508,21 +615,41 @@ regionUtils.analyzeRegion = function (regionid) {
     }
     regionUtils._regions[regionid].barcodeHistogram.sort(compare);
 
-    var rPanel = document.getElementById(op + regionid + "panel");
-    var rpanelbody = HTMLElementUtils.getFirstChildByClass(rPanel, "panel-body");
-    histodiv = document.getElementById(regionid + "histogram");
+    var rPanel = document.getElementById(op + regionid + "_panel");
+    var rpanelbody = rPanel.getElementsByClassName("region-histogram")[0];
+    histodiv = document.getElementById(regionid + "_histogram");
     if (histodiv) {
         histodiv.parentNode.removeChild(histodiv);
     }
 
-    rpanelbody.setAttribute("style", "padding-top: 0px; height: 230px;overflow-y:scroll;");
-
-    var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "histogram" });
+    var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "_histogram" });
     var histogram = regionUtils._regions[regionid].barcodeHistogram;
-    var ul=div.appendChild(HTMLElementUtils.createElement({ type: "ul" }))
+    var table = div.appendChild(HTMLElementUtils.createElement({
+        type: "table",
+        extraAttributes: {
+            class: "table table-striped",
+            style: "overflow-y: auto;"
+        }
+    }));
+    thead = HTMLElementUtils.createElement({type: "thead"});
+    thead.innerHTML = `<tr>
+      <th scope="col">Name</th>
+      <th scope="col">Barcode</th>
+      <th scope="col">Count</th>
+    </tr>`;
+    tbody = HTMLElementUtils.createElement({type: "tbody"});
+    table.appendChild(thead);
+    table.appendChild(tbody);
+
     for (var i in histogram) {
-        var innerHTML = "<strong>" + histogram[i].gene_name + "," + histogram[i].barcode + ",</strong>" + histogram[i].count;
-        ul.appendChild(HTMLElementUtils.createElement({ type: "li", "innerHTML": innerHTML }))
+        var innerHTML = "";
+        innerHTML += "<td>" + histogram[i].gene_name + "</td>";
+        innerHTML += "<td>" + histogram[i].barcode + "</td>";
+        innerHTML += "<td>" + histogram[i].count + "</td>";
+        tbody.appendChild(HTMLElementUtils.createElement({
+            type: "tr",
+            "innerHTML": innerHTML
+        }));
     }
     rpanelbody.appendChild(div);
 
@@ -533,10 +660,14 @@ regionUtils.regionsOnOff = function () {
     overlayUtils._drawRegions = !overlayUtils._drawRegions;
     var op = tmapp["object_prefix"];
     if (overlayUtils._drawRegions) {
-        document.getElementById(op + '_drawregions_btn').setAttribute("class", "btn btn-primary")
+        let regionBtn = document.getElementById(op + '_drawregions_btn')
+        regionBtn.classList.remove("btn-secondary");
+        regionBtn.classList.add("btn-primary");
     } else {
         regionUtils.resetManager();
-        document.getElementById(op + '_drawregions_btn').setAttribute("class", "btn btn-secondary")
+        let regionBtn = document.getElementById(op + '_drawregions_btn')
+        regionBtn.classList.remove("btn-primary");
+        regionBtn.classList.add("btn-secondary");
     }
 }
 /** 
@@ -550,11 +681,11 @@ regionUtils.importRegionsFromJSON = function () {
     var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
     regionsobj = d3.select(canvas);
     regionsobj.selectAll("*").remove();
+
     var regionsPanel = document.getElementById("markers-regions-panel");
     regionsPanel.innerText = "";
     regionUtils._regions = {};
     regionUtils.JSONToRegions();
-
 }
 
 regionUtils.pointsInRegionsToCSV=function(){
