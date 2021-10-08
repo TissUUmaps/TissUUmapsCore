@@ -37,8 +37,7 @@ dataUtils.processISSRawData = function () {
     if(progressParent == null){
         console.log("No progress bar present.")
     }else{
-        progressParent.style.visibility="hidden";
-        progressParent.style.display="none";
+        progressParent.classList.add("d-none");
     }
     
     var ISSBarcodeInputNode = document.getElementById("ISS_barcode_header");
@@ -154,15 +153,15 @@ dataUtils.processISSRawData = function () {
         });
         dataUtils[op + "_processeddata"].push(obj);
     });
-    
+
     dataUtils.makeQuadTrees();
-    
+
     delete dataUtils[op + "_rawdata"];
     if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
+        document.getElementById("ISS_globalmarkersize").classList.remove("d-none");
     }
     if (document.getElementById("ISS_searchmarkers_row")) {
-        document.getElementById("ISS_searchmarkers_row").style.display = "block";
+        document.getElementById("ISS_searchmarkers_row").classList.remove("d-none");
     }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
@@ -171,7 +170,10 @@ dataUtils.processISSRawData = function () {
         markerUtils.addPiechartLegend();
     }
     else {
-        document.getElementById("piechartLegend").style.display="none";
+        let piechartLegend = document.getElementById("piechartLegend")
+        if (piechartLegend !== null) {
+            piechartLegend.classList.add("d-none");
+        }
     }
 }
 
@@ -196,7 +198,7 @@ dataUtils.showMenuCSV = function(){
     var ISSScale = document.getElementById(op + "_scale_header");
     var ISSPiechart = document.getElementById(op + "_piechart_header");
     var ISSKey = document.getElementById(op + "_key_header");
-    //console.log(dataUtils._CSVStructure["ISS_csv_header"]);
+
     [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSScale, ISSPiechart].forEach(function (node) {
         if (!node) return;
         node.innerHTML = "";
@@ -213,7 +215,7 @@ dataUtils.showMenuCSV = function(){
     });
     var panel = document.getElementById(op + "_csv_headers");
     if (!dataUtils._autoLoadCSV) {
-        panel.style = "";
+        panel.classList.remove("d-none");
     }
     //search for defaults if any, "barcode" used to be called "letters"
     //it is still "letters in the obejct" but the BarcodeInputValue can be anything chosen by the user
@@ -269,23 +271,19 @@ dataUtils.makeQuadTrees = function () {
     });
     markerUtils.printBarcodeUIs(dataUtils._drawOptions);
     var panel = document.getElementById(op+"_csv_headers");
-    panel.style = "visibility: hidden; display:none;";
-    
+    panel.classList.add("d-none");
 }
 
 dataUtils.XHRCSV = function (thecsv) {
     var op = tmapp["object_prefix"];
 
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
-    panel.style.visibility="hidden"; 
-    panel.style.display="none"
+    panel.classList.add("d-none");
 
     var xhr = new XMLHttpRequest();
 
     var progressParent=interfaceUtils.getElementById("ISS_csv_progress_parent");
-    progressParent.style.visibility="visible";
-    progressParent.style.display="block";
-    //console.log(progressParent)
+    progressParent.classList.remove("d-none");
 
     var progressBar=interfaceUtils.getElementById("ISS_csv_progress");
     var fakeProgress = 0;
@@ -303,7 +301,7 @@ dataUtils.XHRCSV = function (thecsv) {
             
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
-            progressParent.style.display = "none";
+            progressParent.classList.add("d-none");
             alert ("Impossible to load data, please contact an administrator.")
         }     
     };
@@ -340,8 +338,7 @@ dataUtils.XHRCSV = function (thecsv) {
 dataUtils.readCSV = function (thecsv) {
     var op = tmapp["object_prefix"];
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
-    panel.style.visibility="hidden"; 
-    panel.style.display="none"
+    panel.classList.add("d-none");
     dataUtils[op + "_rawdata"] = {};
     dataUtils._CSVStructure[op + "_csv_header"] = null;
     var request = d3.csv(

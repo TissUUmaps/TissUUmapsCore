@@ -71,7 +71,8 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     if (layerIndex < 0)
         visible.checked = true; 
     visible.id = "visible-layer-" + (layerIndex + 1);
-    visible.className = "visible-layers";
+    visible.classList.add("visible-layers");
+    visible.classList.add("form-check-input")
     visible.setAttribute("layer", (layerIndex + 1));
     var td_visible = document.createElement("td");
     td_visible.appendChild(visible);
@@ -80,6 +81,8 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     td_visible.style.minWidth = "100px";
 
     var opacity = document.createElement("input");
+    opacity.classList.add("overlay-slider");
+    opacity.classList.add("form-range");
     opacity.type = "range";
     opacity.setAttribute("min", "0");
     opacity.setAttribute("max", "1");
@@ -100,14 +103,16 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         filterName = filterUtils._filtersUsed[filterIndex];
         filterParams = filterUtils.getFilterParams(filterName)
         filterParams.layer = layerIndex + 1;
-        
+
         filterInput = filterUtils.createHTMLFilter(filterParams);
+        filterInput.classList.add("overlay-slider");
+        filterInput.classList.add("form-range");
         var td_filterInput = document.createElement("td");
         td_filterInput.style.textAlign = "center";
         td_filterInput.style.padding = "6px";
         td_filterInput.style.minWidth = "100px";
         td_filterInput.appendChild(filterInput);
-        
+
         tr.appendChild(td_filterInput);
     }
     layerTable.prepend(tr);
@@ -136,23 +141,22 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     });
     overlayUtils.addLayerSlider();
 }
-    
+
 /**
  * This method is used to add a layer */
  overlayUtils.addLayerSlider = function() {
     if (document.getElementById("channelRangeInput") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "channelRange"
+        elt.className = "channelRange px-1 mx-1 viewer-layer";
         elt.id = "channelRangeDiv"
         elt.style.zIndex = "100";
-        elt.style.paddingLeft = "5px";
-        elt.style.paddingBottom = "2px";
         var span = document.createElement('div');
         span.innerHTML = "Channel 1"
         span.id = "channelValue"
         span.style.maxWidth="200px";
         span.style.overflow="hidden";
         var channelRange = document.createElement("input");
+        channelRange.classList.add("form-range");
         channelRange.type = "range";
         channelRange.style.width = "200px";
         channelRange.id = "channelRangeInput";
@@ -191,10 +195,10 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
                 //scroll up
                 $(channelRange).val(zoomLevel-1);
             }
-            
+
             // trigger the change event
             changeFun(e.originalEvent);
-            
+
             //prevent page fom scrolling
             return false;
         }
@@ -356,7 +360,7 @@ overlayUtils.modifyDisplayIfAny = function () {
 
     if (xmin < 0) { xmin = 0; }; if (xmax > 1.0) { xmax = 1.0; };
     if (ymin < 0) { ymin = 0; }; if (ymax > imageHeight / imageWidth) { ymax = imageHeight / imageWidth; };
-    
+
     var total = imageWidth * imageHeight;
 
     //convert to global image coords

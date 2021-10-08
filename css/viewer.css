@@ -1,0 +1,84 @@
+@charset "UTF-8";
+body {
+  overflow: hidden; }
+
+.ISS_viewer {
+  position: absolute;
+  width: inherit;
+  height: 100vh;
+  background-color: #676767; }
+
+.ISS_viewer.navbar-visible, .ISS_menu.navbar-visible {
+  height: calc(100vh - 50px) !important; }
+
+.ISS_menu {
+  height: 100vh;
+  padding-left: 6px; }
+
+#ISS_markers {
+  overflow-y: auto; }
+
+#markers-regions-div {
+  overflow-y: auto; }
+
+.navbar {
+  border-radius: 0px !important; }
+
+.range-label {
+  width: 30px;
+  display: inline-block; }
+
+.openseadragon-canvas svg {
+  z-index: 11; }
+
+.navigator {
+  z-index: 12; }
+
+#ISS_globalmarkersize {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  z-index: 13;
+  padding: 4px;
+  display: None;
+  text-align: center; }
+
+#ISS_drawregions_btn.btn-primary:before {
+  content: "☑";
+  font-size: 20px;
+  line-height: 14px; }
+
+#ISS_drawregions_btn.btn-secondary:before {
+  content: "☐";
+  font-size: 20px;
+  line-height: 14px; }
+
+#ISS_table {
+  user-select: none; }
+
+#ISS_collapse_btn {
+  display: block;
+  position: absolute;
+  right: 0;
+  border-radius: 5px 0 0 5px;
+  height: calc(34vh - 50px);
+  margin-top: 33vh;
+  margin-bottom: 33vh;
+  vertical-align: middle;
+  line-height: calc(34vh - 50px);
+  width: 12px;
+  text-align: center;
+  padding: 0px;
+  font-size: 10px;
+  z-index: 100; }
+
+.tab-content:not(#markers-region-subtabs) {
+  height: 100vh !important;
+  overflow-y: scroll; }
+
+#channelRangeDiv {
+  background-color: white;
+  opacity: 70%; }
+
+/*# sourceMappingURL=viewer.css.map */

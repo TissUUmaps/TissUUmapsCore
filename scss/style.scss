@@ -1,0 +1,35 @@
+// Default variable overrides
+$primary:   #ad1d28;
+$danger:    #9f1daa;
+$secondary: #a5565c;
+//$success:   #1daa9f;
+//$info:      #1daa9f;
+//$warning:   #1daa9f;
+//$light:     #1daa9f;
+$dark:      #911821;
+
+.navbar-dark {
+    background-color: $primary;
+}
+$navbar-padding-y: 0;
+
+.overlay-slider {
+    width: 100px;
+}
+
+.ISS_menu {
+    background-color: white;
+}
+
+.tab-pane:not(#markers-regions-gui):not(#image-gui) {
+    margin: 5px 0 0 5px;
+}
+
+// IMPORTS
+@import "../vendor/bootstrap-5.1.1/scss/bootstrap";
+@import "../vendor/bootstrap-5.1.1/scss/functions";
+@import "../vendor/bootstrap-5.1.1/scss/variables";
+@import "../vendor/bootstrap-5.1.1/scss/reboot";
+@import "../vendor/bootstrap-5.1.1/scss/type";
+@import "../vendor/bootstrap-5.1.1/scss/grid";
+@import "viewer";
