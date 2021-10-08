@@ -10218,4 +10218,7 @@ body {
   opacity: 70%;
   border-radius: .3rem; }
 
+.displayregion {
+  border: 1px solid #ad1d28 !important; }
+
 /*# sourceMappingURL=style.css.map */
