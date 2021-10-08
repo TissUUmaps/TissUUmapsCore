@@ -659,15 +659,14 @@ regionUtils.analyzeRegion = function (regionid) {
 regionUtils.regionsOnOff = function () {
     overlayUtils._drawRegions = !overlayUtils._drawRegions;
     var op = tmapp["object_prefix"];
+    let regionIcon = document.getElementById(op + '_drawregions_icon');
     if (overlayUtils._drawRegions) {
-        let regionBtn = document.getElementById(op + '_drawregions_btn')
-        regionBtn.classList.remove("btn-secondary");
-        regionBtn.classList.add("btn-primary");
+        regionIcon.classList.remove("bi-circle");
+        regionIcon.classList.add("bi-check-circle");
     } else {
         regionUtils.resetManager();
-        let regionBtn = document.getElementById(op + '_drawregions_btn')
-        regionBtn.classList.remove("btn-primary");
-        regionBtn.classList.add("btn-secondary");
+        regionIcon.classList.remove("bi-check-circle");
+        regionIcon.classList.add("bi-circle");
     }
 }
 /** 

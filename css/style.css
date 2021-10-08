@@ -1,4 +1,3 @@
-@charset "UTF-8";
 .navbar-dark {
   background-color: #ad1d28; }
 
@@ -10172,16 +10171,6 @@ body {
   overflow-y: auto;
   max-height: calc(100vh - 245px);
   z-index: 13; }
-
-#ISS_drawregions_btn.btn-primary:before {
-  content: "☑";
-  font-size: 20px;
-  line-height: 14px; }
-
-#ISS_drawregions_btn.btn-secondary:before {
-  content: "☐";
-  font-size: 20px;
-  line-height: 14px; }
 
 #ISS_table {
   user-select: none;
