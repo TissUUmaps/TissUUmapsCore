@@ -10133,7 +10133,7 @@ body {
 
 .ISS_menu {
   height: 100vh;
-  border-left: 1px solid #ad1d28; }
+  border-left: 1px solid #911821; }
 
 #ISS_markers {
   overflow-y: auto; }
@@ -10208,6 +10208,6 @@ body {
   border-radius: .3rem; }
 
 .displayregion {
-  border: 1px solid #ad1d28 !important; }
+  border: 1px solid #911821 !important; }
 
 /*# sourceMappingURL=style.css.map */
