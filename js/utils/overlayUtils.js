@@ -58,9 +58,14 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         layerTable.style.marginBottom = "0px";
         filterHeaders = "";
         for (filterIndex = 0; filterIndex < filterUtils._filtersUsed.length; filterIndex++) {
-            filterHeaders += "<th style='text-align:center;'>" + filterUtils._filtersUsed[filterIndex] + "</th>";
+            filterHeaders += "<th class='text-center'>" + filterUtils._filtersUsed[filterIndex] + "</th>";
         }
-        layerTable.innerHTML = "<thead><th style='text-align:center;'>Name</th><th style='text-align:center;'>Visible</th><th style='text-align:center;'>Opacity</th>" + filterHeaders + "</thead><tbody id='image-overlay-tbody'></tbody>"
+        layerTable.innerHTML = `<thead>
+            <th class='text-center'>Name</th>
+            <th class='text-center'>Visible</th>
+            <th class='text-center'>Opacity</th>` +
+            filterHeaders +
+            "</thead><tbody id='image-overlay-tbody'></tbody>"
         settingsPanel.appendChild(layerTable);
     }
     layerTable = document.getElementById("image-overlay-tbody");
@@ -76,9 +81,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     visible.setAttribute("layer", (layerIndex + 1));
     var td_visible = document.createElement("td");
     td_visible.appendChild(visible);
-    td_visible.style.textAlign = "center";
-    td_visible.style.padding = "6px";
-    td_visible.style.minWidth = "100px";
+    td_visible.classList.add("text-center");
 
     var opacity = document.createElement("input");
     opacity.classList.add("overlay-slider");
@@ -91,11 +94,9 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     opacity.id = "opacity-layer-" + (layerIndex + 1);
     var td_opacity = document.createElement("td");
     td_opacity.appendChild(opacity);
-    td_opacity.style.textAlign = "center";
-    td_opacity.style.padding = "6px";
-    td_opacity.style.minWidth = "100px";
+    td_opacity.classList.add("text-center");
     tileSource = tileSource.replace(/\\/g, '\\\\');
-    tr.innerHTML = "<td style='padding:6px;'>" + layerName + "</td>";
+    tr.innerHTML = "<td>" + layerName + "</td>";
     tr.appendChild(td_visible);
     tr.appendChild(td_opacity);
 
@@ -108,9 +109,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
         filterInput.classList.add("overlay-slider");
         filterInput.classList.add("form-range");
         var td_filterInput = document.createElement("td");
-        td_filterInput.style.textAlign = "center";
-        td_filterInput.style.padding = "6px";
-        td_filterInput.style.minWidth = "100px";
+        td_filterInput.classList.add("text-center");
         td_filterInput.appendChild(filterInput);
 
         tr.appendChild(td_filterInput);
@@ -296,7 +295,7 @@ overlayUtils.areAllFullyLoaded = function () {
 overlayUtils.setLayerOpacity= function(layerName,opacity){
     if(layerName in overlayUtils._d3nodes){
         var layer = overlayUtils._d3nodes[layerName];
-        layer._groups[0][0].style.opacity=opacity;    
+        layer._groups[0][0].style.opacity=opacity;
     }else{
         console.log("layer does not exist or is not a D3 node");
     }
