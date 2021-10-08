@@ -514,12 +514,12 @@ interfaceUtils.hideTabsExcept = function (a) {
         menu.style.display = "block";
         main.style.width = "66.66666%";
         main.style.maxWidth = "100%";
-        btn.innerHTML = "&#9654;";
+        btn.innerHTML = '<i class="bi bi-caret-right-fill"></i>';
     }
     else {
         menu.style.display = "none";
         main.style.width = "100%";
         main.style.maxWidth = "";
-        btn.innerHTML = "&#9664;";
+        btn.innerHTML = '<i class="bi bi-caret-left-fill"></i>';
     }
 }
