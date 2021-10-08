@@ -2,7 +2,7 @@ body {
     overflow: hidden;
 }
 
-.ISS_viewer{
+.ISS_viewer {
     position: absolute;
     width: inherit;
     height: 100vh;
@@ -13,9 +13,9 @@ body {
     height: calc(100vh - 50px) !important;
 }
 
-.ISS_menu{
+.ISS_menu {
     height: 100vh;
-    padding-left:6px;
+    border-left: 1px solid $primary;
 }
 
 #ISS_markers {
@@ -36,16 +36,16 @@ body {
 }
 
 .range-label {
-    width:30px;
-    display:inline-block;
+    width: 30px;
+    display: inline-block;
 }
 
 .openseadragon-canvas svg {
-    z-index:11;
+    z-index: 11;
 }
 
 .navigator {
-    z-index:12;
+    z-index: 12;
 }
 
 #ISS_globalmarkersize {
@@ -64,14 +64,14 @@ body {
     z-index: 13;
 }
 #ISS_drawregions_btn.btn-primary:before {
-    content:"☑";
-    font-size:20px;
+    content: "☑";
+    font-size: 20px;
     line-height: 14px;
 }
 
 #ISS_drawregions_btn.btn-secondary:before {
-    content:"☐";
-    font-size:20px;
+    content: "☐";
+    font-size: 20px;
     line-height: 14px;
 }
 

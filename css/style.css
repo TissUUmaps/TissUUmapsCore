@@ -10134,7 +10134,7 @@ body {
 
 .ISS_menu {
   height: 100vh;
-  padding-left: 6px; }
+  border-left: 1px solid #ad1d28; }
 
 #ISS_markers {
   overflow-y: auto; }
