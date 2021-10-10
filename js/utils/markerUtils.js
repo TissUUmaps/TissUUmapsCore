@@ -481,7 +481,7 @@ markerUtils.markerUI = function (barObject,options) {
                 value: thecolor
             }
         });
-        colorinput.classList.add("form-control", "form-control-color");
+        colorinput.classList.add("form-control", "form-control-color", "p-1");
         color.appendChild(colorinput);
         row.appendChild(color);
 
