@@ -69,11 +69,18 @@ html {
     vertical-align: middle;
 }
 
+#ISS_collapser {
+    right: 0px;
+    width: 12px;
+    // Height of the collapsing button
+    line-height: 30vh;
+}
+
 #ISS_collapse_btn {
     border-radius: 5px 0 0 5px;
+    width: inherit;
     // Height of the collapsing button
-    line-height: 100px;
-    width: 12px;
+    line-height: inherit;
     padding: 0px;
     font-size: 12px;
     // Important to always be above any other UI item

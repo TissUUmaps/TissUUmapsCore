@@ -10175,10 +10175,15 @@ html {
 #ISS_table td {
   vertical-align: middle; }
 
+#ISS_collapser {
+  right: 0px;
+  width: 12px;
+  line-height: 30vh; }
+
 #ISS_collapse_btn {
   border-radius: 5px 0 0 5px;
-  line-height: 100px;
-  width: 12px;
+  width: inherit;
+  line-height: inherit;
   padding: 0px;
   font-size: 12px;
   z-index: 100; }
