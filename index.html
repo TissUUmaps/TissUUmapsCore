@@ -98,20 +98,6 @@
                                                 <label id="label_ISS_csv" for="ISS_csv">Import markers from CSV file:</label>
                                                 <input class="form-control-file form-control form-control-sm" type="file" id="ISS_csv" name="ISS_csv"
                                                     accept=".csv,.tsv,.txt">
-                                                <script type="text/javascript">
-                                                    d3.select("#ISS_csv")
-                                                        .on("change", function () {
-                                                            var file = d3.event.target.files[0];
-                                                            if (file) {
-                                                                var reader = new FileReader();
-                                                                reader.onloadend = function (evt) {
-                                                                    var dataUrl = evt.target.result;
-                                                                    dataUtils.readCSV(dataUrl);
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            }
-                                                        });
-                                                </script>
                                             </div>
                                         </div>
                                     </div>
@@ -374,7 +360,6 @@
 <script src="vendor/CamanJS-4.1.2/dist/caman.min.js"></script>
 <script src="js/utils/interfaceUtils.js"></script>
 <script src="js/utils/dataUtils.js"></script>
-<script src="js/utils/CPDataUtils.js"></script>
 <script src="js/utils/markerUtils.js"></script>
 <script src="js/utils/OSDViewerUtils.js"></script>
 <script src="js/utils/HTMLElementUtils.js"></script>

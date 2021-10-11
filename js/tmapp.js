@@ -25,7 +25,7 @@ tmapp.registerActions = function () {
     var cpop="CP";
 
     interfaceUtils.listen(op + '_collapse_btn','click', function () { interfaceUtils.toggleRightPanel() },false);
-    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processISSRawData(); },false);
+    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processRawData("gene"); },false);
     interfaceUtils.listen(op + '_search','input', function () { markerUtils.hideRowsThatDontContain(); },false);
     interfaceUtils.listen(op + '_drawall_btn','click', function () { markerUtils.drawAllToggle(); },false);
     interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
@@ -33,7 +33,11 @@ tmapp.registerActions = function () {
     interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
     interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
     interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { CPDataUtils.processISSRawData() },false);
+    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { dataUtils.processRawData("morphology") },false);
+    
+    dataUtils.processEventForCSV("morphology",cpop + '_csv');
+    dataUtils.processEventForCSV("gene",op + '_csv');
+    
     var navtabs=document.getElementsByClassName("nav-tabs")[0];
     var uls=navtabs.getElementsByTagName("ul");
     for(var i=0;i<uls.length;i++){
@@ -97,36 +101,15 @@ tmapp.init = function () {
                 regionUtils.manager(event);
             }
         } else { //if it is not quick then its panning
-            scroll_handler();
+            //scroll_handler();
         }
     };
-
-    //delay the scroll and the panning options so that there is a bit more time to calcualte which 
-    //markers to plot and where and how many
-    var isScrolling;
-    var scroll_handler = function (event) {
-
-        // Clear our timeout throughout the scroll
-        window.clearTimeout(isScrolling);
-        // Set a timeout to run after scrolling ends
-        isScrolling = setTimeout(function () {
-
-            // Run the callback
-            console.log('Scrolling has stopped.');
-            //
-            overlayUtils.modifyDisplayIfAny();
-
-        }, tmapp._scrollDelay);
-    }
-
 
     //OSD handlers are not registered manually they have to be registered
     //using MouseTracker OSD objects 
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-        //element: this.fixed_svgov.node().parentNode, 
         element: tmapp[vname].canvas,
-        clickHandler: click_handler,
-        scrollHandler: scroll_handler
+        clickHandler: click_handler
     }).setTracking(true);
 
     elt = document.getElementById("ISS_globalmarkersize");

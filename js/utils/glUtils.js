@@ -86,7 +86,7 @@ glUtils._markersVS = `
             if (u_usePiechartFromMarker && v_color.a > 0.0) {
                 v_shapeSector = a_position.z / 16777215.0;
                 v_color.rgb = hex_to_rgb(a_position.w);
-                v_color.a = 8.0 / 255.0;  // Give markers a round shape
+                v_color.a = 16.0 / 255.0;  // Give markers a round shape
                 if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
                 if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
             }
@@ -316,7 +316,7 @@ glUtils.loadMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    const markerData = dataUtils["ISS_processeddata"];
+    const markerData = dataUtils.data["gene"]["ISS_processeddata"];
     let numPoints = markerData.length;
     const keyName = document.getElementById("ISS_key_header").value;
     const imageWidth = OSDViewerUtils.getImageWidth();
@@ -390,7 +390,7 @@ glUtils.loadCPMarkers = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    const markerData = CPDataUtils["CP_rawdata"];
+    const markerData = dataUtils.data["morphology"]["CP_rawdata"];
     const numPoints = markerData.length;
     const propertyName = document.getElementById("CP_property_header").value;
     const xColumnName = document.getElementById("CP_X_header").value;
@@ -844,7 +844,7 @@ glUtils.pick = function(event) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.innerHTML = markerUtils.makePiechartTable(dataUtils["ISS_processeddata"][glUtils._pickedMarker]);
+            div.innerHTML = markerUtils.makePiechartTable(dataUtils.data["gene"]["ISS_processeddata"][glUtils._pickedMarker]);
             div.classList.add("viewer-layer", "m-0", "p-1");
 
             tmapp["ISS_viewer"].addOverlay({
@@ -884,7 +884,7 @@ glUtils.updateMarkerScale = function() {
     const globalMarkerSize = Number(document.getElementById("ISS_globalmarkersize_text").value);
     // Clamp the scale factor to avoid giant markers and slow rendering if the
     // user inputs a very large value (say 10000 or something)
-    glUtils._markerScale = Math.max(0.01, Math.min(5.0, globalMarkerSize / 100.0));
+    glUtils._markerScale = Math.max(0.01, Math.min(20.0, globalMarkerSize / 25.0));
 }
 
 
