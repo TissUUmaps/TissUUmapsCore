@@ -6,8 +6,11 @@ html {
     overflow: hidden;
 }
 
+@import "../vendor/pattern.css-1.0.0/pattern.min.scss";
 .ISS_viewer {
-    background-color: #676767;
+    @extend .pattern-checks-sm;
+    background-color: #666;
+    color: #999;
 }
 
 .ISS_menu {
