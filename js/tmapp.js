@@ -101,7 +101,7 @@ tmapp.init = function () {
                 regionUtils.manager(event);
             }
         } else { //if it is not quick then its panning
-            scroll_handler();
+            //scroll_handler();
         }
     };
 
