@@ -598,10 +598,10 @@ regionUtils.analyzeRegion = function (regionid) {
     regionUtils._regions[regionid].barcodeHistogram=[];
 
     console.log("analyzing "+regionid);
-    var allkeys=Object.keys(dataUtils[op + "_barcodeGarden"]);
+    var allkeys=Object.keys(dataUtils.data["gene"][op + "_barcodeGarden"]);
     for (var codeIndex in allkeys) {
         var code = allkeys[codeIndex];
-        var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils[op + "_barcodeGarden"][code],
+        var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils.data["gene"][op + "_barcodeGarden"][code],
         regionUtils._regions[regionid]._gxmin,regionUtils._regions[regionid]._gymin,
         regionUtils._regions[regionid]._gxmax,regionUtils._regions[regionid]._gymax,
             regionid, {"globalCoords":true});
