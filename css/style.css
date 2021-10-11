@@ -10418,7 +10418,8 @@ html {
 .viewer-layer {
   background-color: white;
   opacity: 70%;
-  border-radius: .3rem; }
+  border-radius: .3rem;
+  color: black; }
 
 .displayregion {
   border: 1px solid #911821 !important; }
