@@ -212,22 +212,16 @@ function toggleFullscreen() {
 
 function toggleNavbar(turn_on = null) {
     let main_navbar = document.getElementsByTagName("nav")[0];
-    let ISS_viewer = document.getElementById("ISS_viewer");
-    let ISS_menu = document.getElementById("ISS_menu");
 
     if (turn_on === true) {
         main_navbar.classList.remove("d-none");
-        ISS_viewer.classList.add("navbar-visible");
-        ISS_menu.classList.add("navbar-visible");
     } else if (turn_on === false) {
         main_navbar.classList.add("d-none");
-        ISS_viewer.classList.remove("navbar-visible");
-        ISS_menu.classList.remove("navbar-visible");
     } else if (turn_on === null) {
-        if (ISS_viewer.classList.contains("navbar-visible")) {
-            toggleNavbar(false);
-        } else {
+        if (main_navbar.classList.contains("d-none")) {
             toggleNavbar(true);
+        } else {
+            toggleNavbar(false);
         }
     }
 }
@@ -235,7 +229,6 @@ function toggleNavbar(turn_on = null) {
 $( document ).ready(function() {
     let ISS_viewer = document.getElementById("ISS_viewer");
     let ISS_viewer_container = document.getElementById("ISS_viewer_container");
-    let ISS_menu = document.getElementById("ISS_menu");
 
     ISS_viewer.addEventListener('dblclick', function (e) {
         // Open in fullscreen if double clicked
