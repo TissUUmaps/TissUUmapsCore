@@ -6,13 +6,6 @@ html {
     overflow: hidden;
 }
 
-@import "../vendor/pattern.css-1.0.0/pattern.min.scss";
-.ISS_viewer {
-    @extend .pattern-checks-sm;
-    background-color: #666;
-    color: #999;
-}
-
 .ISS_menu {
     border-left: 1px solid $dark;
 }
@@ -28,10 +21,6 @@ html {
 #ISS_marker_info {
     z-index: 19;
     pointer-events: none;
-}
-
-.navbar {
-    border-radius: 0px !important;
 }
 
 .range-label {
@@ -72,13 +61,6 @@ html {
     vertical-align: middle;
 }
 
-#ISS_collapser {
-    right: 0px;
-    width: 12px;
-    // Height of the collapsing button
-    line-height: 30vh;
-}
-
 #ISS_collapse_btn {
     border-radius: 5px 0 0 5px;
     width: inherit;
@@ -88,16 +70,5 @@ html {
     font-size: 12px;
     // Important to always be above any other UI item
     z-index: 100;
-}
-
-.viewer-layer {
-    background-color: white;
-    opacity: 70%;
-    border-radius: .3rem;
-    color: black;
-}
-
-.displayregion {
-    border: 1px solid $dark !important;
 }
 

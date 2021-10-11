@@ -1,28 +1,60 @@
-// Default variable overrides
+// Default bootstrap colors override
 $primary:   #ad1d28;
-$danger:    #9f1daa;
 $secondary: #a5565c;
+//$danger:    #9f1daa;
 //$success:   #1daa9f;
 //$info:      #1daa9f;
 //$warning:   #1daa9f;
 //$light:     #1daa9f;
 $dark:      #911821;
 
+// *** Navbar ***
 .navbar-dark {
     background-color: $primary;
 }
 $navbar-padding-y: 0;
 
-.overlay-slider {
-    width: 100px;
+// *** Viewer
+@import "../vendor/pattern.css-1.0.0/pattern.min.scss";
+.ISS_viewer {
+    @extend .pattern-checks-sm;
+    background-color: #666;
+    color: #999;
+}
+
+// All the overlays over the viewer inherit this class.
+.viewer-layer {
+    background-color: white;
+    opacity: 70%;
+    border-radius: .3rem;
+    color: black;
+}
+
+// *** Side menu ***
+.displayregion {
+    border: 1px solid $dark !important;
 }
 
 .ISS_menu {
     background-color: white;
 }
 
+// Tabs content
 .tab-pane:not(#markers-regions-gui):not(#image-gui) {
     margin: 5px 0 0 5px;
+}
+
+// Sliders in the side menu (image layer in particular)
+.overlay-slider {
+    width: 100px;
+}
+
+// *** Collapsing button ***
+#ISS_collapser {
+    right: 0px;
+    width: 12px;
+    // Height of the collapsing button
+    line-height: 30vh;
 }
 
 // IMPORTS

@@ -1,14 +1,258 @@
 .navbar-dark {
   background-color: #ad1d28; }
 
-.overlay-slider {
+.pattern-checks-sm, .ISS_viewer {
+  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
+  background-position: 0 0,10px 10px;
+  background-size: calc(2 * 10px) calc(2 * 10px); }
+
+.pattern-checks-md {
+  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
+  background-position: 0 0,25px 25px;
+  background-size: calc(2 * 25px) calc(2 * 25px); }
+
+.pattern-checks-lg {
+  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
+  background-position: 0 0,50px 50px;
+  background-size: calc(2 * 50px) calc(2 * 50px); }
+
+.pattern-checks-xl {
+  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
+  background-position: 0 0,100px 100px;
+  background-size: calc(2 * 100px) calc(2 * 100px); }
+
+.pattern-grid-sm {
+  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
+  background-size: 10px 10px; }
+
+.pattern-grid-md {
+  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
+  background-size: 25px 25px; }
+
+.pattern-grid-lg {
+  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
+  background-size: 50px 50px; }
+
+.pattern-grid-xl {
+  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
+  background-size: 100px 100px; }
+
+.pattern-dots-sm {
+  background-image: radial-gradient(currentColor 0.5px, transparent 0.5px);
+  background-size: calc(10 * .5px) calc(10 * .5px); }
+
+.pattern-dots-md {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: calc(10 * 1px) calc(10 * 1px); }
+
+.pattern-dots-lg {
+  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
+  background-size: calc(10 * 1.5px) calc(10 * 1.5px); }
+
+.pattern-dots-xl {
+  background-image: radial-gradient(currentColor 2px, transparent 2px);
+  background-size: calc(10 * 2px) calc(10 * 2px); }
+
+.pattern-cross-dots-sm {
+  background-image: radial-gradient(currentColor 0.5px, transparent 0.5px), radial-gradient(currentColor 0.5px, transparent 0.5px);
+  background-size: calc(20 * .5px) calc(20 * .5px);
+  background-position: 0 0, calc(10 * .5px) calc(10 * .5px); }
+
+.pattern-cross-dots-md {
+  background-image: radial-gradient(currentColor 1px, transparent 1px), radial-gradient(currentColor 1px, transparent 1px);
+  background-size: calc(20 * 1px) calc(20 * 1px);
+  background-position: 0 0, calc(10 * 1px) calc(10 * 1px); }
+
+.pattern-cross-dots-lg {
+  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px), radial-gradient(currentColor 1.5px, transparent 1.5px);
+  background-size: calc(20 * 1.5px) calc(20 * 1.5px);
+  background-position: 0 0, calc(10 * 1.5px) calc(10 * 1.5px); }
+
+.pattern-cross-dots-xl {
+  background-image: radial-gradient(currentColor 2px, transparent 2px), radial-gradient(currentColor 2px, transparent 2px);
+  background-size: calc(20 * 2px) calc(20 * 2px);
+  background-position: 0 0, calc(10 * 2px) calc(10 * 2px); }
+
+.pattern-vertical-lines-sm {
+  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 10px 10px; }
+
+.pattern-horizontal-lines-sm {
+  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 10px 10px; }
+
+.pattern-diagonal-lines-sm {
+  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
+  background-size: 10px 10px; }
+
+.pattern-vertical-lines-md {
+  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 25px 25px; }
+
+.pattern-horizontal-lines-md {
+  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 25px 25px; }
+
+.pattern-diagonal-lines-md {
+  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
+  background-size: 25px 25px; }
+
+.pattern-vertical-lines-lg {
+  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 50px 50px; }
+
+.pattern-horizontal-lines-lg {
+  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 50px 50px; }
+
+.pattern-diagonal-lines-lg {
+  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
+  background-size: 50px 50px; }
+
+.pattern-vertical-lines-xl {
+  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 100px 100px; }
+
+.pattern-horizontal-lines-xl {
+  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
+  background-size: 100px 100px; }
+
+.pattern-diagonal-lines-xl {
+  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
+  background-size: 100px 100px; }
+
+.pattern-vertical-stripes-sm {
+  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
+  background-size: 10px 10px; }
+
+.pattern-horizontal-stripes-sm {
+  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
+  background-size: 10px 10px; }
+
+.pattern-diagonal-stripes-sm {
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor calc(2 * 10px)); }
+
+.pattern-vertical-stripes-md {
+  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
+  background-size: 25px 25px; }
+
+.pattern-horizontal-stripes-md {
+  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
+  background-size: 25px 25px; }
+
+.pattern-diagonal-stripes-md {
+  background: repeating-linear-gradient(45deg, transparent, transparent 25px, currentColor 25px, currentColor calc(2 * 25px)); }
+
+.pattern-vertical-stripes-lg {
+  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
+  background-size: 50px 50px; }
+
+.pattern-horizontal-stripes-lg {
+  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
+  background-size: 50px 50px; }
+
+.pattern-diagonal-stripes-lg {
+  background: repeating-linear-gradient(45deg, transparent, transparent 50px, currentColor 50px, currentColor calc(2 * 50px)); }
+
+.pattern-vertical-stripes-xl {
+  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
+  background-size: 100px 100px; }
+
+.pattern-horizontal-stripes-xl {
+  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
+  background-size: 100px 100px; }
+
+.pattern-diagonal-stripes-xl {
+  background: repeating-linear-gradient(45deg, transparent, transparent 100px, currentColor 100px, currentColor calc(2 * 100px)); }
+
+.pattern-zigzag-sm {
+  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -10px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -10px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
+  background-size: calc(2 * 10px) calc(2 * 10px); }
+
+.pattern-zigzag-md {
+  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -25px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -25px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
+  background-size: calc(2 * 25px) calc(2 * 25px); }
+
+.pattern-zigzag-lg {
+  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -50px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -50px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
+  background-size: calc(2 * 50px) calc(2 * 50px); }
+
+.pattern-zigzag-xl {
+  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -100px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -100px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
+  background-size: calc(2 * 100px) calc(2 * 100px); }
+
+.pattern-triangles-sm {
+  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
+  background-size: 10px 10px; }
+
+.pattern-triangles-md {
+  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
+  background-size: 25px 25px; }
+
+.pattern-triangles-lg {
+  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
+  background-size: 50px 50px; }
+
+.pattern-triangles-xl {
+  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
+  background-size: 100px 100px; }
+
+.text-pattern {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent; }
+
+.pattern-w-sm {
+  width: 10px; }
+
+.pattern-h-sm {
+  height: 10px; }
+
+.pattern-w-md {
+  width: 25px; }
+
+.pattern-h-md {
+  height: 25px; }
+
+.pattern-w-lg {
+  width: 50px; }
+
+.pattern-h-lg {
+  height: 50px; }
+
+.pattern-w-xl {
   width: 100px; }
+
+.pattern-h-xl {
+  height: 100px; }
+
+/*# sourceMappingURL=pattern.min.css.map */
+.ISS_viewer {
+  background-color: #666;
+  color: #999; }
+
+.viewer-layer {
+  background-color: white;
+  opacity: 70%;
+  border-radius: .3rem;
+  color: black; }
+
+.displayregion {
+  border: 1px solid #911821 !important; }
 
 .ISS_menu {
   background-color: white; }
 
 .tab-pane:not(#markers-regions-gui):not(#image-gui) {
   margin: 5px 0 0 5px; }
+
+.overlay-slider {
+  width: 100px; }
+
+#ISS_collapser {
+  right: 0px;
+  width: 12px;
+  line-height: 30vh; }
 
 /*!
  * Bootstrap v5.1.1 (https://getbootstrap.com/)
@@ -44,7 +288,7 @@
   --bs-success: #198754;
   --bs-info: #0dcaf0;
   --bs-warning: #ffc107;
-  --bs-danger: #9f1daa;
+  --bs-danger: #dc3545;
   --bs-light: #f8f9fa;
   --bs-dark: #911821;
   --bs-primary-rgb: 173, 29, 40;
@@ -52,7 +296,7 @@
   --bs-success-rgb: 25, 135, 84;
   --bs-info-rgb: 13, 202, 240;
   --bs-warning-rgb: 255, 193, 7;
-  --bs-danger-rgb: 159, 29, 170;
+  --bs-danger-rgb: 220, 53, 69;
   --bs-light-rgb: 248, 249, 250;
   --bs-dark-rgb: 145, 24, 33;
   --bs-white-rgb: 255, 255, 255;
@@ -1661,15 +1905,15 @@ progress {
   border-color: #e6dbb9; }
 
 .table-danger {
-  --bs-table-bg: #ecd2ee;
-  --bs-table-striped-bg: #e0c8e2;
+  --bs-table-bg: #f8d7da;
+  --bs-table-striped-bg: #eccccf;
   --bs-table-striped-color: #000;
-  --bs-table-active-bg: #d4bdd6;
+  --bs-table-active-bg: #dfc2c4;
   --bs-table-active-color: #000;
-  --bs-table-hover-bg: #dac2dc;
+  --bs-table-hover-bg: #e5c7ca;
   --bs-table-hover-color: #000;
   color: #000;
-  border-color: #d4bdd6; }
+  border-color: #dfc2c4; }
 
 .table-light {
   --bs-table-bg: #f8f9fa;
@@ -2253,7 +2497,7 @@ textarea.form-control-lg {
   width: 100%;
   margin-top: 0.25rem;
   font-size: 0.875em;
-  color: #9f1daa; }
+  color: #dc3545; }
 
 .invalid-tooltip {
   position: absolute;
@@ -2265,7 +2509,7 @@ textarea.form-control-lg {
   margin-top: .1rem;
   font-size: 0.875rem;
   color: #fff;
-  background-color: rgba(159, 29, 170, 0.9);
+  background-color: rgba(220, 53, 69, 0.9);
   border-radius: 0.25rem; }
 
 .was-validated :invalid ~ .invalid-feedback,
@@ -2275,39 +2519,39 @@ textarea.form-control-lg {
   display: block; }
 
 .was-validated .form-control:invalid, .form-control.is-invalid {
-  border-color: #9f1daa;
+  border-color: #dc3545;
   padding-right: calc(1.5em + 0.75rem);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%239f1daa'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%239f1daa' stroke='none'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
   .was-validated .form-control:invalid:focus, .form-control.is-invalid:focus {
-    border-color: #9f1daa;
-    box-shadow: 0 0 0 0.25rem rgba(159, 29, 170, 0.25); }
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); }
 
 .was-validated textarea.form-control:invalid, textarea.form-control.is-invalid {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem); }
 
 .was-validated .form-select:invalid, .form-select.is-invalid {
-  border-color: #9f1daa; }
+  border-color: #dc3545; }
   .was-validated .form-select:invalid:not([multiple]):not([size]), .was-validated .form-select:invalid:not([multiple])[size="1"], .form-select.is-invalid:not([multiple]):not([size]), .form-select.is-invalid:not([multiple])[size="1"] {
     padding-right: 4.125rem;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"), url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%239f1daa'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%239f1daa' stroke='none'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"), url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
     background-position: right 0.75rem center, center right 2.25rem;
     background-size: 16px 12px, calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
   .was-validated .form-select:invalid:focus, .form-select.is-invalid:focus {
-    border-color: #9f1daa;
-    box-shadow: 0 0 0 0.25rem rgba(159, 29, 170, 0.25); }
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); }
 
 .was-validated .form-check-input:invalid, .form-check-input.is-invalid {
-  border-color: #9f1daa; }
+  border-color: #dc3545; }
   .was-validated .form-check-input:invalid:checked, .form-check-input.is-invalid:checked {
-    background-color: #9f1daa; }
+    background-color: #dc3545; }
   .was-validated .form-check-input:invalid:focus, .form-check-input.is-invalid:focus {
-    box-shadow: 0 0 0 0.25rem rgba(159, 29, 170, 0.25); }
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25); }
   .was-validated .form-check-input:invalid ~ .form-check-label, .form-check-input.is-invalid ~ .form-check-label {
-    color: #9f1daa; }
+    color: #dc3545; }
 
 .form-check-inline .form-check-input ~ .invalid-feedback {
   margin-left: .5em; }
@@ -2471,27 +2715,27 @@ textarea.form-control-lg {
 
 .btn-danger {
   color: #fff;
-  background-color: #9f1daa;
-  border-color: #9f1daa; }
+  background-color: #dc3545;
+  border-color: #dc3545; }
   .btn-danger:hover {
     color: #fff;
-    background-color: #871991;
-    border-color: #7f1788; }
+    background-color: #bb2d3b;
+    border-color: #b02a37; }
   .btn-check:focus + .btn-danger, .btn-danger:focus {
     color: #fff;
-    background-color: #871991;
-    border-color: #7f1788;
-    box-shadow: 0 0 0 0.25rem rgba(173, 63, 183, 0.5); }
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+    box-shadow: 0 0 0 0.25rem rgba(225, 83, 97, 0.5); }
   .btn-check:checked + .btn-danger, .btn-check:active + .btn-danger, .btn-danger:active, .btn-danger.active, .show > .btn-danger.dropdown-toggle {
     color: #fff;
-    background-color: #7f1788;
-    border-color: #771680; }
+    background-color: #b02a37;
+    border-color: #a52834; }
     .btn-check:checked + .btn-danger:focus, .btn-check:active + .btn-danger:focus, .btn-danger:active:focus, .btn-danger.active:focus, .show > .btn-danger.dropdown-toggle:focus {
-      box-shadow: 0 0 0 0.25rem rgba(173, 63, 183, 0.5); }
+      box-shadow: 0 0 0 0.25rem rgba(225, 83, 97, 0.5); }
   .btn-danger:disabled, .btn-danger.disabled {
     color: #fff;
-    background-color: #9f1daa;
-    border-color: #9f1daa; }
+    background-color: #dc3545;
+    border-color: #dc3545; }
 
 .btn-light {
   color: #000;
@@ -2637,22 +2881,22 @@ textarea.form-control-lg {
     background-color: transparent; }
 
 .btn-outline-danger {
-  color: #9f1daa;
-  border-color: #9f1daa; }
+  color: #dc3545;
+  border-color: #dc3545; }
   .btn-outline-danger:hover {
     color: #fff;
-    background-color: #9f1daa;
-    border-color: #9f1daa; }
+    background-color: #dc3545;
+    border-color: #dc3545; }
   .btn-check:focus + .btn-outline-danger, .btn-outline-danger:focus {
-    box-shadow: 0 0 0 0.25rem rgba(159, 29, 170, 0.5); }
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5); }
   .btn-check:checked + .btn-outline-danger, .btn-check:active + .btn-outline-danger, .btn-outline-danger:active, .btn-outline-danger.active, .btn-outline-danger.dropdown-toggle.show {
     color: #fff;
-    background-color: #9f1daa;
-    border-color: #9f1daa; }
+    background-color: #dc3545;
+    border-color: #dc3545; }
     .btn-check:checked + .btn-outline-danger:focus, .btn-check:active + .btn-outline-danger:focus, .btn-outline-danger:active:focus, .btn-outline-danger.active:focus, .btn-outline-danger.dropdown-toggle.show:focus {
-      box-shadow: 0 0 0 0.25rem rgba(159, 29, 170, 0.5); }
+      box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5); }
   .btn-outline-danger:disabled, .btn-outline-danger.disabled {
-    color: #9f1daa;
+    color: #dc3545;
     background-color: transparent; }
 
 .btn-outline-light {
@@ -3885,11 +4129,11 @@ textarea.form-control-lg {
     color: #523e02; }
 
 .alert-danger {
-  color: #5f1166;
-  background-color: #ecd2ee;
-  border-color: #e2bbe6; }
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7; }
   .alert-danger .alert-link {
-    color: #4c0e52; }
+    color: #6a1a21; }
 
 .alert-light {
   color: #636464;
@@ -4161,15 +4405,15 @@ textarea.form-control-lg {
     border-color: #664d03; }
 
 .list-group-item-danger {
-  color: #5f1166;
-  background-color: #ecd2ee; }
+  color: #842029;
+  background-color: #f8d7da; }
   .list-group-item-danger.list-group-item-action:hover, .list-group-item-danger.list-group-item-action:focus {
-    color: #5f1166;
-    background-color: #d4bdd6; }
+    color: #842029;
+    background-color: #dfc2c4; }
   .list-group-item-danger.list-group-item-action.active {
     color: #fff;
-    background-color: #5f1166;
-    border-color: #5f1166; }
+    background-color: #842029;
+    border-color: #842029; }
 
 .list-group-item-light {
   color: #636464;
@@ -5033,9 +5277,9 @@ textarea.form-control-lg {
     color: #ffcd39; }
 
 .link-danger {
-  color: #9f1daa; }
+  color: #dc3545; }
   .link-danger:hover, .link-danger:focus {
-    color: #7f1788; }
+    color: #b02a37; }
 
 .link-light {
   color: #f8f9fa; }
@@ -5365,7 +5609,7 @@ textarea.form-control-lg {
   border-color: #ffc107 !important; }
 
 .border-danger {
-  border-color: #9f1daa !important; }
+  border-color: #dc3545 !important; }
 
 .border-light {
   border-color: #f8f9fa !important; }
@@ -10125,236 +10369,6 @@ html, body {
 html {
   overflow: hidden; }
 
-.pattern-checks-sm, .ISS_viewer {
-  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
-  background-position: 0 0,10px 10px;
-  background-size: calc(2 * 10px) calc(2 * 10px); }
-
-.pattern-checks-md {
-  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
-  background-position: 0 0,25px 25px;
-  background-size: calc(2 * 25px) calc(2 * 25px); }
-
-.pattern-checks-lg {
-  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
-  background-position: 0 0,50px 50px;
-  background-size: calc(2 * 50px) calc(2 * 50px); }
-
-.pattern-checks-xl {
-  background-image: repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor), repeating-linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 75%, currentColor 75%, currentColor);
-  background-position: 0 0,100px 100px;
-  background-size: calc(2 * 100px) calc(2 * 100px); }
-
-.pattern-grid-sm {
-  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
-  background-size: 10px 10px; }
-
-.pattern-grid-md {
-  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
-  background-size: 25px 25px; }
-
-.pattern-grid-lg {
-  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
-  background-size: 50px 50px; }
-
-.pattern-grid-xl {
-  background-image: linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px);
-  background-size: 100px 100px; }
-
-.pattern-dots-sm {
-  background-image: radial-gradient(currentColor 0.5px, transparent 0.5px);
-  background-size: calc(10 * .5px) calc(10 * .5px); }
-
-.pattern-dots-md {
-  background-image: radial-gradient(currentColor 1px, transparent 1px);
-  background-size: calc(10 * 1px) calc(10 * 1px); }
-
-.pattern-dots-lg {
-  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
-  background-size: calc(10 * 1.5px) calc(10 * 1.5px); }
-
-.pattern-dots-xl {
-  background-image: radial-gradient(currentColor 2px, transparent 2px);
-  background-size: calc(10 * 2px) calc(10 * 2px); }
-
-.pattern-cross-dots-sm {
-  background-image: radial-gradient(currentColor 0.5px, transparent 0.5px), radial-gradient(currentColor 0.5px, transparent 0.5px);
-  background-size: calc(20 * .5px) calc(20 * .5px);
-  background-position: 0 0, calc(10 * .5px) calc(10 * .5px); }
-
-.pattern-cross-dots-md {
-  background-image: radial-gradient(currentColor 1px, transparent 1px), radial-gradient(currentColor 1px, transparent 1px);
-  background-size: calc(20 * 1px) calc(20 * 1px);
-  background-position: 0 0, calc(10 * 1px) calc(10 * 1px); }
-
-.pattern-cross-dots-lg {
-  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px), radial-gradient(currentColor 1.5px, transparent 1.5px);
-  background-size: calc(20 * 1.5px) calc(20 * 1.5px);
-  background-position: 0 0, calc(10 * 1.5px) calc(10 * 1.5px); }
-
-.pattern-cross-dots-xl {
-  background-image: radial-gradient(currentColor 2px, transparent 2px), radial-gradient(currentColor 2px, transparent 2px);
-  background-size: calc(20 * 2px) calc(20 * 2px);
-  background-position: 0 0, calc(10 * 2px) calc(10 * 2px); }
-
-.pattern-vertical-lines-sm {
-  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 10px 10px; }
-
-.pattern-horizontal-lines-sm {
-  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 10px 10px; }
-
-.pattern-diagonal-lines-sm {
-  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
-  background-size: 10px 10px; }
-
-.pattern-vertical-lines-md {
-  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 25px 25px; }
-
-.pattern-horizontal-lines-md {
-  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 25px 25px; }
-
-.pattern-diagonal-lines-md {
-  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
-  background-size: 25px 25px; }
-
-.pattern-vertical-lines-lg {
-  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 50px 50px; }
-
-.pattern-horizontal-lines-lg {
-  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 50px 50px; }
-
-.pattern-diagonal-lines-lg {
-  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
-  background-size: 50px 50px; }
-
-.pattern-vertical-lines-xl {
-  background-image: repeating-linear-gradient(to right, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 100px 100px; }
-
-.pattern-horizontal-lines-xl {
-  background-image: repeating-linear-gradient(0deg, currentColor, currentColor 1px, transparent 1px, transparent);
-  background-size: 100px 100px; }
-
-.pattern-diagonal-lines-xl {
-  background-image: repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%);
-  background-size: 100px 100px; }
-
-.pattern-vertical-stripes-sm {
-  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
-  background-size: 10px 10px; }
-
-.pattern-horizontal-stripes-sm {
-  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
-  background-size: 10px 10px; }
-
-.pattern-diagonal-stripes-sm {
-  background: repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor calc(2 * 10px)); }
-
-.pattern-vertical-stripes-md {
-  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
-  background-size: 25px 25px; }
-
-.pattern-horizontal-stripes-md {
-  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
-  background-size: 25px 25px; }
-
-.pattern-diagonal-stripes-md {
-  background: repeating-linear-gradient(45deg, transparent, transparent 25px, currentColor 25px, currentColor calc(2 * 25px)); }
-
-.pattern-vertical-stripes-lg {
-  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
-  background-size: 50px 50px; }
-
-.pattern-horizontal-stripes-lg {
-  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
-  background-size: 50px 50px; }
-
-.pattern-diagonal-stripes-lg {
-  background: repeating-linear-gradient(45deg, transparent, transparent 50px, currentColor 50px, currentColor calc(2 * 50px)); }
-
-.pattern-vertical-stripes-xl {
-  background-image: linear-gradient(90deg, transparent 50%, currentColor 50%);
-  background-size: 100px 100px; }
-
-.pattern-horizontal-stripes-xl {
-  background-image: linear-gradient(0deg, transparent 50%, currentColor 50%);
-  background-size: 100px 100px; }
-
-.pattern-diagonal-stripes-xl {
-  background: repeating-linear-gradient(45deg, transparent, transparent 100px, currentColor 100px, currentColor calc(2 * 100px)); }
-
-.pattern-zigzag-sm {
-  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -10px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -10px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
-  background-size: calc(2 * 10px) calc(2 * 10px); }
-
-.pattern-zigzag-md {
-  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -25px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -25px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
-  background-size: calc(2 * 25px) calc(2 * 25px); }
-
-.pattern-zigzag-lg {
-  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -50px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -50px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
-  background-size: calc(2 * 50px) calc(2 * 50px); }
-
-.pattern-zigzag-xl {
-  background: linear-gradient(135deg, currentColor 25%, transparent 25%) -100px 0, linear-gradient(225deg, currentColor 25%, transparent 25%) -100px 0, linear-gradient(315deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%);
-  background-size: calc(2 * 100px) calc(2 * 100px); }
-
-.pattern-triangles-sm {
-  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
-  background-size: 10px 10px; }
-
-.pattern-triangles-md {
-  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
-  background-size: 25px 25px; }
-
-.pattern-triangles-lg {
-  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
-  background-size: 50px 50px; }
-
-.pattern-triangles-xl {
-  background-image: linear-gradient(45deg, currentColor 50%, transparent 50%);
-  background-size: 100px 100px; }
-
-.text-pattern {
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent; }
-
-.pattern-w-sm {
-  width: 10px; }
-
-.pattern-h-sm {
-  height: 10px; }
-
-.pattern-w-md {
-  width: 25px; }
-
-.pattern-h-md {
-  height: 25px; }
-
-.pattern-w-lg {
-  width: 50px; }
-
-.pattern-h-lg {
-  height: 50px; }
-
-.pattern-w-xl {
-  width: 100px; }
-
-.pattern-h-xl {
-  height: 100px; }
-
-/*# sourceMappingURL=pattern.min.css.map */
-.ISS_viewer {
-  background-color: #666;
-  color: #999; }
-
 .ISS_menu {
   border-left: 1px solid #911821; }
 
@@ -10367,9 +10381,6 @@ html {
 #ISS_marker_info {
   z-index: 19;
   pointer-events: none; }
-
-.navbar {
-  border-radius: 0px !important; }
 
 .range-label {
   width: 30px;
@@ -10402,11 +10413,6 @@ html {
 #ISS_table td {
   vertical-align: middle; }
 
-#ISS_collapser {
-  right: 0px;
-  width: 12px;
-  line-height: 30vh; }
-
 #ISS_collapse_btn {
   border-radius: 5px 0 0 5px;
   width: inherit;
@@ -10414,14 +10420,5 @@ html {
   padding: 0px;
   font-size: 12px;
   z-index: 100; }
-
-.viewer-layer {
-  background-color: white;
-  opacity: 70%;
-  border-radius: .3rem;
-  color: black; }
-
-.displayregion {
-  border: 1px solid #911821 !important; }
 
 /*# sourceMappingURL=style.css.map */
