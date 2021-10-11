@@ -528,7 +528,12 @@ interfaceUtils._mGenUIFuncs={ctx:{aUUID:0}}
 
 interfaceUtils._mGenUIFuncs.generateUUID=function(){
     //HAS TO START with letter
-    aUUID="U12345";
+    //aUUID="U12345";
+    aUUID='Uxxxxx'.replace(/[x]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+    });
+    aUUID=aUUID.toUpperCase();  
     interfaceUtils._mGenUIFuncs.ctx.aUUID=aUUID;
 }
    
@@ -674,6 +679,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
         }
     });
     label1111.innerText="File and coordinates";
+
     input1112=HTMLElementUtils.createElement({
         "kind":"input", "id":generated+"_csv",
         "extraAttributes":{
@@ -708,6 +714,12 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
             "aria-label":"Tab name"
         }
     });
+    input1222.innerText=generated; 
+
+    input1222.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.ChangeTabName(event);
+
+    })
 
     ///ROW 2
 
@@ -773,21 +785,28 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
 interfaceUtils._mGenUIFuncs.hideAndShow=function(event,array,option){
     //hide all show only option
     uid=event.target.name.split("_")[0]
-    console.log(event,array,option,uid);
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            console.log(newdomid,index);
             if(index != option){
-                console.log("index is option")
                 domelement.setAttribute("style",'visibility:hidden;display:none;');
             }else{
-                console.log("index is not option")
                 domelement.removeAttribute("style");
             }
         }
     });
+}
+
+interfaceUtils._mGenUIFuncs.ChangeTabName=function(event){
+    uid=event.target.name.split("_")[0]
+    domelement=interfaceUtils.getElementById(uid+"_marker-tab-name");
+    if(domelement){
+        if(event.target.value)
+            domelement.innerText=event.target.value
+        else
+            domelement.innerText=uid;
+    }
 }
 
 interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
