@@ -137,11 +137,11 @@ HTMLElementUtils.createElement = function (params) {
         return null;
     }
     var id = params.id || null;
-    var type = params.type || null;
+    var kind = params.kind || null;
     var innerText = params.innerText || null;
     var innerHTML = params.innerHTML || null;
 
-    var element = (type ? document.createElement(type) : null);
+    var element = (kind ? document.createElement(kind) : null);
     if (!element) return null;
     (id ? element.setAttribute("id", id) : null);
     (innerText ? element.appendChild(document.createTextNode(innerText)) : null);
@@ -181,11 +181,11 @@ HTMLElementUtils.createPanel = function (params) {
 /** Create a booststrap row */
 HTMLElementUtils.createRow = function (params) {
     if (!params) {
-        var row = HTMLElementUtils.createElement({ type: "div" });
+        var row = HTMLElementUtils.createElement({ kind: "div" });
         row.setAttribute("class", "row");
         return row;
     }
-    var row = HTMLElementUtils.createElement({ type: "div" });
+    var row = HTMLElementUtils.createElement({ kind: "div" });
     (params.id || null ? row.setAttribute("id", params.id) : null);
     row.setAttribute("class", "row");
     if (params.divisions) {
@@ -202,16 +202,17 @@ HTMLElementUtils.createRow = function (params) {
 
 }
 
-/** Create a booststrap column */
+/** Create a booststrap column */ 
 HTMLElementUtils.createColumn = function (params) {
     if (!params) {
         var width = 2;
-        var column = HTMLElementUtils.createElement({ type: "div" });
+        var column = HTMLElementUtils.createElement({ kind: "div" });
         column.setAttribute("class", "col-xs-" + width + " col-sm-" + width + " col-md-" + width + " col-lg-" + width);
         return column;
     }
     var width = (params.width || null ? params.width : 2);
-    var column = HTMLElementUtils.createElement({ type: "div" });
+    var column = HTMLElementUtils.createElement({ kind: "div" });
+    (params.id || null ? column.setAttribute("id", params.id) : null);
     if (width == 0) {
         column.setAttribute("class", "col");
     } else {
