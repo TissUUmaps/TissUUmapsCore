@@ -16,7 +16,7 @@
 </head>
 
 <body style="background-color:#ccc;">
-    <div class="navbar navbar-default">
+    <div class="navbar navbar-default"  style="height: 50px !important;">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
                 <span class="icon-bar"></span>
@@ -69,7 +69,7 @@
                     <!-- Level 0 tabs -->
                     <ul class="nav nav-tabs L0-tabs">
                         <li> <a href="#markers-iss-gui" data-toggle="tab" aria-expanded="true"
-                                class="active main-child" id="title-tab-markers">Gene expression</a></li>
+                                class="active main-child" id="title-tab-markers">Markers</a></li>
                         <li> <a href="#markers-cp-gui" data-toggle="tab"
                                 aria-expanded="false" id="title-tab-CPmarkers">Cell morphology</a></li>
                         <li> <a href="#markers-regions-gui" data-toggle="tab"
@@ -80,6 +80,19 @@
                     </ul>
 
                     <div id="TM-tabs" class="tab-content extended-height" style="overflow-y:auto;">
+                        <nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Home</button>
+    <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Profile</button>
+    <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
+  </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+  <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
+  <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">...</div>
+  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
+</div>
+
                         <!-- TAB 1.1 ISS data  -------------------------------------------------------------------------------- -->
                         <div class="tab-pane active" id="markers-iss-gui" style="height:100%;">
                             <div class="panel panel-default" style="height:100%;">
@@ -448,7 +461,8 @@
         </div><!-- end of single row -->
     </div><!-- end of container-fuild-->
 </body>
-<script src="js/bootstrap.4.0.0.bundle.min.js" ></script>
+<!--<script src="js/bootstrap.4.0.0.bundle.min.js" ></script>-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 <script src="js/openseadragon.2.4.2.min.js"></script>
 <script src="js/caman.min.js"></script>
 <script src="js/openseadragon-filtering.js"></script>
