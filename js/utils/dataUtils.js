@@ -285,7 +285,7 @@ dataUtils._createMenuFromCSV["GENE_DATA"] = function(data_id) {
         node.innerHTML = "";
         var option = document.createElement("option");
         option.value = "null";
-        option.text = "-----";
+        option.text = "—";
         node.appendChild(option);
         csvheaders.forEach(function (head) {
             var option = document.createElement("option");
@@ -618,7 +618,7 @@ dataUtils._createMenuFromCSV["MORPHOLOGY_DATA"] = function(data_id) {
         node.innerHTML = "";
         var option = document.createElement("option");
         option.value = "null";
-        option.text = "-----";
+        option.text = "—";
         node.appendChild(option);
         csvheaders.forEach(function (head) {
             var option = document.createElement("option");
