@@ -902,7 +902,7 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
     
 }
 
-interfaceUtils._mGenUIFuncs.generateColorMapAccordion1= function(){
+interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
     ///col 1
@@ -1019,18 +1019,18 @@ interfaceUtils._mGenUIFuncs.generateColorMapAccordion1= function(){
     
 }
 
-
 interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     
     rowgb=interfaceUtils._mGenUIFuncs.generateGroupByAccordion1();
-    rowcb=interfaceUtils._mGenUIFuncs.generateColorMapAccordion1();
+    rowcb=interfaceUtils._mGenUIFuncs.generateColorByAccordion1();
 
 
     return [rowgb,rowcb];
 }
 
+//first funciton called to create tab
 interfaceUtils.generateDataTabUI = function(csvheader){
 
     interfaceUtils._mGenUIFuncs.generateUUID();
