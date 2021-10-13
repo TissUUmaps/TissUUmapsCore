@@ -844,9 +844,8 @@ glUtils.pick = function(event) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.style = "background-color:white; margin:0px; padding:2px 6px; " +
-                        "border:1px solid; z-index:19; opacity:80%; pointer-events:none";
             div.innerHTML = markerUtils.makePiechartTable(dataUtils.data["gene"]["ISS_processeddata"][glUtils._pickedMarker]);
+            div.classList.add("viewer-layer", "m-0", "p-1");
 
             tmapp["ISS_viewer"].addOverlay({
                 element: div,

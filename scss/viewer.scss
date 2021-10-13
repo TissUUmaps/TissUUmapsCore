@@ -1,0 +1,74 @@
+html, body {
+    height: 100%;
+}
+
+html {
+    overflow: hidden;
+}
+
+.ISS_menu {
+    border-left: 1px solid $dark;
+}
+
+#ISS_markers {
+    overflow-y: auto;
+}
+
+#markers-regions-div {
+    overflow-y: auto;
+}
+
+#ISS_marker_info {
+    z-index: 19;
+    pointer-events: none;
+}
+
+.range-label {
+    width: 30px;
+    display: inline-block;
+}
+
+.openseadragon-canvas svg {
+    z-index: 11;
+}
+
+.navigator {
+    z-index: 12;
+}
+
+#ISS_globalmarkersize {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 13;
+    text-align: center;
+}
+
+#piechartLegend {
+    left: 10px;
+    top: 10px;
+    overflow-y: auto;
+    max-height: 33vh;
+    z-index: 13;
+}
+
+#ISS_table {
+    user-select: none;
+    font-size: 13px;
+}
+
+#ISS_table td {
+    vertical-align: middle;
+}
+
+#ISS_collapse_btn {
+    border-radius: 5px 0 0 5px;
+    width: inherit;
+    // Height of the collapsing button
+    line-height: inherit;
+    padding: 0px;
+    font-size: 12px;
+    // Important to always be above any other UI item
+    z-index: 100;
+}
+

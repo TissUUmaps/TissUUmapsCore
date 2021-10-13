@@ -68,6 +68,10 @@ tmapp.init = function () {
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+    // Disable keyboard hack
+    tmapp[vname].innerTracker.keyHandler = null;
+    tmapp[vname].innerTracker.keyDownHandler = null;
+    tmapp[vname].innerTracker.keyPressHandler = null;
 
     if(!tmapp.layers){
         tmapp.layers = [];
@@ -98,7 +102,7 @@ tmapp.init = function () {
                 regionUtils.manager(event);
             }
         } else { //if it is not quick then its panning
-            scroll_handler();
+            //scroll_handler();
         }
     };
 
@@ -111,8 +115,10 @@ tmapp.init = function () {
 
     elt = document.getElementById("ISS_globalmarkersize");
     if (elt) {
-        tmapp[vname].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT});
-        elt.style.display="None";
+        tmapp[vname].addControl(elt,{
+            anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT
+        });
+        elt.classList.add("d-none");
     }
 
     if (tmapp.mpp != 0) {
@@ -161,3 +167,76 @@ tmapp.options_osd = {
     maxImageCacheCount:500,
     imageSmoothingEnabled:false
 }
+
+function toggleFullscreen() {
+    let full_ui = document.getElementById("main-ui");
+    let bIsFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+    if (!bIsFullscreen) {
+        if (full_ui.requestFullscreen) {
+            full_ui.requestFullscreen();
+        } else if (full_ui.webkitRequestFullscreen) {
+            full_ui.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        } else if (full_ui.msRequestFullscreen) {
+            full_ui.msRequestFullscreen();
+        } else if (full_ui.webkitRequestFullscreen) {
+            full_ui.mozRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen()
+        } else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+            document.msCancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen()
+        }
+    }
+}
+
+function toggleNavbar(turn_on = null) {
+    let main_navbar = document.getElementsByTagName("nav")[0];
+
+    if (turn_on === true) {
+        main_navbar.classList.remove("d-none");
+    } else if (turn_on === false) {
+        main_navbar.classList.add("d-none");
+    } else if (turn_on === null) {
+        if (main_navbar.classList.contains("d-none")) {
+            toggleNavbar(true);
+        } else {
+            toggleNavbar(false);
+        }
+    }
+}
+
+$( document ).ready(function() {
+    let ISS_viewer = document.getElementById("ISS_viewer");
+    let ISS_viewer_container = document.getElementById("ISS_viewer_container");
+
+    ISS_viewer.addEventListener('dblclick', function (e) {
+        // Open in fullscreen if double clicked
+        toggleFullscreen();
+    });
+
+    let full_ui = document.getElementById("main-ui");
+    full_ui.addEventListener('fullscreenchange', (event) => {
+        // document.fullscreenElement will point to the element that
+        // is in fullscreen mode if there is one. If not, the value
+        // of the property is null.
+        if (document.fullscreenElement) {
+            toggleNavbar(false);
+        } else {
+            toggleNavbar(true);
+        }
+    });
+
+    ISS_viewer_container.addEventListener("keypress", (event) => {
+        if (event.key === "0") {
+            interfaceUtils.toggleRightPanel();
+        } else if (event.key === "f") {
+            toggleFullscreen();
+        }
+    });
+});
+

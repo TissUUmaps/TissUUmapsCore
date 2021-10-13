@@ -15,36 +15,48 @@
 dataUtils = {
     data:{
         "gene":{
-            _type: "GENE_DATA",
-            /** _CSVStructure - Expected csv structure */
-            _CSVStructure: { headers: ["barcode", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-            _expectedCSV: { "group": "macro_cluster", "name": "", "X_col": "global_X_pos", "Y_col": "global_Y_pos", "key": "" },
-            _subsampledBarcodes: {},
-            _maximumAmountInLowerRes: 5000,
-            _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
-            _drawOptions: { randomColorForMarker: false },
-            _autoLoadCSV: false
-            //_minimumAmountToDisplay: 500,
-            //_subsamplingRate: 100
+            _type: "GENE_DATA"
         },
         "morphology":{
             _type: "MORPHOLOGY_DATA",
-            _CSVStructure: { headers: ["letters", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-            _expectedCSV: { "key_header": "Global_Exp_ID", "X_header": "Global_X", "Y_header": "Global_Y", "colorscale": "interpolateRainbow" },
-            _d3LUTs:["ownColorFromColumn","interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys", "interpolatePurples", "interpolateReds", "interpolateOranges"],
-            _subsampledItems: {},
-            _ownColorLut:{"class":"hexcolor"},
-            _subsamplingRate: 100,
-            _minimumAmountToDisplay: 500,
-            _markersize:0.0008,
-            _subsamplingfactor:0.15,
-            _drawCPdata: false
+            _name:""
+        },
+        "U23423R":{
+            _type: "GENERIC_DATA",
+            _name:"",
+            _processedata:[],
+            //iff user selects by group
+            _groupgarden:[]// full of separated d3.tree
         }
         /*
         data_id:{kv pairs}
         ... and inifinitely more data "types" like piecharts or whatever
         */
-    }
+    },
+    _d3LUTs:["interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", 
+    "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", 
+    "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", 
+    "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", 
+    "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys",
+     "interpolatePurples", "interpolateReds", "interpolateOranges"],
+}
+/**
+ * BIG CHANGE
+ * TODO: implemente createDataset so that Fredrik can draw
+ * load data as usual, object format
+ * trees only when user selects it, keep processeddata
+ * how to close 
+ * 
+*/
+
+dataUtils.readRenderoptions = function(){
+    //bring columns and options 
+
+}
+
+
+dataUtils.createDataset = function(){
+
 }
 
 /**
@@ -127,8 +139,7 @@ dataUtils._processRawData["GENE_DATA"] = function(data_id) {
     if(progressParent == null){
         console.log("No progress bar present.")
     }else{
-        progressParent.style.visibility="hidden";
-        progressParent.style.display="none";
+        progressParent.classList.add("d-none");
     }
     
     var ISSBarcodeInputNode = document.getElementById("ISS_barcode_header");
@@ -244,15 +255,15 @@ dataUtils._processRawData["GENE_DATA"] = function(data_id) {
         });
         data_obj[op + "_processeddata"].push(obj);
     });
-    
+
     dataUtils.makeQuadTrees();
     
     delete data_obj[op + "_rawdata"];
     if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
+        document.getElementById("ISS_globalmarkersize").classList.remove("d-none");
     }
     if (document.getElementById("ISS_searchmarkers_row")) {
-        document.getElementById("ISS_searchmarkers_row").style.display = "block";
+        document.getElementById("ISS_searchmarkers_row").classList.remove("d-none");
     }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadMarkers();  // Update vertex buffers, etc. for WebGL drawing
@@ -262,7 +273,7 @@ dataUtils._processRawData["GENE_DATA"] = function(data_id) {
     }
     else {
         if(interfaceUtils.getElementById("piechartLegend"))
-            interfaceUtils.getElementById("piechartLegend").style.display="none";
+            interfaceUtils.getElementById("piechartLegend").classList.add("d-none");
     }
 }
 
@@ -281,7 +292,6 @@ dataUtils._createMenuFromCSV["GENE_DATA"] = function(data_id) {
     var ISSScale = document.getElementById(op + "_scale_header");
     var ISSPiechart = document.getElementById(op + "_piechart_header");
     var ISSKey = document.getElementById(op + "_key_header");
-    //console.log(data_obj._CSVStructure["ISS_csv_header"]);
     [ISSBarcodeInput, ISSNanmeInput, ISSX, ISSY, ISSColor, ISSScale, ISSPiechart].forEach(function (node) {
         if (!node) return;
         node.innerHTML = "";
@@ -298,7 +308,7 @@ dataUtils._createMenuFromCSV["GENE_DATA"] = function(data_id) {
     });
     var panel = document.getElementById(op + "_csv_headers");
     if (!data_obj._autoLoadCSV) {
-        panel.style = "";
+        panel.classList.remove("d-none");
     }
     //search for defaults if any, "barcode" used to be called "letters"
     //it is still "letters in the obejct" but the BarcodeInputValue can be anything chosen by the user
@@ -326,8 +336,7 @@ dataUtils._readCSV["GENE_DATA"] = function(data_id, thecsv) {
 
     var op = tmapp["object_prefix"];
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
-    panel.style.visibility="hidden"; 
-    panel.style.display="none"
+    panel.classList.add("d-none");
     data_obj[op + "_rawdata"] = {};
     data_obj._CSVStructure[op + "_csv_header"] = null;
     var request = d3.csv(
@@ -347,15 +356,12 @@ dataUtils.XHRCSV = function(thecsv) {
     var op = tmapp["object_prefix"];
 
     var panel = interfaceUtils.getElementById(op + "_csv_headers");
-    panel.style.visibility="hidden"; 
-    panel.style.display="none"
+    panel.classList.add("d-none");
 
     var xhr = new XMLHttpRequest();
 
     var progressParent=interfaceUtils.getElementById("ISS_csv_progress_parent");
-    progressParent.style.visibility="visible";
-    progressParent.style.display="block";
-    //console.log(progressParent)
+    progressParent.classList.remove("d-none");
 
     var progressBar=interfaceUtils.getElementById("ISS_csv_progress");
     var fakeProgress = 0;
@@ -373,7 +379,7 @@ dataUtils.XHRCSV = function(thecsv) {
             
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
-            progressParent.style.display = "none";
+            progressParent.classList.add("d-none");
             alert ("Impossible to load data, please contact an administrator.")
         }     
     };
@@ -440,7 +446,7 @@ dataUtils.makeQuadTrees = function() {
     });
     markerUtils.printBarcodeUIs(data_obj._drawOptions);
     var panel = document.getElementById(op+"_csv_headers");
-    panel.style = "visibility: hidden; display:none;";
+    panel.classList.add("d-none");
 }
 
 /**
@@ -488,7 +494,7 @@ dataUtils.randomMarkersFromBarcode = function(amount, barcode) {
 * Sumsampling is done homogenously for all the space and density. 
 * @param {Number} amount needed amount of barcodes
 * @param {String} barcode Barcode or gene_name (key) to search for in op+_data*/
-dataUtils.randomMarkersFromBarcode = function (amount, barcode) {
+dataUtils.randomMarkersFromBarcode = function(amount, barcode) {
     var op = tmapp["object_prefix"];
     data_obj[op + "_data"].forEach(function (bar) {
         if (bar.key == barcode) {
@@ -529,7 +535,7 @@ dataUtils.findBarcodesInRawData = function(keystring) {
  * Calculate and save the right amount of downsampling for each barcode.
  * And save the subsample arrays, subsampling is homogeneous
  */
-dataUtils.sortDataAndDownsample = function () {
+dataUtils.sortDataAndDownsample = function() {
 
     let data_obj = dataUtils.data["gene"];  // TODO
 
@@ -570,8 +576,7 @@ dataUtils._processRawData["MORPHOLOGY_DATA"] = function(data_id) {
     if(progressParent == null){
         console.log("No progress bar present.")
     }else{
-        progressParent.style.visibility="hidden";
-        progressParent.style.display="none";
+        progressParent.classList.add("d-none");
     }
     var CPProperty = document.getElementById(cpop+"_property_header");
     var propertyselector=CPProperty.value;
@@ -592,7 +597,7 @@ dataUtils._processRawData["MORPHOLOGY_DATA"] = function(data_id) {
         data_obj[cpop + "_tree"] = d3.quadtree().x(x).y(y).addAll(data_obj[cpop + "_rawdata"]);
 
     if (document.getElementById("ISS_globalmarkersize")) {
-        document.getElementById("ISS_globalmarkersize").style.display = "block";
+        document.getElementById("ISS_globalmarkersize").classList.remove("d-none");
     }
     if (window.hasOwnProperty("glUtils")) {
         glUtils.loadCPMarkers();  // Update vertex buffers, etc. for WebGL drawing
@@ -671,9 +676,7 @@ dataUtils._readCSV["MORPHOLOGY_DATA"] = function(data_id, thecsv) {
     data_obj._CSVStructure[cpop + "_csv_header"] = null;
 
     var progressParent=interfaceUtils.getElementById("ISS_CP_csv_progress_parent");
-    progressParent.style.visibility="visible";
-    progressParent.style.display="block";
-    //console.log(progressParent)
+    progressParent.classList.remove("d-none");
     var progressBar=interfaceUtils.getElementById("ISS_CP_csv_progress");
     var fakeProgress = 0;
 
@@ -708,7 +711,7 @@ dataUtils._readCSV["MORPHOLOGY_DATA"] = function(data_id, thecsv) {
 /** 
  * Remove the cp data from the view
  */
-dataUtils.removeMorphologydata=function(){
+dataUtils.removeMorphologydata=function() {
     var cpop = "CP";//tmapp["object_prefix"];
     for(d3nodename in overlayUtils._d3nodes){
         if(d3nodename.includes(cpop+"_prop_")){
@@ -750,7 +753,7 @@ dataUtils.arrayOfElementsInBox = function(x0, y0, x3, y3, options) {
 /** 
  * Take the HTML input and read the file when it is changed, take the data type and the html dom id
 */
-dataUtils.processEventForCSV = function(data_id,dom_id){
+dataUtils.processEventForCSV = function(data_id, dom_id) {
     //the dom id has to be of an input type 
     if(!dom_id.includes("#"))
         dom_id="#"+dom_id
@@ -766,8 +769,8 @@ dataUtils.processEventForCSV = function(data_id,dom_id){
                 reader.readAsDataURL(file);
             }
         });
+}
 
-}        
 /** ----------------------------------------------------------------------
 * Misc. helper functions
 * ---------------------------------------------------------------------- */
@@ -778,7 +781,7 @@ dataUtils.processEventForCSV = function(data_id,dom_id){
  * @param {Number} amount needed amount of barcodes
  * @param {barcodes[]} list A list
  */
-dataUtils.randomSamplesFromList = function (amount, list) {
+dataUtils.randomSamplesFromList = function(amount, list) {
     //var op=tmapp["object_prefix"];
     if (amount >= list.length) return list;
 

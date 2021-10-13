@@ -41,10 +41,10 @@ markerUtils = {
 }
 
 
-/** 
+/**
  * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
- * clicking the box invokes the drawing of the marker or erase. 
- * Selects a color based on the barcode letters so that the color are different versions of 
+ * clicking the box invokes the drawing of the marker or erase.
+ * Selects a color based on the barcode letters so that the color are different versions of
  * the four corners of Ycbcr. Chooses a random shape
  * @param {Object} barObject coming from dataUtils.data["gene"][op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
@@ -61,6 +61,7 @@ markerUtils.markerUI = function (barObject,options) {
     var check = HTMLElementUtils.createElement({ type: "td" });
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: barObject.key.replace(/\W/g, '') + "-checkbox-" + op,
+        class: "form-check-input",
         extraAttributes: { barcode: barObject.key },
         eventListeners: { click: function () {
             document.getElementById("AllMarkers-checkbox-" + op).checked = false;
@@ -73,19 +74,34 @@ markerUtils.markerUI = function (barObject,options) {
 
     if(options.drawGeneLetters){
         var barcodeLetters=barObject.values[0].letters;
-        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML: "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+barcodeLetters+" </label>",
-            extraAttributes: { "title": barcodeLetters, "data-title":barcodeLetters } });
+        var lettersrow = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML: "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+barcodeLetters+" </label>",
+            extraAttributes: {
+                "title": barcodeLetters,
+                "data-title":barcodeLetters
+            }
+        });
         row.appendChild(lettersrow);
     }
 
     if(options.drawGeneName){
         var gn=barObject.values[0].gene_name;
-        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+gn+" </label>",
-            extraAttributes: { "title": gn, "data-title":gn } });
+        var name = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='" + barObject.key.replace(/\W/g, '') + "-checkbox-" + op + "'>"+gn+" </label>",
+            extraAttributes: {
+                "title": gn,
+                "data-title": gn
+            }
+        });
         row.appendChild(name);
     }
 
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: barObject.values.length });
+    var amount = HTMLElementUtils.createElement({
+        type: "td",
+        innerText: barObject.values.length
+    });
     row.appendChild(amount);
 
     if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
@@ -102,7 +118,13 @@ markerUtils.markerUI = function (barObject,options) {
         }
         thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
         var color = HTMLElementUtils.createElement({ type: "td" });
-        var colorinput = HTMLElementUtils.inputTypeColor({ id: barObject.key + "-color-" + op, extraAttributes: { value: thecolor } })
+        var colorinput = HTMLElementUtils.inputTypeColor({
+            id: barObject.key + "-color-" + op,
+            extraAttributes: {
+                value: thecolor
+            }
+        });
+        colorinput.classList.add("form-control", "form-control-color", "p-1");
         color.appendChild(colorinput);
         row.appendChild(color);
 
@@ -113,10 +135,20 @@ markerUtils.markerUI = function (barObject,options) {
 
     if (!markerUtils._uniquePiechart) {
         var shape = HTMLElementUtils.createElement({ type: "td" });
-        var shapeParams = { random: markerUtils._randomShape, id: barObject.key + "-shape-" + op, "options": markerUtils._d3SymbolStrings };
+        var shapeParams = {
+            random: markerUtils._randomShape,
+            id: barObject.key + "-shape-" + op,
+            class: "form-select form-select-sm",
+            "options": markerUtils._d3SymbolStrings
+        };
         var shapeinput = HTMLElementUtils.selectTypeDropDown(shapeParams);
-        if (shapeParams.random) { var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0; shapeinput.selectedIndex = rnd; }
-        else {shapeinput.selectedIndex = markerUtils._selectedShape}
+        if (shapeParams.random) {
+            var rnd = Math.floor(Math.random() * (markerUtils._d3SymbolStrings.length-1)) + 0;
+            shapeinput.selectedIndex = rnd;
+        }
+        else {
+            shapeinput.selectedIndex = markerUtils._selectedShape
+        }
         shape.appendChild(shapeinput);
         row.appendChild(shape);
     }
@@ -131,10 +163,10 @@ markerUtils.markerUI = function (barObject,options) {
     return row;
 }
 
-/** 
+/**
  * Invokes all the HTML necessary to create the interface for a barcode and add the listener so that
- * clicking the box invokes the drawing of the marker or erase. 
- * Selects a color based on the barcode letters so that the color are different versions of 
+ * clicking the box invokes the drawing of the marker or erase.
+ * Selects a color based on the barcode letters so that the color are different versions of
  * the four corners of Ycbcr. Chooses a random shape
  * @param {Object} barObject coming from dataUtils.data["gene"][op+_data] which looks like this {key: "AGGGC", values: Array(1234)} 
  * @param {Object} options containing inforamtion on what to omit if necessary. for instance if
@@ -143,7 +175,10 @@ markerUtils.markerUI = function (barObject,options) {
  * */
 markerUtils.markerUIAll = function (options) {
     var op = tmapp["object_prefix"];
-    var row = HTMLElementUtils.createElement({ type: "tr", id: "allbarcodes-tr" });
+    var row = HTMLElementUtils.createElement({
+        type: "tr",
+        id: "allbarcodes-tr"
+    });
 
     //var tdkey = HTMLElementUtils.createElement({ type: "td", innerText: barObject.key });
     //row.appendChild(tdkey);
@@ -151,30 +186,46 @@ markerUtils.markerUIAll = function (options) {
     var check = HTMLElementUtils.createElement({ type: "td" });
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: "AllMarkers-checkbox-" + op,
+        class: "form-check-input",
         eventListeners: { click: function () { 
             // TODO: Remove JQuery dependency here?
             $("#ISS_table input[type=checkbox]").prop("checked",$("#AllMarkers-checkbox-ISS").prop("checked"));
          } }
     });
-    
+
     check.appendChild(checkinput);
     row.appendChild(check);
     if(options.drawGeneLetters){
-        var lettersrow = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
-            extraAttributes: { "title": "All", "data-title":"All" } });
+        var lettersrow = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: {
+                "title": "All",
+                "data-title":"All"
+            }
+        });
         row.appendChild(lettersrow);
     }
 
     if(options.drawGeneName){
-        var name = HTMLElementUtils.createElement({ type: "td", innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
-            extraAttributes: { "title": "All", "data-title":"All" } });
+        var name = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML:  "<label style='cursor:pointer' for='AllMarkers-checkbox-" + op + "'>All</label>",
+            extraAttributes: {
+                "title": "All",
+                "data-title":"All"
+            }
+        });
         row.appendChild(name);
     }
     var length = 0;
     dataUtils.data["gene"][op + "_data"].forEach(function (barcode) {
         length += barcode.values.length;
     });
-    var amount = HTMLElementUtils.createElement({ type: "td", innerText: length });
+    var amount = HTMLElementUtils.createElement({
+        type: "td",
+        innerText: length
+    });
     row.appendChild(amount);
 
     if (!markerUtils._uniqueColor && !markerUtils._uniquePiechart) {
@@ -353,13 +404,8 @@ markerUtils.addPiechartLegend = function () {
         return;
     if (document.getElementById("piechartLegend") == undefined) {
         var elt = document.createElement('div');
-        elt.className = "piechartLegend"
+        elt.className = "piechartLegend px-1 mx-1 viewer-layer"
         elt.id = "piechartLegend"
-        elt.style.zIndex = "100";
-        elt.style.paddingLeft = "5px";
-        elt.style.paddingBottom = "2px";
-        elt.style.overflowY = "auto";
-        elt.style.maxHeight = "Calc(100vh - 245px)";
         tmapp['ISS_viewer'].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
     }
     elt = document.getElementById("piechartLegend");
