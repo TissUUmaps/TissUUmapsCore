@@ -15,36 +15,48 @@
 dataUtils = {
     data:{
         "gene":{
-            _type: "GENE_DATA",
-            /** _CSVStructure - Expected csv structure */
-            _CSVStructure: { headers: ["barcode", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-            _expectedCSV: { "group": "macro_cluster", "name": "", "X_col": "global_X_pos", "Y_col": "global_Y_pos", "key": "" },
-            _subsampledBarcodes: {},
-            _maximumAmountInLowerRes: 5000,
-            _nameAndLetters: { drawGeneName: false, drawGeneLetters: false },
-            _drawOptions: { randomColorForMarker: false },
-            _autoLoadCSV: false
-            //_minimumAmountToDisplay: 500,
-            //_subsamplingRate: 100
+            _type: "GENE_DATA"
         },
         "morphology":{
             _type: "MORPHOLOGY_DATA",
-            _CSVStructure: { headers: ["letters", "gene_name", "global_X_pos", "global_Y_pos", "seq_quality_min"] },
-            _expectedCSV: { "key_header": "Global_Exp_ID", "X_header": "Global_X", "Y_header": "Global_Y", "colorscale": "interpolateRainbow" },
-            _d3LUTs:["ownColorFromColumn","interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys", "interpolatePurples", "interpolateReds", "interpolateOranges"],
-            _subsampledItems: {},
-            _ownColorLut:{"class":"hexcolor"},
-            _subsamplingRate: 100,
-            _minimumAmountToDisplay: 500,
-            _markersize:0.0008,
-            _subsamplingfactor:0.15,
-            _drawCPdata: false
+            _name:""
+        },
+        "U23423R":{
+            _type: "GENERIC_DATA",
+            _name:"",
+            _processedata:[],
+            //iff user selects by group
+            _groupgarden:[]// full of separated d3.tree
         }
         /*
         data_id:{kv pairs}
         ... and inifinitely more data "types" like piecharts or whatever
         */
-    }
+    },
+    _d3LUTs:["interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", 
+    "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", 
+    "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", 
+    "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", 
+    "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys",
+     "interpolatePurples", "interpolateReds", "interpolateOranges"],
+}
+/**
+ * BIG CHANGE
+ * TODO: implemente createDataset so that Fredrik can draw
+ * load data as usual, object format
+ * trees only when user selects it, keep processeddata
+ * how to close 
+ * 
+*/
+
+dataUtils.readRenderoptions(){
+    //bring columns and options 
+
+}
+
+
+dataUtils.createDataset = function(){
+
 }
 
 /**
