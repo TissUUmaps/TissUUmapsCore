@@ -526,6 +526,74 @@ interfaceUtils.hideTabsExcept = function (a) {
 
 interfaceUtils._mGenUIFuncs={ctx:{aUUID:0}}
 
+interfaceUtils._mGenUIFuncs.deleteTab=function(event){
+    uid=event.target.id.split("_")[0];
+
+    tabbutton=interfaceUtils.getElementById(uid+"_li-tab")
+    tabbutton.remove();
+
+    tabpane=interfaceUtils.getElementById(uid+"_marker-pane")
+    tabpane.remove();
+
+    delete dataUtils.data[uid];
+}
+
+interfaceUtils._mGenUIFuncs.hideShow=function(event,array,option){
+    uid=event.target.name.split("_")[0]
+    array.forEach((domid, index)=>{
+        newdomid=uid+domid;
+        domelement=interfaceUtils.getElementById(newdomid);
+        if(domelement){
+            if(index != option){
+                domelement.setAttribute("style",'visibility:hidden;display:none;');
+            }else{
+                domelement.removeAttribute("style");
+            }
+        }
+    });
+}
+
+interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,option){
+    uid=event.target.name.split("_")[0]
+    array.forEach((domid, index)=>{
+        newdomid=uid+domid;
+        domelement=interfaceUtils.getElementById(newdomid);
+        if(domelement){
+            if(index != option){
+                domelement.checked=false;
+            }else{
+                domelement.checked=true;
+            }
+        }
+    });
+}
+
+interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,option){
+    uid=event.target.name.split("_")[0]
+    array.forEach((domid, index)=>{
+        newdomid=uid+domid;
+        domelement=interfaceUtils.getElementById(newdomid);
+        if(domelement){
+            if(index != option){
+                domelement.disabled=false
+            }else{
+                domelement.disabled=true
+            }
+        }
+    });
+}
+
+interfaceUtils._mGenUIFuncs.ChangeTabName=function(event){
+    uid=event.target.name.split("_")[0]
+    domelement=interfaceUtils.getElementById(uid+"_marker-tab-name");
+    if(domelement){
+        if(event.target.value)
+            domelement.innerText=event.target.value
+        else
+            domelement.innerText=uid;
+    }
+}
+
 interfaceUtils._mGenUIFuncs.generateUUID=function(){
     //HAS TO START with letter
     //aUUID="U12345";
@@ -547,25 +615,10 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     */
     
     //first thing is to add the tab in the level 1. Which is a li with a button
-    li1=HTMLElementUtils.createElement({
-        "kind":"li",
-        "extraAttributes":{
-            "class":"nav-item",
-            "role":"presentation"}});
+    li1=HTMLElementUtils.createElement({"kind":"li", "id":generated+"_li-tab", "extraAttributes":{ "class":"nav-item", "role":"presentation"}});
+    button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-name","extraAttributes":{ "class":"nav-link", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
 
-    button1=HTMLElementUtils.createButton({
-        "id":generated+"_marker-tab-name",
-        "extraAttributes":{ 
-            "class":"nav-link", 
-            "data-bs-toggle":"tab",
-            "data-bs-target":"#"+generated+"_marker-pane",
-            "type":"button",
-            "role":"tab",
-            "aria-controls":generated+"_marker",
-            "aria-selected":"false"}
-    })
-
-    button1.innerHTML=generated
+    button1.innerHTML=generated;
 
     li1.appendChild(button1);
     ultabs1=interfaceUtils.getElementById("level-1-tabs");
@@ -578,14 +631,7 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     */
     //now the content of that tab pane which is a form like group to select the options for rendering
     //1.1
-    divpane=HTMLElementUtils.createElement({
-        "kind":"div",
-        "id":generated+"_marker-pane",
-        "extraAttributes":{ 
-            "class":"tab-pane", 
-            "role":"tabpanel",
-            "aria-labelledby":generated+"_marker-tab"}
-    });
+    divpane=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-pane", "extraAttributes":{  "class":"tab-pane",  "role":"tabpanel", "aria-labelledby":generated+"_marker-tab"}});
 
     //return this pane
     return divpane;
@@ -598,47 +644,16 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
      * MAIN ACCORDION
     */
     //inside the pane put an accordio with 3 accordion-items to put the options
-    divaccordion=HTMLElementUtils.createElement({
-        "kind":"div",
-        "id":generated+"_accordion-flush",
-        "extraAttributes":{"class":"accordion accordion-flush"}
-    })
+    divaccordion=HTMLElementUtils.createElement({"kind":"div","id":generated+"_accordion-flush","extraAttributes":{"class":"accordion accordion-flush"}})
 
     //now 3 accordion items
     accordionitems=[];
     accordioncontents=[];
     ["File and coordinates","Render options","Charts"].forEach(function(title,index){
-        divaccordionitem=HTMLElementUtils.createElement({
-            "kind":"div",
-            "extraAttributes":{"class":"accordion-item"}
-        })
-        h2accordionitem=HTMLElementUtils.createElement({
-            "kind":"h2",
-            "id":"flush-heading"+index.toString(),
-            "extraAttributes":{"class":"accordion-header"}
-        })
-        buttonaccordionitem=HTMLElementUtils.createElement({
-            "kind":"button",
-            "extraAttributes":{
-                "class":"accordion-button collapsed",
-                "type":"button",
-                "data-bs-toggle":"collapse",
-                "data-bs-target":"#flush-collapse"+index.toString(),
-                "aria-expanded":"false",
-                "aria-controls":"flush-collapse"+index.toString()
-            }
-        })
-
-        divaccordioncontent=HTMLElementUtils.createElement({
-            "kind":"div",
-            "id":"flush-collapse"+index.toString(),
-            "extraAttributes":{
-                "class":"accordion-collapse collapse",
-                "data-bs-parent":"#"+generated+"_accordion-flush",
-                "aria-labelledby":"flush-heading"+index.toString()
-            }
-        })
-
+        divaccordionitem=HTMLElementUtils.createElement({ "kind":"div","extraAttributes":{"class":"accordion-item"}});
+        h2accordionitem=HTMLElementUtils.createElement({ "kind":"h2","id":"flush-heading"+index.toString(),"extraAttributes":{"class":"accordion-header"}});
+        buttonaccordionitem=HTMLElementUtils.createElement({ "kind":"button", "extraAttributes":{ "class":"accordion-button collapsed", "type":"button", "data-bs-toggle":"collapse", "data-bs-target":"#flush-collapse"+index.toString(), "aria-expanded":"false", "aria-controls":"flush-collapse"+index.toString()}})
+        divaccordioncontent=HTMLElementUtils.createElement({ "kind":"div", "id":"flush-collapse"+index.toString(), "extraAttributes":{ "class":"accordion-collapse collapse", "data-bs-parent":"#"+generated+"_accordion-flush", "aria-labelledby":"flush-heading"+index.toString()}})
         buttonaccordionitem.innerText=title;
 
         h2accordionitem.appendChild(buttonaccordionitem);
@@ -647,7 +662,6 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
 
         accordionitems.push(divaccordionitem);
         accordioncontents.push(divaccordioncontent);
-
     })
 
     accordionitems.forEach(ait =>{divaccordion.appendChild(ait)});
@@ -665,101 +679,63 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
      /**
      *  ACCORDION ITEM 1
      */
+
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_csv_progress_parent"});
+    row0.classList.add("d-none");
+    row0.innerHTML="Loading markers..."
+
+    col01=HTMLElementUtils.createColumn({"width":12});
+    div011=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"progress"}});
+    div0111=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_csv_progress", "extraAttributes":{"class":"progress-bar progress-bar-striped","role":"progressbar" ,"aria-valuenow":"10", "aria-valuemin":"0" ,"aria-valuemax":"100"}});
+
     //row 1
     row1=HTMLElementUtils.createRow({id:generated+"_row-1"});
     col11=HTMLElementUtils.createColumn({"width":6});
-    div111=HTMLElementUtils.createElement({
-        "kind":"div",
-        "id":generated+"_input_csv"
-    });
-    label1111=HTMLElementUtils.createElement({
-        "kind":"label",
-        "extraAttributes":{
-            "for":generated+"_csv"
-        }
-    });
+    div111=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_input_csv"});
+    label1111=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":generated+"_csv"}});
     label1111.innerText="File and coordinates";
-
-    input1112=HTMLElementUtils.createElement({
-        "kind":"input", "id":generated+"_csv",
-        "extraAttributes":{
-            "name":generated+"_csv",
-            "class":"form-control-file form-control form-control-sm",
-            "type":"file",
-            "accept":".csv,.tsv,.txt"
-        }
-    });
+    input1112=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_csv","extraAttributes":{ "name":generated+"_csv", "class":"form-control-file form-control form-control-sm", "type":"file", "accept":".csv,.tsv,.txt"}});
     
     //---------------------------------
 
     col12=HTMLElementUtils.createColumn({"width":6});
-    div121=HTMLElementUtils.createElement({
-        "kind":"div",
-        "id":"input-group"
-    });
-    label1221=HTMLElementUtils.createElement({
-        "kind":"label",
-        "extraAttributes":{
-            "for":generated+"_tab-name"
-        }
-    });
+    div121=HTMLElementUtils.createElement({"kind":"div","id":"input-group"});
+    label1221=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":generated+"_tab-name"}});
     label1221.innerText="Tab name";
-    input1222=HTMLElementUtils.createElement({
-        "kind":"input", "id":generated+"_tab-name",
-        "extraAttributes":{
-            "name":generated+"_tab-name",
-            "class":"form-control",
-            "type":"text",
-            "placeholder":generated,
-            "aria-label":"Tab name"
-        }
-    });
+    input1222=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_tab-name", "extraAttributes":{ "name":generated+"_tab-name", "class":"form-control","type":"text", "placeholder":generated, "aria-label":"Tab name" }});
     input1222.innerText=generated; 
-
-    input1222.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.ChangeTabName(event);
-
-    })
+    input1222.addEventListener("change",(event)=>{interfaceUtils._mGenUIFuncs.ChangeTabName(event);})
 
     ///ROW 2
 
     row2=HTMLElementUtils.createRow({"id":generated+"_row-2"});
-
     col21=HTMLElementUtils.createColumn({"width":6});
-    label211=HTMLElementUtils.createElement({
-        "kind":"label",
-        "id":generated+"_x-label",
-        "extraAttributes":{
-            "for":generated+"_x_value"
-        }
+    label211=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_x-label", "extraAttributes":{ "for":generated+"_x_value" }
     });
     label211.innerText="X coordinate"
-    select212=HTMLElementUtils.createElement({
-        "kind":"select",
-        "id":generated+"_x-value",
-        "extraAttributes":{
-            "class":"form-select form-select-sm",
-            "aria-label":".form-select-sm"
-        }
+    select212=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_x-value", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}
     });
 
     col22=HTMLElementUtils.createColumn({"width":6});
-    label221=HTMLElementUtils.createElement({
-        "kind":"label",
-        "id":generated+"_y-label",
-        "extraAttributes":{
-            "for":generated+"_y-value"
-        }
+    label221=HTMLElementUtils.createElement({"kind":"label","id":generated+"_y-label","extraAttributes":{"for":generated+"_y-value" }
     });
     label221.innerText="Y coordinate";
-    select222=HTMLElementUtils.createElement({
-        "kind":"select",
-        "id":generated+"_y-value",
-        "extraAttributes":{
-            "class":"form-select form-select-sm",
-            "aria-label":".form-select-sm"
-        }
+    select222=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_y-value", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"
+     }
     });
+
+    row3=HTMLElementUtils.createRow({"id":generated+"_row-3"});
+    col30=HTMLElementUtils.createColumn({"width":4});
+    button300=HTMLElementUtils.createButton({"id":generated+"_delete_button",
+    "innerText":"Close tab","class":"btn btn-primary",
+    "eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}
+    })
+
+
+    row0.appendChild(col01)
+        col01.appendChild(div011)
+            div011.appendChild(div0111);
 
     row1.appendChild(col11);
         col11.appendChild(div111);  
@@ -777,36 +753,12 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
         col22.appendChild(label221);
         col22.appendChild(select222);
 
+    row3.appendChild(col30);
+        col30.appendChild(button300);
 
-    return [row1,row2];
 
-}
+    return [row0,row1,row2,row3];
 
-interfaceUtils._mGenUIFuncs.hideAndShow=function(event,array,option){
-    //hide all show only option
-    uid=event.target.name.split("_")[0]
-    array.forEach((domid, index)=>{
-        newdomid=uid+domid;
-        domelement=interfaceUtils.getElementById(newdomid);
-        if(domelement){
-            if(index != option){
-                domelement.setAttribute("style",'visibility:hidden;display:none;');
-            }else{
-                domelement.removeAttribute("style");
-            }
-        }
-    });
-}
-
-interfaceUtils._mGenUIFuncs.ChangeTabName=function(event){
-    uid=event.target.name.split("_")[0]
-    domelement=interfaceUtils.getElementById(uid+"_marker-tab-name");
-    if(domelement){
-        if(event.target.value)
-            domelement.innerText=event.target.value
-        else
-            domelement.innerText=uid;
-    }
 }
 
 interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
@@ -817,69 +769,61 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
     //------------------------------------
     rowgb=HTMLElementUtils.createRow({"id":generated+"_groupby"});
         colgb1=HTMLElementUtils.createColumn({"width":12});
-            labelgb11=HTMLElementUtils.createElement({
-                "kind":"label", "id":generated+"_gb-label"
+            labelgb11=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_gb-label"
             });
-            labelgb11.innerText="Group by";
+            labelgb11.innerHTML="<strong>Group by</strong>";
 
     //col 2
     //-----------------------------------
 
     colgb2=HTMLElementUtils.createColumn({"width":6});
-        divformcheck1=HTMLElementUtils.createElement({
-            "kind":"div", "extraAttributes":{"class":"form-check"}
+        divformcheck1=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}
         });
-            inputradio1=HTMLElementUtils.createElement({
-                "kind":"input", "id":generated+"_gb-none","extraAttributes":{"name":generated+"_flexRadioGroupBy","class":"form-check-input","type":"radio" }
+            inputradio1=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_gb-single","extraAttributes":{"name":generated+"_flexRadioGroupBy","class":"form-check-input","type":"radio" }
             });
-            labelgbnone=HTMLElementUtils.createElement({
-                "kind":"label", "extraAttributes":{"class":"form-check-label","for":generated+"_gb-none" }
+            inputradio1.checked=true;
+            labelgbnone=HTMLElementUtils.createElement({"kind":"label", "extraAttributes":{"class":"form-check-label","for":generated+"_gb-single" }
             });
-            labelgbnone.innerText="None";
+            labelgbnone.innerText="Single row";
 
-        divformcheck2=HTMLElementUtils.createElement({
-            "kind":"div", "extraAttributes":{"class":"form-check"}
+        divformcheck2=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}
         });
-            inputradio2=HTMLElementUtils.createElement({
-                "kind":"input", "id":generated+"_gb-col", "extraAttributes":{ "name":generated+"_flexRadioGroupBy", "class":"form-check-input", "type":"radio"  }
+            inputradio2=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_gb-col", "extraAttributes":{ "name":generated+"_flexRadioGroupBy", "class":"form-check-input", "type":"radio"  }
             });
-            labelgbcol=HTMLElementUtils.createElement({
-                "kind":"label", "extraAttributes":{ "class":"form-check-label", "for":generated+"_gb-col" } 
+            labelgbcol=HTMLElementUtils.createElement({"kind":"label", "extraAttributes":{ "class":"form-check-label", "for":generated+"_gb-col" } 
             });
             labelgbcol.innerText="By Column";
 
-            inputradio1.addEventListener("change",(event)=>{
-                interfaceUtils._mGenUIFuncs.hideAndShow(event,["_gb-none-options","_gb-col-options"],0)
-            });
-            inputradio2.addEventListener("change",(event)=>{
-                interfaceUtils._mGenUIFuncs.hideAndShow(event,["_gb-none-options","_gb-col-options"],1)
-            });
+        
 
     //------------------------
 
     colgb3=HTMLElementUtils.createColumn({"width":6});
 
-        divoptionsnone=HTMLElementUtils.createElement({
-            "kind":"div", "id":generated+"_gb-none-options"
-        });
-            labelgbnonefeature=HTMLElementUtils.createElement({
-                "kind":"label","id":generated+"_gb_none-feature-label","extraAttributes":{"for":generated+"_feature-value"}
-            });
+        divoptionsnone=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_gb-single-options"});
+            labelgbnonefeature=HTMLElementUtils.createElement({ "kind":"label","id":generated+"_gb_none-feature-label","extraAttributes":{"for":generated+"_feature-value"}});
             labelgbnonefeature.innerText="Feature to display";
-            selectgbnone=HTMLElementUtils.createElement({
-                "kind":"select","id":generated+"_feature-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}
-            });
+            selectgbnone=HTMLElementUtils.createElement({"kind":"select","id":generated+"_feature-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
 
-        divoptionscol=HTMLElementUtils.createElement({
-            "kind":"div","id":generated+"_gb-col-options"
-        });
-            labelgbcolvalue=HTMLElementUtils.createElement({
-                "kind":"label","id":generated+"_gb_col-colname-label","extraAttributes":{"for":generated+"_col-value"}
-            });
+        divoptionscol=HTMLElementUtils.createElement({ "kind":"div","id":generated+"_gb-col-options" , "extraAttributes":{"style":'visibility:hidden;display:none;'}});
+            labelgbcolvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_gb-col-value-label","extraAttributes":{"for":generated+"_gb-col-value"}});
             labelgbcolvalue.innerText="Column group";
-            selectgbcol=HTMLElementUtils.createElement({
-                "kind":"select","id":generated+"_col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}
-            });
+            selectgbcol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm" }});
+
+            labelgbcolname=HTMLElementUtils.createElement({"kind":"label","id":generated+"_gb-col-name-label","extraAttributes":{"for":generated+"_gb-col-name"}});
+            labelgbcolname.innerText="Group name";
+            selectgbcolname=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-col-name","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm" }});
+
+    inputradio1.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],0);
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],0)
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],0);
+        interfaceUtils._mGenUIFuncs.selectDeselect(event,["_cb-colormap","_cb-bypoint","_cb-bygroup"],0);        
+    });
+    inputradio2.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],1);
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],1);
+    });
 
     rowgb.appendChild(colgb1);
         colgb1.appendChild(labelgb11);
@@ -897,6 +841,8 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
         colgb3.appendChild(divoptionscol);
             divoptionscol.appendChild(labelgbcolvalue);
             divoptionscol.appendChild(selectgbcol);
+            divoptionscol.appendChild(labelgbcolname);
+            divoptionscol.appendChild(selectgbcolname);
 
     return rowgb;
     
@@ -912,10 +858,8 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
 
     colcb1=HTMLElementUtils.createColumn({"width":12});
 
-    labelcb11=HTMLElementUtils.createElement({
-        "kind":"label", "id":generated+"_cb-label"
-    });
-    labelcb11.innerText="Color options";
+    labelcb11=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+    labelcb11.innerHTML="<strong>Color options</strong>";
 
 
     //col 2
@@ -923,75 +867,70 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
 
     colcb2=HTMLElementUtils.createColumn({"width":6});
 
-    divformcheck1cb=HTMLElementUtils.createElement({
-        "kind":"div","extraAttributes":{"class":"form-check"}
-    });
-    inputradio1cb=HTMLElementUtils.createElement({
-        "kind":"input", "id":generated+"_cb-colormap","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}
-    });
-    labelcbcmap=HTMLElementUtils.createElement({
-        "kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-colormap"}
-    });
+    divformcheck1cb=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
+    inputradio1cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-colormap","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}});
+    labelcbcmap=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-colormap"}});
     labelcbcmap.innerText="Color map";
 
 
-    divformcheck2cb=HTMLElementUtils.createElement({
-        "kind":"div", "extraAttributes":{"class":"form-check"}
-    });
-    inputradio2cb=HTMLElementUtils.createElement({
-        "kind":"input", "id":generated+"_cb-bypoint","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}
-    });
-    labelcbpoint=HTMLElementUtils.createElement({
-        "kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bypoint"}
-    });
+    divformcheck2cb=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"form-check"}});
+    inputradio2cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bypoint","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}});
+    labelcbpoint=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bypoint"}});
     labelcbpoint.innerText="Color by point";
 
-    divformcheck3cb=HTMLElementUtils.createElement({
-        "kind":"div","extraAttributes":{"class":"form-check"}
-    });
-    inputradio3cb=HTMLElementUtils.createElement({
-        "kind":"input", "id":generated+"_cb-bygroup","extraAttributes":{ "name":generated+"_flexRadioColorBy", "class":"form-check-input", "type":"radio"}
-    });
-    labelcbgroup=HTMLElementUtils.createElement({
-        "kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup"}
-    });
+    divformcheck3cb=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
+    inputradio3cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup","extraAttributes":{ "name":generated+"_flexRadioColorBy", "class":"form-check-input", "type":"radio"}});
+    inputradio3cb.disabled=true;
+    labelcbgroup=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup"}});
     labelcbgroup.innerText="Color by group";
    
     //------------------------
 
     colcb3=HTMLElementUtils.createColumn({"width":6});
 
-    divoptionscmap=HTMLElementUtils.createElement({
-        "kind":"div", "id":generated+"_cb-cmap-options"
-    });
-    labelcbcmapvalue=HTMLElementUtils.createElement({
-        "kind":"label","id":generated+"_cb-cmap-label","extraAttributes":{"for":generated+"_cb-cmap-value"}
-    });
-    labelcbcmapvalue.innerText="Feature to display";
-    selectcbcmap=HTMLElementUtils.createElement({
-        "kind":"select",
-        "id":generated+"_cb-cmap-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}
-    });
+    divoptionscmap=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_cb-cmap-options","extraAttributes":{"class": "renderOptionContainer"}});
+    labelcbcmapvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_cb-cmap-label","extraAttributes":{"for":generated+"_cb-cmap-value"}});
+    labelcbcmapvalue.innerText="Color map";
+    cmapoptions=[];
+    dataUtils._d3LUTs.forEach((lut)=>{ cmapoptions.push({"text":lut.replace("interpolate",""),"value":lut}) })
+    selectcbcmap=HTMLElementUtils.selectTypeDropDown({ "id":generated+"_cb-cmap-value","class":"form-select form-select-sm","options":cmapoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
 
-    divoptionscol=HTMLElementUtils.createElement({
-        "kind":"div","id":generated+"_cb-col-options"
-    });
-    labelcbcol=HTMLElementUtils.createElement({
-        "kind":"label", "id":generated+"_cb_col-colname-label","extraAttributes":{"for":generated+"_cb-col-value"}
-    });
+    divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+    selectcbcol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_cb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
+    labelcbcol=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb_col-colname-label","extraAttributes":{"for":generated+"_cb-col-value"} });
     labelcbcol.innerText="Color column";
-    selectcbcol=HTMLElementUtils.createElement({
-        "kind":"select","id":generated+"_cb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}
-    });
+
+    //create a whole group for color by group, random, gene and group name
+    divoptionscolgroup=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-group-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+
+    rowrand=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-rand","extraAttributes":{"class": "renderOption"}});
+    inputradiocbgrrand=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-rand","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
+    labelcbgrouprand=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-rand"}});
+    labelcbgrouprand.innerHTML="Color randomly<br>";
+
+    rowgene=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-gene","extraAttributes":{"class": "renderOption"}});
+    inputradiocbgrgene=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-gene","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", 
+        "class":"form-check-input", "type":"radio"}});
+    labelcbgroupgene=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-gene"}});
+    labelcbgroupgene.innerHTML="Color by gene<br>";
+
+    rowname=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-name","extraAttributes":{"class": "renderOption"}});
+    inputradiocbgrname=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-name","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", 
+        "class":"form-check-input", "type":"radio"}});
+    labelcbgroupname=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-name"}});
+    labelcbgroupname.innerHTML="Color by name<br>";
+
+
+    //listeners
 
     inputradio1cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideAndShow(event,["_cb-cmap-options","_cb-col-options"],0)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],0)
     });
     inputradio2cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideAndShow(event,["_cb-cmap-options","_cb-col-options"],1)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],1)
     });
     inputradio3cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideAndShow(event,["_cb-cmap-options","_cb-col-options"],2)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],2)
     });
 
     rowcb.appendChild(colcb1);
@@ -1013,8 +952,17 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
         colcb3.appendChild(divoptionscol);
             divoptionscol.appendChild(labelcbcol);
             divoptionscol.appendChild(selectcbcol);
-
-
+        colcb3.appendChild(divoptionscolgroup);
+            divoptionscolgroup.appendChild(rowrand);
+                rowrand.appendChild(inputradiocbgrrand);
+                rowrand.appendChild(labelcbgrouprand);            
+            divoptionscolgroup.appendChild(rowgene);
+                rowgene.appendChild(inputradiocbgrgene);
+                rowgene.appendChild(labelcbgroupgene);            
+            divoptionscolgroup.appendChild(rowname);
+                rowname.appendChild(inputradiocbgrname);
+                rowname.appendChild(labelcbgroupname);
+                
     return rowcb;
     
 }
@@ -1056,4 +1004,21 @@ interfaceUtils.generateDataTabUI = function(csvheader){
     item2rows=interfaceUtils._mGenUIFuncs.generateAccordionItem2();
     item2rows.forEach(row => accordioncontents[1].appendChild(row))
     
+}
+
+
+interfaceUtils.fillColorMaps = function(uid){
+    input=null;
+    if(uid) input=interfaceUtils.getElementById(uid+"_cb-cmap-value");
+    else {
+        generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+        input=interfaceUtils.getElementById(generated+"_cb-cmap-value");
+    }
+    for(cm in dataUtils._d3LUTs){
+        val=dataUtils._d3LUTs[cm]
+        opt = HTMLElementUtils.createElement({"kind":"option","value":val});
+        opt.innerHTML=val.replace("interpolate","");
+        input.appendChild(opt);
+    }
+
 }

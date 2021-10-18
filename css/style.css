@@ -10421,4 +10421,14 @@ html {
   font-size: 12px;
   z-index: 100; }
 
+
+.renderOptionContainer{
+    display: flex;
+    flex-direction: column;
+}
+
+.renderOption{
+    display: flex;
+    flex-direction: row;
+}
 /*# sourceMappingURL=style.css.map */

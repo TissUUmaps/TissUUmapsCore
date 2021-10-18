@@ -57,6 +57,16 @@ $navbar-padding-y: 0;
     line-height: 30vh;
 }
 
+.renderOptionContainer{
+    display: flex;
+    flex-direction: column;
+}
+
+.renderOption{
+    display: flex;
+    flex-direction: row;
+}
+
 // IMPORTS
 @import "../vendor/bootstrap-5.1.1/scss/bootstrap";
 @import "../vendor/bootstrap-5.1.1/scss/functions";
