@@ -55,9 +55,21 @@ dataUtils.readRenderoptions = function(){
 }
 
 
-dataUtils.createDataset = function(){
-
+dataUtils.createDataset = function(uid,options){
+    if(!options) options={};
+    //generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+    dataUtils.data[uid]={
+        _type: "GENERIC_DATA",
+        _name:options.name || "",
+        _processedata:[],
+        //iff user selects by group
+        _groupgarden:[]// full of separated d3.tree
+    }
 }
+
+dataUtils._processRawData
+
+
 
 /**
  * @deprecated Not required anymore, but kept for backwards-compatibility
@@ -126,6 +138,17 @@ dataUtils._setExpectedCSV["GENE_DATA"] = function(data_id, expectedCSV) {
 
     let data_obj = dataUtils.data[data_id];
     data_obj._expectedCSV = expectedCSV;
+}
+
+dataUtils._processRawData["GENERIC_DATA"] = function(data_id) {
+    let data_obj = dataUtils.data[data_id];
+    var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
+    if(progressParent == null){
+        console.log("No progress bar present.")
+    }else{
+        progressParent.classList.add("d-none");
+    }
+
 }
 
 dataUtils._processRawData["GENE_DATA"] = function(data_id) {
