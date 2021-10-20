@@ -394,7 +394,7 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
         }
         var dataURL = params.selected;
         if (dataURL == "") return;
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"gene");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("gene", expectedCSV);
         dataUtils.XHRCSV(dataURL);
     }
     options = [{"value":"","text":"Select a gene"}];
@@ -440,7 +440,7 @@ HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment, e
                 window[setting.module][setting.function] = setting.value;
             });
         }
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"gene");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("gene", expectedCSV);
         dataUtils.XHRCSV(dataURL);
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
@@ -460,7 +460,7 @@ HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment,
                 window[setting.module][setting.function] = setting.value;
             });
         }
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"morphology");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("morphology", expectedCSV);
         dataUtils.readCSV("morphology",dataURL)
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);

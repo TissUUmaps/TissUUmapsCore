@@ -60,7 +60,7 @@ dataUtils.setExpectedCSV = function(data_id, expectedCSV) {
 
     // TODO: Do validation of inputs
     let data_obj = dataUtils.data[data_id];
-    dataUtils._setExpectedCSV[data_obj._type](data_id);
+    dataUtils._setExpectedCSV[data_obj._type](data_id, expectedCSV);
 }
 
 dataUtils._setExpectedCSV = {}
