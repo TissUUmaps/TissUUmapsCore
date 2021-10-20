@@ -251,6 +251,7 @@
                     markerFile.path,
                     markerFile.comment,
                     markerFile.expectedCSV,
+                    markerFile.autoLoad,
                     markerFile.settings
                 );        
             }
