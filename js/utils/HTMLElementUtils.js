@@ -384,7 +384,7 @@ HTMLElementUtils.createDLSelect = function(downloadRow, innerText, callback, com
     return row;
 }
 
-HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, expectedCSV, settings) {
+HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, expectedCSV, autoLoad, settings) {
     var downloadRow = document.getElementById("ISS_rowDownloadMarkers");
     callback = function(e, params){
         if (settings) {
@@ -397,7 +397,12 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
         if (expectedCSV !== undefined) dataUtils.setExpectedCSV("gene", expectedCSV);
         dataUtils.XHRCSV(dataURL);
     }
-    options = [{"value":"","text":"Select a gene"}];
+    if (autoLoad) {
+        options = [];
+    }
+    else {
+        options = [{"value":"","text":"Select from list"}];
+    }
     dataURLs.forEach (function (dataURL) {
         options.push({
             "value": dataURL,
@@ -406,7 +411,12 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
     });
     HTMLElementUtils.createDLSelect(downloadRow, innerText, callback, comment, options);
     var label = document.getElementById("label_ISS_csv");
-    label.innerHTML = "Or import gene expression from CSV file:";
+    if (autoLoad) {
+        callback(null, {'selected':dataURLs[0]});
+    }
+    else {
+        label.innerHTML = "Or import gene expression from CSV file:";
+    }
 }
 
 HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
