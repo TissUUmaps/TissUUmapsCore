@@ -290,7 +290,11 @@
     }
     if (state.filename) {
         tmapp.slideFilename = state.filename;
-        document.getElementById("project_title").innerText = state.filename;
+        document.getElementById("project_title").innerHTML = state.filename;
+    }
+    if (state.link) {
+        document.getElementById("project_title").href = state.link;
+        document.getElementById("project_title").target = "_blank";
     }
     tmapp.layers = [];
     subfolder = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
@@ -329,6 +333,11 @@
         document.getElementById("ISS_data_panel").style.display="none";
     }
     setTimeout(function(){
+        if (state.rotate) {
+            var op = tmapp["object_prefix"];
+            var vname = op + "_viewer";
+            tmapp[vname].viewport.setRotation(state.rotate);
+        }
         if (state.boundingBox) {
             setTimeout(function() {
                 tmapp[tmapp["object_prefix"] + "_viewer"].viewport.fitBounds(new OpenSeadragon.Rect(state.boundingBox.x, state.boundingBox.y, state.boundingBox.width, state.boundingBox.height), false);
