@@ -327,7 +327,6 @@
     }
     if (projectUtils._hideCSVImport) {
         document.getElementById("ISS_data_panel").style.display="none";
-        document.getElementById("CP_data_panel").style.display="none";
     }
     setTimeout(function(){
         if (state.boundingBox) {
