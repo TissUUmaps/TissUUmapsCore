@@ -406,7 +406,7 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
     dataURLs.forEach (function (dataURL) {
         options.push({
             "value": dataURL,
-            "text": dataURL.split('/').reverse()[0]
+            "text": dataURL.split('/').reverse()[0].replaceAll('_', ' ').replaceAll('.csv', '')
         })
     });
     HTMLElementUtils.createDLSelect(downloadRow, innerText, callback, comment, options);
