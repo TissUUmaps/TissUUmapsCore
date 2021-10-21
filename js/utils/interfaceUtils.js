@@ -594,12 +594,12 @@ interfaceUtils._mGenUIFuncs.deleteTab=function(event){
 * @param {Array Number} option this option will be shown while all others are hidden
 * This function takes options within one specific tab and hide all except the one marked by option */
 interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
-    uid=event.target.name.split("_")[0]
+    uid=event.target.id.split("_")[0]
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            if(index in options){
+            if(options.includes(index)){
                 domelement.removeAttribute("style");
             }else{
                 domelement.setAttribute("style",'visibility:hidden;display:none;');
@@ -614,12 +614,12 @@ interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
 * @param {Number} option this option will be selected while all others are unselected
 * This function takes options within one specific tab and deselects all except the one marked by option */
 interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,options){
-    uid=event.target.name.split("_")[0]
+    uid=event.target.id.split("_")[0]
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            if(index in option){
+            if(options.includes(index)){
                 domelement.checked=true;
             }else{
                 domelement.checked=false;
@@ -634,15 +634,18 @@ interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,options){
 * @param {Number} option this option will be enabled while all others are disabled
 * This function takes options within one specific tab and disables all except the one marked by option */
 interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,options){
-    uid=event.target.name.split("_")[0]
+    uid=event.target.id.split("_")[0];
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
+        console.log(domelement,index,options,(index in options).toString())
         if(domelement){
-            if(index in options){
-                domelement.disabled=false
+            if(options.includes(index)){
+                domelement.disabled=false;
+                console.log(newdomid,"falsy")
             }else{
                 domelement.disabled=true
+                console.log(newdomid)
             }
         }
     });
@@ -1112,13 +1115,22 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
             label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-col-label", "extraAttributes":{ "for":generated+"_piechart-col" }});
             label010.innerText="Pie chart column"
             select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_piechart-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011.disabled=true
 
     row1=HTMLElementUtils.createRow({id:generated+"_piechart_1"});
         col10=HTMLElementUtils.createColumn({"width":12});
             label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-options-label", "extraAttributes":{ "for":generated+"_piechart-options-text" }});
             label010.innerText="Piechart options"
             area101=HTMLElementUtils.createElement({"kind":"textarea", "id":generated+"_piechart-options-text","extraAttributes":{ "class":"form-control" }});    
+            area101.disabled=true;
 
+    inputcheck0000.addEventListener("change", (event)=>{
+        var value=event.target.checked;
+        if(value)
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text"],[0,1])
+        else 
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text"],[3])
+    })
 
     row0.appendChild(col00)
         col00.appendChild(divformcheck000)
