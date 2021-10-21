@@ -36,8 +36,8 @@ tmapp.registerActions = function () {
     interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { dataUtils.processRawData("morphology") },false);
     interfaceUtils.listen("plus-1-button","click",function(){interfaceUtils.generateDataTabUI()},false)
     
-    dataUtils.processEventForCSV("morphology",cpop + '_csv');
-    dataUtils.processEventForCSV("gene",op + '_csv');
+    // dataUtils.processEventForCSV("morphology",cpop + '_csv');
+    //dataUtils.processEventForCSV("gene",op + '_csv');
     
     var navtabs=document.getElementsByClassName("nav-tabs")[0];
     var uls=navtabs.getElementsByTagName("ul");
@@ -239,4 +239,3 @@ $( document ).ready(function() {
         }
     });
 });
-
