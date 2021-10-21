@@ -6,11 +6,8 @@
 
 /**
  * @namespace dataUtils
- * @property {Object} dataUtils.data["gene"]._expectedCSV - Expected csv structure
- * @property {Object} dataUtils.data["gene"]._subsampledBarcodes - Containing the subsamples barcode trees to display
- * @property {Number} dataUtils.data["gene"]._maximumAmountInLowerRes - Maximum amount of points to display in low res
- * @property {Object} dataUtils.data["gene"]._nameAndLetters - Contains two bools drawGeneName and drawGeneLetters to know if and which to display between barcode or gene name
- * @property {Object} dataUtils.data["gene"]._drawOptions - Options for markerUtils.printBarcodeUIs
+ * @property {Object} dataUtils.data contains all data per tab
+ * @property {array} dataUtils._d3LUTs All options ofr colormaps coming from d3
  */
 dataUtils = {
     data:{
@@ -40,12 +37,12 @@ dataUtils = {
         ... and inifinitely more data "types" like piecharts or whatever
         */
     },
-    _d3LUTs:["interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", 
-    "interpolateViridis", "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateRdYlGn", 
-    "interpolateBuGn", "interpolateBuPu", "interpolateGnBu", "interpolateOrRd", "interpolatePuBuGn", 
-    "interpolatePuBu", "interpolatePuRd", "interpolateRdPu", "interpolateYlGnBu", "interpolateYlGn", 
-    "interpolateYlOrBr", "interpolateYlOrRd", "interpolateBlues", "interpolateGreens", "interpolateGreys",
-     "interpolatePurples", "interpolateReds", "interpolateOranges"],
+    _d3LUTs:[ "interpolateCubehelix", "interpolateCubehelixLong", "interpolateCubehelixDefault", "interpolateRainbow", "interpolateWarm", "interpolateCool", "interpolateViridis", 
+    "interpolateMagma", "interpolateInferno", "interpolatePlasma", "interpolateBlues", "interpolateBrBG", "interpolateBuGn", "interpolateBuPu", "interpolateCividis", 
+    "interpolateGnBu", "interpolateGreens", "interpolateGreys", "interpolateOrRd", "interpolateOranges", "interpolatePRGn", "interpolatePiYG", "interpolatePuBu", 
+    "interpolatePuBuGn", "interpolatePuOr", "interpolatePuRd", "interpolatePurples", "interpolateRdBu", "interpolateRdGy", "interpolateRdPu", "interpolateRdYlBu", 
+    "interpolateRdYlGn", "interpolateReds", "interpolateSinebow", "interpolateSpectral", "interpolateTurbo", "interpolateYlGn", "interpolateYlGnBu", "interpolateYlOrBr", 
+    "interpolateYlOrRd"],
 }
 /**
  * BIG CHANGE
@@ -55,7 +52,6 @@ dataUtils = {
  * how to close 
  * 
 */
-
 
 /** 
 * @param {String} uid The id of the data group
@@ -102,7 +98,6 @@ dataUtils.startCSVcascade= function(event){
  */
 CPDataUtils={};
 
-
 /** 
 * @param {String} data_id The id of the data group like "U234345"
 * @param {Array} data data coming from d3 after parsing the csv
@@ -131,7 +126,7 @@ dataUtils.updateViewOptions = function(event){
     var data_obj = dataUtils.data[data_id];
 
     //check options, there are only 2 really, or three? with charts
-    
+
 
 
     dataUtils.makeQuadTrees(data_id)
@@ -212,7 +207,6 @@ dataUtils.readCSV = function(data_id, thecsv) {
         dataUtils.processRawData(data_id,xhr)
     });
 }
-
 
 /** 
 * @param {Object} thecsv csv file path
