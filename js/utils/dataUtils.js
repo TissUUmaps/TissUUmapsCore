@@ -21,6 +21,7 @@ dataUtils = {
             _type: "MORPHOLOGY_DATA",
             _name:""
         },
+        /*
         "U23423R":{
             _type: "GENERIC_DATA",
             _name:"",
@@ -28,7 +29,6 @@ dataUtils = {
             //iff user selects by group
             _groupgarden:[]// full of separated d3.tree
         }
-        /*
         data_id:{kv pairs}
         ... and inifinitely more data "types" like piecharts or whatever
         */
@@ -57,7 +57,6 @@ dataUtils.readRenderoptions = function(){
 
 dataUtils.createDataset = function(uid,options){
     if(!options) options={};
-    //generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     dataUtils.data[uid]={
         _type: "GENERIC_DATA",
         _name:options.name || "",
@@ -67,7 +66,18 @@ dataUtils.createDataset = function(uid,options){
     }
 }
 
-dataUtils._processRawData
+dataUtils.startCSVcascade= function(event){
+    data_id=event.target.id.split("_")[0];
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onloadend = function (evt) {
+            var dataUrl = evt.target.result;
+            dataUtils.readCSV(data_id,dataUrl);
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
 
 
@@ -105,11 +115,11 @@ dataUtils._processRawData = {}
 /** 
  * Show the menu do select the CSV headers that contain the information to display
  */
-dataUtils.createMenuFromCSV = function(data_id) {
+dataUtils.createMenuFromCSV = function(data_id,datumExample) {
 
     // TODO: Do validation of inputs
     let data_obj = dataUtils.data[data_id];
-    dataUtils._createMenuFromCSV[data_obj._type](data_id);
+    dataUtils._createMenuFromCSV[data_obj._type](data_id,datumExample);
 }
 
 dataUtils._createMenuFromCSV = {}
@@ -122,8 +132,9 @@ dataUtils._createMenuFromCSV = {}
  * Later on it should be nested according to the main criteria
  */
 dataUtils.readCSV = function(data_id, thecsv) {
-
+    console.log(data_id);
     // TODO: Do validation of inputs
+    dataUtils.createDataset(data_id,{"name":data_id});
     let data_obj = dataUtils.data[data_id];
     dataUtils._readCSV[data_obj._type](data_id, thecsv);
 }
@@ -148,6 +159,8 @@ dataUtils._processRawData["GENERIC_DATA"] = function(data_id) {
     }else{
         progressParent.classList.add("d-none");
     }
+
+
 
 }
 
@@ -300,6 +313,30 @@ dataUtils._processRawData["GENE_DATA"] = function(data_id) {
     }
 }
 
+dataUtils._createMenuFromCSV["GENERIC_DATA"] = function(data_id,datumExample) {
+    let data_obj = dataUtils.data[data_id];
+
+    var csvheaders = Object.keys(datumExample);
+    data_obj["_csv_header"] = csvheaders;
+
+    //fill dropdowns
+    alldrops=interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
+    namesymbols=Object.getOwnPropertyNames(alldrops);
+    namesymbols.forEach((drop)=>{
+        if(drop=="cb_cmap") return; //if its colormaps dont fill it with csv but with d3 luts which are already there
+        if (!alldrops[drop]) return;
+        alldrops[drop].innerHTML = "";
+        var option = document.createElement("option");
+        option.value = "null"; option.text = "-----";
+        alldrops[drop].appendChild(option);
+        csvheaders.forEach(function (head) {
+            var option = document.createElement("option");
+            option.value = head; option.text = head.split(";")[0];
+            alldrops[drop].appendChild(option);
+        });
+    })
+}
+
 dataUtils._createMenuFromCSV["GENE_DATA"] = function(data_id) {
 
     let data_obj = dataUtils.data[data_id];
@@ -372,6 +409,50 @@ dataUtils._readCSV["GENE_DATA"] = function(data_id, thecsv) {
     );
 }
 
+dataUtils._readCSV["GENERIC_DATA"] = function(data_id, thecsv) {
+
+    let data_obj = dataUtils.data[data_id];
+
+    data_obj["_rawdata"] = {};
+    data_obj["_csv_header"] = null;
+
+    var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
+    progressParent.classList.remove("d-none");
+    var progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
+
+    var fakeProgress = 0;
+
+    var request = d3.csv(
+        thecsv,
+        function (d) { return d; } //here you can modify the datum 
+    ).on("progress", function(pe){
+        //update progress bar
+        if (pe.lengthComputable) {
+            var maxsize = pe.total;
+            var prog=pe.loaded;
+            var perc=prog/maxsize*100;
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+            //console.log(perc);
+        }
+        else {
+            fakeProgress += 1;
+            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
+            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
+            perc=perc.toString()+"%"
+            progressBar.style.width = perc;
+        }
+    }).on("load",function(xhr){
+        console.log(xhr);
+
+        progressBar.style.width="100%"
+        progressParent.classList.add("d-none");
+        dataUtils.createMenuFromCSV(data_id,xhr[0]);
+        //dataUtils.createMenuFromCSV(data_id);
+        
+    });
+}
+
 dataUtils.XHRCSV = function(thecsv) {
 
     let data_obj = dataUtils.data["gene"];  // TODO
@@ -403,7 +484,7 @@ dataUtils.XHRCSV = function(thecsv) {
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
             progressParent.classList.add("d-none");
-            alert ("Impossible to load data, please contact an administrator.")
+            alert ("Impossible to load data")
         }     
     };
     
@@ -728,7 +809,7 @@ dataUtils._readCSV["MORPHOLOGY_DATA"] = function(data_id, thecsv) {
             perc=perc.toString()+"%"
             progressBar.style.width = perc;
         }
-    });;
+    });
 }
 
 /** 
