@@ -366,6 +366,9 @@ interfaceUtils.openDZI=function(dzi,viewer){
     
 }
 
+/** 
+* @param {String} domid The id of the element
+* See if a dom is checked (mostly a checkbox) */
 interfaceUtils.isChecked=function(domid){
     var check= document.getElementById(domid);
     if(check){
@@ -377,6 +380,9 @@ interfaceUtils.isChecked=function(domid){
     }
 }
 
+/** 
+* @param {String} domid The id of the element
+* checl if an input has o has not its first options sslected */
 interfaceUtils.checkSelectNotZero=function(domid){
     var selector= document.getElementById(domid);
     if(selector){
@@ -524,8 +530,49 @@ interfaceUtils.hideTabsExcept = function (a) {
     }
 }
 
+
+/** 
+* @param {Object} options The id of the element
+* Create a complete new tab with all the UI, accordion and buttons. 
+* Options are not implemented but are there if needed in the future 
+*/
+interfaceUtils.generateDataTabUI = function(options){
+
+    interfaceUtils._mGenUIFuncs.generateUUID();
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    divpane=interfaceUtils._mGenUIFuncs.generateTab();
+    accordion=interfaceUtils._mGenUIFuncs.generateAccordion();
+    accordioncontents=accordion.contents;
+    
+    //now that the 3 accordion items are created, fill tehm and 
+    //add all to the corresponding main data tab
+
+    item1rows=interfaceUtils._mGenUIFuncs.generateAccordionItem1();
+    item1rows.forEach(row => accordioncontents[0].appendChild(row))
+
+    item2rows=interfaceUtils._mGenUIFuncs.generateAccordionItem2();
+    item2rows.forEach(row => accordioncontents[1].appendChild(row))
+
+    buttonrow=interfaceUtils._mGenUIFuncs.generateRowOptionsButtons();
+
+    divpane.appendChild(accordion.divaccordion);
+    divpane.appendChild(buttonrow);
+
+    tabs1content=interfaceUtils.getElementById("level-1-tabsContent");
+    if(tabs1content) tabs1content.appendChild(divpane);
+    else { console.log("No level 1 tab conent"); return;}
+}
+
+/**
+ * To not fill interfaceUtils with a lot of things, there is the _mGenUIFuncs
+ * object encapsulating all the functions pertaining creation of tabs
+ */
 interfaceUtils._mGenUIFuncs={ctx:{aUUID:0}}
 
+/** 
+* @param {HTMLEvent} event event that triggered function
+* Delete all trace of a tab including datautils.data.key*/
 interfaceUtils._mGenUIFuncs.deleteTab=function(event){
     uid=event.target.id.split("_")[0];
 
@@ -538,6 +585,11 @@ interfaceUtils._mGenUIFuncs.deleteTab=function(event){
     delete dataUtils.data[uid];
 }
 
+/** 
+* @param {HTMLEvent} event event that triggered function
+* @param {Array string} array domid suffixes within group
+* @param {Number} option this option will be shown while all others are hidden
+* This function takes options within one specific tab and hide all except the one marked by option */
 interfaceUtils._mGenUIFuncs.hideShow=function(event,array,option){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
@@ -553,6 +605,11 @@ interfaceUtils._mGenUIFuncs.hideShow=function(event,array,option){
     });
 }
 
+/** 
+* @param {HTMLEvent} event event that triggered function
+* @param {Array string} array domid suffixes within group
+* @param {Number} option this option will be selected while all others are unselected
+* This function takes options within one specific tab and deselects all except the one marked by option */
 interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,option){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
@@ -568,6 +625,11 @@ interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,option){
     });
 }
 
+/** 
+* @param {HTMLEvent} event event that triggered function
+* @param {Array string} array domid suffixes within group
+* @param {Number} option this option will be enabled while all others are disabled
+* This function takes options within one specific tab and disables all except the one marked by option */
 interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,option){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
@@ -583,6 +645,9 @@ interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,option){
     });
 }
 
+/** 
+* @param {HTMLEvent} event event that triggered function
+* Chages the name of the tab if this text in the form has changed */
 interfaceUtils._mGenUIFuncs.ChangeTabName=function(event){
     uid=event.target.name.split("_")[0]
     domelement=interfaceUtils.getElementById(uid+"_marker-tab-name");
@@ -594,7 +659,13 @@ interfaceUtils._mGenUIFuncs.ChangeTabName=function(event){
     }
 }
 
-interfaceUtils._mGenUIFuncs.getTabDropDowns= function(uid){
+/**
+ * @param {string} uid the data id
+ * Returns an object full with inputs for a tab named as: 
+ * "X","Y","gb_sr","gb_col","gb_name","cb_cmap","cb_col"
+ * @returns {Object} allinputs
+ */
+interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
     allinputs={}
     allinputs["X"]=interfaceUtils.getElementById(uid+"_x-value");
     allinputs["Y"]=interfaceUtils.getElementById(uid+"_y-value");
@@ -609,6 +680,12 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns= function(uid){
     return allinputs;
 }
 
+/**
+ * @param {string} uid the data id
+ * Returns an object full with inputs for a tab named as: 
+ * "gb_sr", "gb_col", "cb_cmap", "cb_col", "cb_gr", "cb_gr_rand", "cb_gr_gene", "cb_gr_name"
+ * @returns {Object} allinputs
+ */
 interfaceUtils._mGenUIFuncs.getTabRadios= function(uid){
     allradios={}
     allradios["gb_sr"]=interfaceUtils.getElementById(uid+"_gb-feature-value");
@@ -625,7 +702,9 @@ interfaceUtils._mGenUIFuncs.getTabRadios= function(uid){
     return allradios;
 }
 
-
+/**
+ * Creates a unique id for each new tab 
+ */
 interfaceUtils._mGenUIFuncs.generateUUID=function(){
     //HAS TO START with letter
     //aUUID="U12345";
@@ -637,6 +716,11 @@ interfaceUtils._mGenUIFuncs.generateUUID=function(){
     interfaceUtils._mGenUIFuncs.ctx.aUUID=aUUID;
 }
    
+/**
+ * Creates a bootstrap tab to put on the top of the menu and it's pane, 
+ * the pane is returned so it can be added to the corresponding existing parent o all panes
+ * @returns {HTMLElement} divpane
+ */
 interfaceUtils._mGenUIFuncs.generateTab=function(){
     //create the tab and the space for the content
     //fill context with generated value for ID of data type
@@ -669,6 +753,11 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     return divpane;
 }
 
+/**
+ * Generate the scaffold of the accordion. if you want more parts for the accordion, do it here.
+ * Returns an object with two elements: Pointers to the accordion contents so that we can fill them with the correct forms
+ * @returns {Object} divpane={divaccordion:_,contents:_}
+ */
 interfaceUtils._mGenUIFuncs.generateAccordion=function(){
 
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
@@ -685,7 +774,7 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
         divaccordionitem=HTMLElementUtils.createElement({ "kind":"div","extraAttributes":{"class":"accordion-item"}});
         h2accordionitem=HTMLElementUtils.createElement({ "kind":"h2","id":"flush-heading"+index.toString(),"extraAttributes":{"class":"accordion-header"}});
         buttonaccordionitem=HTMLElementUtils.createElement({ "kind":"button", "extraAttributes":{ "class":"accordion-button collapsed", "type":"button", "data-bs-toggle":"collapse", "data-bs-target":"#flush-collapse"+index.toString(), "aria-expanded":"false", "aria-controls":"flush-collapse"+index.toString()}})
-        divaccordioncontent=HTMLElementUtils.createElement({ "kind":"div", "id":"flush-collapse"+index.toString(), "extraAttributes":{ "class":"accordion-collapse collapse", "data-bs-parent":"#"+generated+"_accordion-flush", "aria-labelledby":"flush-heading"+index.toString()}})
+        divaccordioncontent=HTMLElementUtils.createElement({ "kind":"div", "id":"flush-collapse"+index.toString(), "extraAttributes":{ "class":"accordion-collapse collapse tm-accordion-collapse", "data-bs-parent":"#"+generated+"_accordion-flush", "aria-labelledby":"flush-heading"+index.toString()}})
         buttonaccordionitem.innerText=title;
 
         h2accordionitem.appendChild(buttonaccordionitem);
@@ -705,7 +794,8 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
 }
 
  /**
- *  ACCORDION ITEM 1
+ *  Creates progrwss bar, input file picker, tab name, X and Y and returns rows to append to the accordion
+ * @returns {array} array of rows
  */
 interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
 
@@ -753,9 +843,9 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
             label221.innerText="Y coordinate";
             select222=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_y-value", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"} });
 
-    row3=HTMLElementUtils.createRow({"id":generated+"_row-3"});
+    /*row3=HTMLElementUtils.createRow({"id":generated+"_row-3"});
         col30=HTMLElementUtils.createColumn({"width":4});
-            button300=HTMLElementUtils.createButton({"id":generated+"_delete_button","innerText":"Close tab","class":"btn btn-primary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}})
+            button300=HTMLElementUtils.createButton({"id":generated+"_delete_button","innerText":"Close tab","class":"btn btn-primary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}})*/
 
     row0.appendChild(col01)
         col01.appendChild(div011)
@@ -777,14 +867,18 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
         col22.appendChild(label221);
         col22.appendChild(select222);
 
-    row3.appendChild(col30);
-        col30.appendChild(button300);
+    /*row3.appendChild(col30);
+        col30.appendChild(button300);*/
 
 
-    return [row0,row1,row2,row3];
+    return [row0,row1,row2];///,row3];
 
 }
 
+ /**
+ *  Creates the forms to group by
+ * @returns {array} array of rows
+ */
 interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
@@ -862,6 +956,10 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
     
 }
 
+ /**
+ *  Creates the forms to color by
+ * @returns {array} array of rows
+ */
 interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
@@ -974,6 +1072,10 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     
 }
 
+ /**
+ *  Creates the whole options section
+ * @returns {array} array of rows
+ */
 interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
@@ -985,47 +1087,55 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     return [rowgb,rowcb];
 }
 
-//first funciton called to create tab
-interfaceUtils.generateDataTabUI = function(csvheader){
-
-    interfaceUtils._mGenUIFuncs.generateUUID();
+ /**
+ *  Creates the forms to color by
+ * @returns {HTMLElement} row
+ */
+interfaceUtils._mGenUIFuncs.generateRowOptionsButtons=function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
-
-    divpane=interfaceUtils._mGenUIFuncs.generateTab();
-    accordion=interfaceUtils._mGenUIFuncs.generateAccordion();
-    accordioncontents=accordion.contents;
-
-    divpane.appendChild(accordion.divaccordion);
+    row0=HTMLElementUtils.createRow({"id":generated+"_row-option-buttons"});
+        col00=HTMLElementUtils.createColumn({"width":5});
+        col01=HTMLElementUtils.createColumn({"width":3});
+            button010=HTMLElementUtils.createButton({"id":generated+"_delete-button","innerText":"Close tab","class":"btn btn-secondary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}});
+        col02=HTMLElementUtils.createColumn({"width":4});
+            button020=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Update view","class":"btn btn-primary","eventListeners":{"click":(event)=> dataUtils.updateViewOptions(event) }});
     
-    //1.0
-    tabs1content=interfaceUtils.getElementById("level-1-tabsContent");
-    if(tabs1content) tabs1content.appendChild(divpane);
-    else { console.log("No level 1 tab conent"); return;}
-    
-    //now that the 3 accordion items are created, fill tehm and 
-    //add all to the corresponding main data tab
+    row0.appendChild(col00);
+    row0.appendChild(col01);
+        col01.appendChild(button010);
+    row0.appendChild(col02);
+        col02.appendChild(button020);
 
-    item1rows=interfaceUtils._mGenUIFuncs.generateAccordionItem1();
-    item1rows.forEach(row => accordioncontents[0].appendChild(row))
+    return row0;
 
-    item2rows=interfaceUtils._mGenUIFuncs.generateAccordionItem2();
-    item2rows.forEach(row => accordioncontents[1].appendChild(row))
-    
 }
 
+/**
+ * @param {string} data_id id in datautils.data
+ * @param {object} expectedHeader object of the type {input:expectedHeaderFromCSV}
+ * If somehow there is an expect CSV this will help you del with that
+*/
+interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV=function(data_id,expectedHeader){
+    //expected headr is an object that has these keys, other will be ignored;
+    //"X","Y","gb_sr","gb_col","gb_name","cb_cmap","cb_col"
+    if(expectedHeader){
+        interfaceUtils._mGenUIFuncs.ctx.expectedHeader=expectedHeader;
 
-interfaceUtils.fillColorMaps = function(uid){
-    input=null;
-    if(uid) input=interfaceUtils.getElementById(uid+"_cb-cmap-value");
-    else {
-        generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
-        input=interfaceUtils.getElementById(generated+"_cb-cmap-value");
-    }
-    for(cm in dataUtils._d3LUTs){
-        val=dataUtils._d3LUTs[cm]
-        opt = HTMLElementUtils.createElement({"kind":"option","value":val});
-        opt.innerHTML=val.replace("interpolate","");
-        input.appendChild(opt);
-    }
+        dropdowns=interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
 
+        for(d in expectedHeader){
+            if(dropdowns[d]){
+                needle=expectedHeader[d];
+                opts=dropdowns[d].options;
+                for(var i=0;i<opts.length;i++){
+                    var o=opts[i];
+                    //console.log(o.value,);
+                    proceed=o.value.includes(needle) 
+                    if(proceed){
+                        dropdowns[d].value=needle
+                    }
+                }               
+            }
+        }
+    }
 }
