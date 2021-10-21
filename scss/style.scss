@@ -67,6 +67,10 @@ $navbar-padding-y: 0;
     flex-direction: row;
 }
 
+.tm-accordion-collapse{
+    margin:10px;
+}
+
 // IMPORTS
 @import "../vendor/bootstrap-5.1.1/scss/bootstrap";
 @import "../vendor/bootstrap-5.1.1/scss/functions";

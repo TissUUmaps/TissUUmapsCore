@@ -10431,4 +10431,8 @@ html {
     display: flex;
     flex-direction: row;
 }
+
+.tm-accordion-collapse{
+  margin:10px;
+}
 /*# sourceMappingURL=style.css.map */
