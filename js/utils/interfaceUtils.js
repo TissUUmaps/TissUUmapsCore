@@ -554,6 +554,9 @@ interfaceUtils.generateDataTabUI = function(options){
     item2rows=interfaceUtils._mGenUIFuncs.generateAccordionItem2();
     item2rows.forEach(row => accordioncontents[1].appendChild(row))
 
+    item3rows=interfaceUtils._mGenUIFuncs.generateAccordionItem3();
+    item3rows.forEach(row => accordioncontents[2].appendChild(row))
+
     buttonrow=interfaceUtils._mGenUIFuncs.generateRowOptionsButtons();
 
     divpane.appendChild(accordion.divaccordion);
@@ -588,18 +591,18 @@ interfaceUtils._mGenUIFuncs.deleteTab=function(event){
 /** 
 * @param {HTMLEvent} event event that triggered function
 * @param {Array string} array domid suffixes within group
-* @param {Number} option this option will be shown while all others are hidden
+* @param {Array Number} option this option will be shown while all others are hidden
 * This function takes options within one specific tab and hide all except the one marked by option */
-interfaceUtils._mGenUIFuncs.hideShow=function(event,array,option){
+interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            if(index != option){
-                domelement.setAttribute("style",'visibility:hidden;display:none;');
-            }else{
+            if(index in options){
                 domelement.removeAttribute("style");
+            }else{
+                domelement.setAttribute("style",'visibility:hidden;display:none;');
             }
         }
     });
@@ -610,16 +613,16 @@ interfaceUtils._mGenUIFuncs.hideShow=function(event,array,option){
 * @param {Array string} array domid suffixes within group
 * @param {Number} option this option will be selected while all others are unselected
 * This function takes options within one specific tab and deselects all except the one marked by option */
-interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,option){
+interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,options){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            if(index != option){
-                domelement.checked=false;
-            }else{
+            if(index in option){
                 domelement.checked=true;
+            }else{
+                domelement.checked=false;
             }
         }
     });
@@ -630,13 +633,13 @@ interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,option){
 * @param {Array string} array domid suffixes within group
 * @param {Number} option this option will be enabled while all others are disabled
 * This function takes options within one specific tab and disables all except the one marked by option */
-interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,option){
+interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,options){
     uid=event.target.name.split("_")[0]
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
-            if(index != option){
+            if(index in options){
                 domelement.disabled=false
             }else{
                 domelement.disabled=true
@@ -923,14 +926,14 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
             selectgbcolname=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-col-name","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm" }});
 
     inputradio1.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],0);
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],0)
-        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],0);
-        interfaceUtils._mGenUIFuncs.selectDeselect(event,["_cb-colormap","_cb-bypoint","_cb-bygroup"],0);        
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],[0]);
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[0])
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[0]);
+        interfaceUtils._mGenUIFuncs.selectDeselect(event,["_cb-colormap","_cb-bypoint","_cb-bygroup"],[0]);        
     });
     inputradio2.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],1);
-        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],1);
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],[1]);
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[1]);
     });
 
     rowgb.appendChild(colgb1);
@@ -1029,13 +1032,13 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     //listeners
 
     inputradio1cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],0)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[0])
     });
     inputradio2cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],1)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[1])
     });
     inputradio3cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],2)
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[2])
     });
 
     rowcb.appendChild(colcb1);
@@ -1085,6 +1088,54 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 
 
     return [rowgb,rowcb];
+}
+
+/**
+ *  Creates piechart options
+ * @returns {array} array of rows
+ */
+ interfaceUtils._mGenUIFuncs.generateAccordionItem3=function(){
+
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+    
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_piechart_0"});
+
+        col00=HTMLElementUtils.createColumn({"width":6});
+            divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-piecharts","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-piecharts-label", "extraAttributes":{ "for":generated+"_use-piecharts" }});
+                label0001.innerText="Use piecharts"
+                
+
+        col01=HTMLElementUtils.createColumn({"width":6});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-col-label", "extraAttributes":{ "for":generated+"_piechart-col" }});
+            label010.innerText="Pie chart column"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_piechart-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+
+    row1=HTMLElementUtils.createRow({id:generated+"_piechart_1"});
+        col10=HTMLElementUtils.createColumn({"width":12});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-options-label", "extraAttributes":{ "for":generated+"_piechart-options-text" }});
+            label010.innerText="Piechart options"
+            area101=HTMLElementUtils.createElement({"kind":"textarea", "id":generated+"_piechart-options-text","extraAttributes":{ "class":"form-control" }});    
+
+
+    row0.appendChild(col00)
+        col00.appendChild(divformcheck000)
+            divformcheck000.appendChild(inputcheck0000);
+            divformcheck000.appendChild(label0001);
+
+    row1.appendChild(col01);
+        col01.appendChild(label010);
+        col01.appendChild(select011);
+
+
+    row1.appendChild(col10);
+        col10.appendChild(label010);
+        col10.appendChild(area101);    
+
+    return [row0,row1];
+
 }
 
  /**
