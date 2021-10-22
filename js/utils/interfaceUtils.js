@@ -559,8 +559,11 @@ interfaceUtils.generateDataTabUI = function(options){
 
     buttonrow=interfaceUtils._mGenUIFuncs.generateRowOptionsButtons();
 
+    menurow=interfaceUtils._mGenUIFuncs.rowForMarkerUI();
+
     divpane.appendChild(accordion.divaccordion);
     divpane.appendChild(buttonrow);
+    divpane.appendChild(menurow);
 
     tabs1content=interfaceUtils.getElementById("level-1-tabsContent");
     if(tabs1content) tabs1content.appendChild(divpane);
@@ -642,10 +645,8 @@ interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,options){
         if(domelement){
             if(options.includes(index)){
                 domelement.disabled=false;
-                console.log(newdomid,"falsy")
             }else{
-                domelement.disabled=true
-                console.log(newdomid)
+                domelement.disabled=true;
             }
         }
     });
@@ -682,6 +683,8 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
 
     allinputs["cb_cmap"]=interfaceUtils.getElementById(uid+"_cb-cmap-value");
     allinputs["cb_col"]=interfaceUtils.getElementById(uid+"_cb-col-value");    
+
+    allinputs["pie_col"]=interfaceUtils.getElementById(uid+"_piechart-col");   
     
     return allinputs;
 }
@@ -692,10 +695,10 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
  * "gb_sr", "gb_col", "cb_cmap", "cb_col", "cb_gr", "cb_gr_rand", "cb_gr_gene", "cb_gr_name"
  * @returns {Object} allinputs
  */
-interfaceUtils._mGenUIFuncs.getTabRadios= function(uid){
+interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
     allradios={}
-    allradios["gb_sr"]=interfaceUtils.getElementById(uid+"_gb-feature-value");
-    allradios["gb_col"]=interfaceUtils.getElementById(uid+"_gb-col-value");
+    allradios["gb_sr"]=interfaceUtils.getElementById(uid+"_gb-single");
+    allradios["gb_col"]=interfaceUtils.getElementById(uid+"_gb-col");
 
     allradios["cb_cmap"]=interfaceUtils.getElementById(uid+"_cb-colormap");
     allradios["cb_col"]=interfaceUtils.getElementById(uid+"_cb-bypoint");
@@ -703,7 +706,11 @@ interfaceUtils._mGenUIFuncs.getTabRadios= function(uid){
 
     allradios["cb_gr_rand"]=interfaceUtils.getElementById(uid+"_cb-bygroup-rand");
     allradios["cb_gr_gene"]=interfaceUtils.getElementById(uid+"_cb-bygroup-gene");
-    allradios["cb_gr_name"]=interfaceUtils.getElementById(uid+"_cb-bygroup-name");   
+    allradios["cb_gr_name"]=interfaceUtils.getElementById(uid+"_cb-bygroup-name"); 
+
+    allradios["pie_check"]=interfaceUtils.getElementById(uid+"_use-piecharts"); 
+    
+    
     
     return allradios;
 }
@@ -936,7 +943,7 @@ interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
     });
     inputradio2.addEventListener("change",(event)=>{
         interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],[1]);
-        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[1]);
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[0]);
     });
 
     rowgb.appendChild(colgb1);
@@ -1126,10 +1133,12 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 
     inputcheck0000.addEventListener("change", (event)=>{
         var value=event.target.checked;
+        //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
+        //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
         if(value)
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text"],[0,1])
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text","_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value","_cb-cmap-value","_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name"],[0,1])
         else 
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text"],[3])
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text","_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value","_cb-cmap-value","_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name"],[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
     })
 
     row0.appendChild(col00)
@@ -1171,6 +1180,16 @@ interfaceUtils._mGenUIFuncs.generateRowOptionsButtons=function(){
 
     return row0;
 
+}
+
+interfaceUtils._mGenUIFuncs.rowForMarkerUI=function(){
+
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    row0=HTMLElementUtils.createRow({id:generated+"_menu-UI"});
+    row0.classList.add("d-none");
+
+    return row0;
 }
 
 /**
