@@ -31,7 +31,8 @@ dataUtils = {
             _gb_col:
             _gb_name:
             _cb_cmap:
-            _cb_col
+            _cb_col:
+            _selectedOptions:{}
         }
         data_id:{kv pairs}
         ... and inifinitely more data "types" like piecharts or whatever
@@ -50,6 +51,8 @@ dataUtils = {
  * load data as usual, object format
  * trees only when user selects it, keep processeddata
  * how to close 
+ * 
+ * deterministic shapes
  * 
 */
 
@@ -125,7 +128,62 @@ dataUtils.updateViewOptions = function(event){
     var data_id=event.target.id.split("_")[0];
     var data_obj = dataUtils.data[data_id];
 
+    var radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(data_id);
+    var inputs = interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
+
+    if(dataUtils.data[data_id]["_processeddata"].length<=0){
+        message="Load data first";
+        alert(message); console.log(message);
+        return;
+    }
+
+    if(!(inputs["X"].value && inputs["Y"].value)){
+        message="Select X and Y first";
+        alert(message); console.log(message);
+        return;
+    }else{
+        data_obj["_X"]=inputs["X"].value;
+        data_obj["_Y"]=inputs["Y"].value;
+    }
+
     //check options, there are only 2 really, or three? with charts
+    if(radios["gb_sr"].checked){
+        if(inputs["gb_sr"].value){
+            data_obj["_gb_sr"]=inputs["gb_sr"].value;
+            data_obj["_gb_sr"]=inputs["gb_sr"].value;
+            //do something, maybe webgl comes here
+        }else{
+            message="Select feature to display. Can't be null";
+            alert(message); console.log(message);
+            return;
+        }
+    }else if(radios["gb_col"].checked){
+        //this will be trickier since trees need to be made and also a menu
+        if(inputs["gb_col"].value){
+            console.log("im here");
+            data_obj["_gb_col"]=inputs["gb_col"].value;
+            if(inputs["gb_name"].value){
+                data_obj["gb_name"]=inputs["gb_name"].value;    
+            }else{
+                data_obj["gb_name"]=null;    
+            }
+            //this function veryfies if a tree with these features exist and doesnt recreate it
+            dataUtils.makeQuadTrees(data_id);
+            //print a menu in the interface for the groups
+            //shape UXXXX_grname_shape, color UXXXX_grname_color
+
+        }else{
+            message="Select feature to group by. Can't be null. You can additionally, optionally, select a feature that contains the name of the group";
+            alert(message); console.log(message);
+            return;
+        }
+
+
+    }else if(radios["pie_check"].checked){
+        
+
+
+    }
 
 
 
@@ -284,13 +342,10 @@ dataUtils.makeQuadTrees = function(data_id) {
 
     //get x and Y from inputs
     var inputs=interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
-    var xselector=inputs["X"].value
-    var yselector=inputs["Y"].value
-    var groupByCol=inputs["gb_col"].value
-    var groupByColsName=inputs["gb_name"].value
-    //set them in data_obj in case they dont exist already
-    data_obj["_X"]=xselector;
-    data_obj["_Y"]=yselector;
+    var xselector=data_obj["_X"]
+    var yselector=data_obj["_Y"]
+    var groupByCol=data_obj["_gb_col"]
+    var groupByColsName=data_obj["_gb_name"]
 
     console.log(
         xselector,yselector,groupByCol,groupByColsName
@@ -299,6 +354,9 @@ dataUtils.makeQuadTrees = function(data_id) {
     //little optimization to not redoo the tree if we have it
     if(inputs["gb_col"].value==data_obj["_gb_col"]){
         if(Object.keys(data_obj["_groupgarden"]).length > 0){
+            message="Group garden exists, dont waste time recreating it";
+            alert(message); console.log(message);
+            
             return; //because graden exists
         }
     }
