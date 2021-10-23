@@ -133,6 +133,145 @@ regionUtils.closePolygon = function () {
 }
 
 /** 
+ * @param {Object} JSON formatted region to convert to GeoJSON
+ *  This is only for backward compatibility */
+ regionUtils.oldRegions2GeoJSON = function (regionsObjects) {
+    try {
+        // Checking if json is in old format
+        if (Object.values(regionsObjects)[0].globalPoints) {
+            return regionUtils.regions2GeoJSON(regionsObjects)
+        }
+        else {
+            return regionsObjects;
+        }
+    } catch (error) {
+        return regionsObjects;
+    }
+ }
+
+/** 
+ * @param {Object} GeoJSON formatted region to import
+ *  When regions are imported, create all objects for it from a region object */
+ regionUtils.regions2GeoJSON = function (regionsObjects) {
+    function HexToRGB(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ];
+    }
+    function oldCoord2GeoJSONCoord(coordinates) {
+        return coordinates.map (function(coordinateList, i) {
+            return coordinateList.map (function(coordinateList_i, index) {
+                return coordinateList_i.map(function(x) {
+                    return [x.x, x.y];
+                });
+                
+            });
+        })
+    }
+    geoJSONObjects = {
+        "type": "FeatureCollection",
+        "features": Object.values(regionsObjects).map (function(Region, i) {
+            return {
+                "type": "Feature",
+                "geometry": {
+                    "type": "MultiPolygon",
+                    "coordinates": oldCoord2GeoJSONCoord(Region.globalPoints)
+                },
+                "properties": {
+                    "name": Region.regionName,
+                    "classification": {
+                        "name": Region.regionClass
+                    },
+                    "color": HexToRGB(Region.polycolor),
+                    "isLocked": false
+                }
+            }
+        })
+    }
+    return geoJSONObjects;
+ }
+
+/** 
+ * @param {Object} GeoJSON formatted region to import
+ *  When regions are imported, create all objects for it from a region object */
+regionUtils.geoJSON2regions = function (geoJSONObjects) {
+    // Helper functions for converting colors to hexadecimal
+    function rgbToHex(rgb) {
+        return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
+    }
+    function decimalToHex(number) {
+        if (number < 0){ number = 0xFFFFFFFF + number + 1; }
+        return "#" + number.toString(16).toUpperCase().substring(2, 8);
+    }
+    var viewer = tmapp[tmapp["object_prefix"] + "_viewer"]
+    var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
+    geoJSONObjects = regionUtils.oldRegions2GeoJSON(geoJSONObjects);
+    if (!Array.isArray(geoJSONObjects)) {
+        geoJSONObjects = [geoJSONObjects];
+    }
+    console.dir(geoJSONObjects);
+    geoJSONObjects.forEach(function(geoJSONObj, geoJSONObjIndex) {
+        if (geoJSONObj.type == "FeatureCollection") {
+            return regionUtils.geoJSON2regions(geoJSONObj.features);
+        }
+        if (geoJSONObj.type != "Feature") {
+            return;
+        }
+        var geometryType = geoJSONObj.geometry.type;
+        var coordinates;
+        if (geometryType=="Polygon") {
+            coordinates = [geoJSONObj.geometry.coordinates];
+        }
+        else if (geometryType=="MultiPolygon") {
+            coordinates = geoJSONObj.geometry.coordinates;
+        }
+        else {
+            coordinates = [];
+        }
+        var geoJSONObjClass = "";
+        var hexColor = "#ff0000";
+        if (geoJSONObj.properties.color) {
+            hexColor = rgbToHex(geoJSONObj.properties.color)
+        }
+        if (geoJSONObj.properties.name) {
+            regionName = geoJSONObj.properties.name;
+        }
+        else {
+            regionName = "Region_" + (geoJSONObjIndex - -1);
+        }
+        if (geoJSONObj.properties.classification) {
+            geoJSONObjClass = geoJSONObj.properties.classification.name;
+            if (geoJSONObj.properties.classification.colorRGB) {
+                hexColor = decimalToHex(geoJSONObj.properties.classification.colorRGB);
+            }
+        }
+        coordinates = coordinates.map (function(coordinateList, i) {
+            return coordinateList.map (function(coordinateList_i, index) {
+                coordinateList_i = coordinateList_i.map(function(x) {
+                    xPoint = new OpenSeadragon.Point(x[0], x[1]);
+                    xPixel = viewer.world.getItemAt(0).imageToViewportCoordinates(xPoint);
+                    return [xPixel.x, xPixel.y];
+                });
+                return coordinateList_i.filter(function(value, index, Arr) {
+                    return index % 1 == 0;
+                });
+            });
+        })
+        var regionId = "Region_geoJSON_" + geoJSONObjIndex;
+        regionUtils.addRegion(coordinates, regionId, hexColor);
+
+        document.getElementById(regionId + "_class_ta").value = geoJSONObjClass;
+        document.getElementById(regionId + "_name_ta").value = regionName;
+
+        regionobj = d3.select(canvas).append('g').attr('class', "mydrawingclass");
+        regionobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionId].points)).attr("id", regionId + "_poly")
+            .attr("class", "regionpoly").attr("polycolor", hexColor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
+            .style("stroke", hexColor).style("fill", "none");
+        
+        regionUtils.changeRegion(regionId);
+    });
+}
+
+/** 
  * @param {Object} JSON formatted region to import
  *  When regions are imported, create all objects for it from a region object */
 regionUtils.createImportedRegion = function (region) {
@@ -533,7 +672,7 @@ regionUtils.changeRegion = function (regionid) {
     var rPanel = document.getElementById(op + regionid + "_panel");
     var regionClass = "";
     if (regionUtils._regions[regionid].regionClass) regionClass = " (" + regionUtils._regions[regionid].regionClass + ")";
-    HTMLElementUtils.getFirstChildByClass(rPanel, "panel-heading").innerHTML = regionUtils._regions[regionid].regionName + regionClass;
+    document.querySelector("#" + op + regionid + "_panel .card-title").innerHTML = regionUtils._regions[regionid].regionName + regionClass;
 
     var newStyle = "stroke-width: " + regionUtils._polygonStrokeWidth.toString() + "; stroke: " + d3color.rgb().toString() + "; fill: none;";
     regionUtils._regions[regionid].polycolor = newregioncolor;
@@ -742,7 +881,7 @@ regionUtils.downloadPointsInRegionsCSV=function(data){
 regionUtils.regionsToJSON= function(){
     if (window.Blob) {
         var op=tmapp["object_prefix"];
-        var jsonse = JSON.stringify(regionUtils._regions);
+        var jsonse = JSON.stringify(regionUtils.regions2GeoJSON(regionUtils._regions));
         var blob = new Blob([jsonse], {type: "application/json"});
         var url  = URL.createObjectURL(blob);
         var a=document.createElement("a");// document.getElementById("invisibleRegionJSON");
@@ -783,30 +922,19 @@ regionUtils.JSONToRegions= function(filepath){
         var op=tmapp["object_prefix"];
         var text=document.getElementById(op+"_region_files_import");
         var file=text.files[0];
-        var currentrid=0;
-        if (file.type.match('json')) {    
-            var reader = new FileReader();
-            reader.onload=function(event) {
-                // The file's text will be printed here
-                regionUtils.JSONValToRegions(JSON.parse(event.target.result));
-            };
-            console.log(regionUtils._currentRegionId);
-            var result=reader.readAsText(file);
-        }
+        var reader = new FileReader();
+        reader.onload=function(event) {
+            // The file's text will be printed here
+            regionUtils.JSONValToRegions(JSON.parse(event.target.result));
+        };
+        reader.readAsText(file);
     } else {
-      alert('The File APIs are not fully supported in this browser.');
+        alert('The File APIs are not fully supported in this browser.');
     }
 }
 
 regionUtils.JSONValToRegions= function(jsonVal){
     // The file's text will be printed here
-    var maxregionid=0;
-var regions=jsonVal;
-    for(i in regions){
-        //console.log(regions[i]);
-        regionUtils.createImportedRegion(regions[i]);
-        var numbers = regions[i].id.match(/\d+/g).map(Number);
-        if(numbers[0]>maxregionid) maxregionid=numbers[0];
-    }
-    regionUtils._currentRegionId=maxregionid;
+    var regions=jsonVal;
+    regionUtils.geoJSON2regions(regions);
 }
