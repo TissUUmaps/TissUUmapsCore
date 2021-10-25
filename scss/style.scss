@@ -15,11 +15,8 @@ $dark:      #911821;
 $navbar-padding-y: 0;
 
 // *** Viewer
-@import "../vendor/pattern.css-1.0.0/pattern.min.scss";
 .ISS_viewer {
-    @extend .pattern-checks-sm;
-    background-color: #666;
-    color: #999;
+    background-color: white;
 }
 
 // All the overlays over the viewer inherit this class.
