@@ -431,6 +431,32 @@ glUtils.loadMarkers = function(uid) {
     }
 }
 
+glUtils.deleteMarkers = function(uid) {
+    if (!glUtils._initialized) return;
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl", glUtils._options);
+
+    if (!(uid in glUtils._numPoints)) return;  // Assume markers are already deleted
+
+    // Delete marker settings and info for UID
+    delete glUtils._numPoints[uid];
+    delete glUtils._markerScalarRange[uid];
+    delete glUtils._markerOpacity[uid];
+    delete glUtils._useColorFromMarker[uid];
+    delete glUtils._useColorFromColormap[uid];
+    delete glUtils._useScaleFromMarker[uid];
+    delete glUtils._usePiechartFromMarker[uid];
+    delete glUtils._colorscaleName[uid];
+    delete glUtils._colorscaleData[uid];
+    delete glUtils._barcodeToLUTIndex[uid];
+    delete glUtils._barcodeToKey[uid];
+
+    // Clean up WebGL resources
+    gl.deleteBuffer(glUtils._buffers[uid + "_markers"]);
+    gl.deleteTexture(glUtils._textures[uid + "_colorLUT"]);
+    gl.deleteTexture(glUtils._textures[uid + "_colorscale"]);
+}
+
 
 // TODO Fix naming of this function, since we now use it for generic markers
 glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {

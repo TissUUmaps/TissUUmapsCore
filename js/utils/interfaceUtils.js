@@ -589,6 +589,9 @@ interfaceUtils._mGenUIFuncs.deleteTab=function(event){
     tabpane.remove();
 
     delete dataUtils.data[uid];
+
+    glUtils.deleteMarkers(uid);
+    glUtils.draw();
 }
 
 /** 
