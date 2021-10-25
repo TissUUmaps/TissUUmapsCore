@@ -128,8 +128,15 @@ dataUtils.updateViewOptions = function(event){
     var data_id=event.target.id.split("_")[0];
     var data_obj = dataUtils.data[data_id];
 
+    var _selectedOptions = interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked(data_id);
+    data_obj["_selectedOptions"]=_selectedOptions
+    
     var radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(data_id);
     var inputs = interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
+
+    //console.log(_selectedOptions);
+    //console.log(radios);
+    //console.log(inputs);
 
     if(dataUtils.data[data_id]["_processeddata"].length<=0){
         message="Load data first";
@@ -147,7 +154,7 @@ dataUtils.updateViewOptions = function(event){
     }
 
     //check options, there are only 2 really, or three? with charts
-    if(radios["gb_sr"].checked){
+    if(_selectedOptions["gb_sr"]){
         if(inputs["gb_sr"].value){
             data_obj["_gb_sr"]=inputs["gb_sr"].value;
             data_obj["_gb_sr"]=inputs["gb_sr"].value;
@@ -157,19 +164,27 @@ dataUtils.updateViewOptions = function(event){
             alert(message); console.log(message);
             return;
         }
-    }else if(radios["gb_col"].checked){
+    }else if(_selectedOptions["gb_col"]){
+        
         //this will be trickier since trees need to be made and also a menu
         if(inputs["gb_col"].value){
-            console.log("im here");
             data_obj["_gb_col"]=inputs["gb_col"].value;
+
             if(inputs["gb_name"].value){
-                data_obj["gb_name"]=inputs["gb_name"].value;    
+                data_obj["_gb_name"]=inputs["gb_name"].value;    
             }else{
-                data_obj["gb_name"]=null;    
+                data_obj["_gb_name"]=null;    
             }
             //this function veryfies if a tree with these features exist and doesnt recreate it
             dataUtils.makeQuadTrees(data_id);
             //print a menu in the interface for the groups
+            table=interfaceUtils._mGenUIFuncs.groupUI(uid);
+
+            menuui=interfaceUtils.getElementById(data_id+"_menu-UI");
+            menuui.classList.remove("d-none")
+            menuui.innerText="";
+
+            menuui.appendChild(table);
             //shape UXXXX_grname_shape, color UXXXX_grname_color
 
         }else{
@@ -184,10 +199,6 @@ dataUtils.updateViewOptions = function(event){
 
 
     }
-
-
-
-    dataUtils.makeQuadTrees(data_id)
 
 }
 
@@ -347,15 +358,14 @@ dataUtils.makeQuadTrees = function(data_id) {
     var groupByCol=data_obj["_gb_col"]
     var groupByColsName=data_obj["_gb_name"]
 
-    console.log(
-        xselector,yselector,groupByCol,groupByColsName
-    )
+    //console.log(xselector,yselector,groupByCol,groupByColsName)
 
     //little optimization to not redoo the tree if we have it
     if(inputs["gb_col"].value==data_obj["_gb_col"]){
         if(Object.keys(data_obj["_groupgarden"]).length > 0){
             message="Group garden exists, dont waste time recreating it";
-            alert(message); console.log(message);
+            //alert(message); 
+            console.log(message);
             
             return; //because graden exists
         }
