@@ -641,7 +641,7 @@ interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,options){
     array.forEach((domid, index)=>{
         newdomid=uid+domid;
         domelement=interfaceUtils.getElementById(newdomid);
-        console.log(domelement,index,options,(index in options).toString())
+        //console.log(domelement,index,options,(index in options).toString())
         if(domelement){
             if(options.includes(index)){
                 domelement.disabled=false;
@@ -714,6 +714,24 @@ interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
     
     return allradios;
 }
+
+/**
+ * @param {string} uid the data id
+ * Returns an object full with bools for checks and radios to see if they are checked
+ * @returns {Object} allinputs
+ */
+ interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked = function(uid){
+
+    var radios=interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(uid)
+    var arechecked={};
+
+    for(r in radios){
+        arechecked[r]=radios[r].checked
+    }
+    
+    return arechecked;
+}
+
 
 /**
  * Creates a unique id for each new tab 
@@ -1193,17 +1211,17 @@ interfaceUtils._mGenUIFuncs.rowForMarkerUI=function(){
 }
 
 /**
- * @param {string} data_id id in datautils.data
+ * @param {string} uid id in datautils.data
  * @param {object} expectedHeader object of the type {input:expectedHeaderFromCSV}
  * If somehow there is an expect CSV this will help you del with that
 */
-interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV=function(data_id,expectedHeader){
+interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV=function(uid,expectedHeader){
     //expected headr is an object that has these keys, other will be ignored;
     //"X","Y","gb_sr","gb_col","gb_name","cb_cmap","cb_col"
     if(expectedHeader){
         interfaceUtils._mGenUIFuncs.ctx.expectedHeader=expectedHeader;
 
-        dropdowns=interfaceUtils._mGenUIFuncs.getTabDropDowns(data_id);
+        dropdowns=interfaceUtils._mGenUIFuncs.getTabDropDowns(uid);
 
         for(d in expectedHeader){
             if(dropdowns[d]){
@@ -1220,4 +1238,111 @@ interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV=function(data_id,expected
             }
         }
     }
+}
+
+/**
+ * @param {string} uid id in datautils.data
+ * Create the menu with the options to select marker, select shape and color to draw
+*/
+interfaceUtils._mGenUIFuncs.groupUI=function(uid){
+    //if we arrive here it's because  agroupgarden exists, all the information is there, 
+    //also we need some info on color and options, but we can get that.
+    var data_obj = dataUtils.data[uid];
+
+    var _selectedOptions=interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked(uid);
+
+
+    //I do this to know if I have name selected, and also to know where to draw the 
+    //color from
+
+    var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped"}});
+    var thead=HTMLElementUtils.createElement({"kind":"thead"});
+    var theadrow=HTMLElementUtils.createElement({"kind":"tr"});
+    var tbody=HTMLElementUtils.createElement({"kind":"tbody"});
+
+    var headopts=["","group", "shape", "color"];
+    var usename=false;
+
+    if(data_obj["_gb_name"]){
+        headopts=["","group", "name", "shape", "color"]
+        usename=true;
+    }
+
+    headopts.forEach((opt)=>{
+        var th=HTMLElementUtils.createElement({"kind":"th","extraAttributes":{"scope":"col"}});
+        th.innerText=opt
+        theadrow.appendChild(th);
+    });
+
+    thead.appendChild(theadrow);
+
+    var count=0;
+    for(i in data_obj["_groupgarden"]){
+
+        var tree = data_obj["_groupgarden"][i]
+        //row
+        var tr=HTMLElementUtils.createElement({"kind":"tr"});
+        //first spot for a check
+        var td0=HTMLElementUtils.createElement({"kind":"td"});
+        var td1=HTMLElementUtils.createElement({"kind":"td"});
+        var td15=null;
+        var td2=HTMLElementUtils.createElement({"kind":"td"});
+        var td3=HTMLElementUtils.createElement({"kind":"td"});
+
+        tr.appendChild(td0);
+        tr.appendChild(td1);
+
+        //remove space just in case
+        var escapedID=tree["treeID"].replace(" ","_");
+        var escapedName="";
+        if(usename)
+            escapedName=tree["treeName"];
+
+        var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_check","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+        td0.appendChild(check0);
+
+        //var p1=HTMLElementUtils.createElement({"kind":"p","id":uid+"_"+escapedID+"_group"});
+        td1.innerText=tree["treeID"];
+        //td1.appendChild(p1);
+
+        if(usename){
+            var td15=HTMLElementUtils.createElement({"kind":"td"});
+            //var p15=HTMLElementUtils.createElement({"kind":"p","id":uid+"_"+escapedID+"_name"});
+            td15.innerText=tree["treeName"];            
+            tr.appendChild(td15);
+            //td15.appendChild(p15);
+        }
+
+        var shapeoptions=[];
+        markerUtils._symbolStrings.forEach((sho)=>{ shapeoptions.push({"text":sho,"value":sho}) })
+        shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
+        shapeinput2.value=markerUtils._symbolStrings[count]
+
+        count+=1;
+        count=count % markerUtils._symbolStrings.length;
+
+        tr.appendChild(td2);
+        td2.appendChild(shapeinput2);
+
+        //the color depends on 3 possibilities , "cb_gr_rand","cb_gr_gene","cb_gr_name"
+        if(_selectedOptions["cb_gr_rand"]){
+            thecolor=overlayUtils.randomColor("hex");
+        }else if(_selectedOptions["cb_gr_gene"]){
+            thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
+        }else if(_selectedOptions["cb_gr_name"]){
+            thecolor=HTMLElementUtils.determinsticHTMLColor(escapedName);
+        }
+
+        var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
+        tr.appendChild(td3);
+        td3.appendChild(colorinput3);
+
+        tbody.appendChild(tr);
+       
+    }
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+
+    return table;
 }

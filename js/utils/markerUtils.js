@@ -33,6 +33,7 @@ markerUtils = {
     _checkBoxes: {},
     _d3Symbols: [d3.symbolCross, d3.symbolDiamond, d3.symbolSquare, d3.symbolTriangle, d3.symbolStar, d3.symbolWye, d3.symbolCircle],  // Not used
     _d3SymbolStrings: ["cross", "diamond", "square", "triangle up", "star", "clobber", "disc", "hbar", "vbar", "tailed arrow", "triangle down", "ring", "x", "arrow"],
+    _symbolStrings: ["cross", "diamond", "square", "triangle up", "star", "clobber", "disc", "hbar", "vbar", "tailed arrow", "triangle down", "ring", "x", "arrow"],
     _colorsperkey:null,
     _startMarkersOn:false,
     _randomShape:true,
@@ -112,9 +113,9 @@ markerUtils.markerUI = function (barObject,options) {
         else if(markerUtils._colorsperkey){
             thecolor=markerUtils._colorsperkey[barObject.key];
             //if it ends up undefined give a random color anyways
-            if(!thecolor) thecolor=HTMLElementUtils.barcodeHTMLColor(barObject.key);
+            if(!thecolor) thecolor=HTMLElementUtils.determinsticHTMLColor(barObject.key);
         }else{
-            thecolor=HTMLElementUtils.barcodeHTMLColor(barObject.key);
+            thecolor=HTMLElementUtils.determinsticHTMLColor(barObject.key);
         }
         thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
         var color = HTMLElementUtils.createElement({ type: "td" });
