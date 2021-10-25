@@ -348,6 +348,11 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
     return thisChild;
 }
 
+/** Create an id from any string */
+HTMLElementUtils.stringToId = function (inputString) {
+    return inputString.replace(/\W/g, '')
+}
+
 HTMLElementUtils.createDLSelect = function(downloadRow, innerText, callback, comment, options) {
     var row = HTMLElementUtils.createRow(null);
     var selectDiv = document.createElement("div");
@@ -410,13 +415,11 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
         })
     });
     HTMLElementUtils.createDLSelect(downloadRow, innerText, callback, comment, options);
-    var label = document.getElementById("label_ISS_csv");
+    //var label = document.getElementById("label_ISS_csv");
     if (autoLoad) {
         callback(null, {'selected':dataURLs[0]});
     }
-    else {
-        label.innerHTML = "Or import gene expression from CSV file:";
-    }
+    //else { label.innerHTML = "Or import gene expression from CSV file:"; }
 }
 
 HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
@@ -454,12 +457,12 @@ HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment, e
         dataUtils.XHRCSV(dataURL);
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_ISS_csv");
+    //var label = document.getElementById("label_ISS_csv");
     if (autoLoad) {
         callback(null);
         buttonRow.style.display="none";
     }
-    else {label.innerHTML = "Or import gene expression from CSV file:";}
+    //else {label.innerHTML = "Or import gene expression from CSV file:";}
 }
 
 HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment, expectedCSV, autoLoad, settings) {
@@ -474,12 +477,12 @@ HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment,
         dataUtils.readCSV("morphology",dataURL)
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_CP_csv");
+    //var label = document.getElementById("label_CP_csv");
     if (autoLoad) {
         callback(null);
         buttonRow.style.display="none";
     }
-    else {label.innerHTML = "Or import cell morphology from CSV file:";}
+    //else {label.innerHTML = "Or import cell morphology from CSV file:";}
 }
 
 HTMLElementUtils.createDLButtonRegions = function(innerText, dataURL, comment, autoLoad, settings) {
