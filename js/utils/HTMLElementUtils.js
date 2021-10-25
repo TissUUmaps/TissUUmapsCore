@@ -288,20 +288,24 @@ HTMLElementUtils.createForm = function (params) {
 }
 
 /** Create a color in YCbCr space to divide between the possible 4 letters */
-HTMLElementUtils.barcodeHTMLColor = function (barcode) {
+HTMLElementUtils.determinsticHTMLColor = function (key) {
     //A Red, T Green, C Bluemagenta, G yellow
-    var maincolor = barcode.charAt(0).toLowerCase();
+    var maincolor = key.charAt(0).toLowerCase();
     var red = 0; var green = 0; var blue = 0;
     var U = 0; var V = 0; var y = 128;
-    ggroup = ["g", "d", "r", "v", "e", "o", "2", "h", "n"];
-    agroup = ["a", "w", "j", "k", "p", "l", "i", "3", "y", "x"];
-    cgroup = ["c", "0", "q", "6", "8", "1", "s", "9", "f"];
-    tugroup = ["u", "4", "z", "b", "7", "t", "m", "0", "5"];
+       
+    ggroup = ['i', 's', 'd', 'g', 'w', 'z','1','5','9'];
+    agroup = ['e', 'o', 'l', 'p', 'b', 'k', 'j','2','6'];
+    cgroup = ['a', 't', 'c', 'm', 'f', 'v','3','7','q'];
+    tugroup = ['r', 'n', 'u', 'h', 'y', 'x','4','8','0' ];
 
-    if (agroup.includes(maincolor)) { U = 255; V = 255; } if (cgroup.includes(maincolor)) { U = 255; V = 0; }
-    if (ggroup.includes(maincolor)) { U = 0; V = 0; } if (tugroup.includes(maincolor)) { U = 0; V = 255; }
+    if (ggroup.includes(maincolor)) { U = 0; V = 0; } 
+    else if (tugroup.includes(maincolor)) { U = 0; V = 255; }
+    else if (cgroup.includes(maincolor)) { U = 255; V = 0; }
+    else if (agroup.includes(maincolor)) { U = 255; V = 255; } 
+    else{ U = 0; V = 255; }
 
-    var second = barcode.charAt(1).toLowerCase();
+    var second = key.charAt(1).toLowerCase();
 
     if (agroup.includes(second)) { U += 80; V += 80; } if (cgroup.includes(second)) { U += 80; V += -80; }
     if (ggroup.includes(second)) { U += -80; V += -80; } if (tugroup.includes(second)) { U += -80; V += 80; }
@@ -309,7 +313,7 @@ HTMLElementUtils.barcodeHTMLColor = function (barcode) {
     if (U > 255) U = 255; if (V > 255) V = 255;
     if (U < 0) U = 0; if (V < 0) V = 0;
 
-    var third = barcode.charAt(2).toLowerCase();
+    var third = key.charAt(2).toLowerCase();
 
     if (agroup.includes(third)) { y += 35; } if (cgroup.includes(third)) { y += 35; }
     if (ggroup.includes(third)) { y -= 35; } if (tugroup.includes(third)) { y -= 35; }
