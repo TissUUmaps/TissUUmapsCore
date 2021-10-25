@@ -5,29 +5,38 @@
 */
 glUtils = {
     _initialized: false,
+    _imageSize: [1, 1],
+    _viewportRect: [0, 0, 1, 1],
+    _options: {antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true},
+
+    // WebGL resources
     _programs: {},
     _buffers: {},
     _textures: {},
-    _numBarcodePoints: 0,
-    _numCPPoints: 0,
-    _imageSize: [1, 1],
-    _viewportRect: [0, 0, 1, 1],
+
+    // Marker settings and info stored per UID (this could perhaps be
+    // better handled by having an object per UID that stores all info
+    // and is easy to delete when closing a marker tab...)
+    _numPoints: {},              // {uid: numPoints, ...}
+    _markerScalarRange: {},      // {uid: [minval, maxval], ...}
+    _markerOpacity: {},          // {uid: alpha, ...}
+    _useColorFromMarker: {},     // {uid: boolean, ...}
+    _useColorFromColormap: {},   // {uid: boolean, ...}
+    _useScaleFromMarker: {},     // {uid: boolean, ...}
+    _usePiechartFromMarker: {},  // {uid: boolean, ...}
+    _colorscaleName: {},         // {uid: colorscaleName, ...}
+    _colorscaleData: {},         // {uid: array of RGBA values, ...}
+    _barcodeToLUTIndex: {},      // {uid: dict, ...}
+    _barcodeToKey: {},           // {uid: dict, ...}
+    _hexColorUID: {},            // {uid: hexColor, ...}
+
+    // Global marker settings and info
     _markerScale: 1.0,
     _useMarkerScaleFix: true,
     _globalMarkerScale: 1.0,
-    _markerScalarRange: [0.0, 1.0],
-    _markerOpacity: 1.0,
-    _useColorFromMarker: false,
-    _useScaleFromMarker: false,
-    _usePiechartFromMarker: false,
-    _pickedMarker: -1,
     _pickingEnabled: false,
     _pickingLocation: [0.0, 0.0],
-    _colorscaleName: "null",
-    _colorscaleData: [],
-    _barcodeToLUTIndex: {},
-    _barcodeToKey: {},
-    _options: {antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true},
+    _pickedMarker: [-1, -1],
     _showColorbar: true,
     _showMarkerInfo: true,
     _piechartPalette: ["#fff100", "#ff8c00", "#e81123", "#ec008c", "#68217a", "#00188f", "#00bcf2", "#00b294", "#009e49", "#bad80a"]
@@ -272,7 +281,7 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 }
 
 
-glUtils._createDummyMarkerBuffer = function(gl, numPoints) {
+glUtils._createMarkerBuffer = function(gl, numPoints) {
     const positions = [], indices = [], scales = [];
     for (let i = 0; i < numPoints; ++i) {
         positions[4 * i + 0] = Math.random();  // X-coord
@@ -310,33 +319,47 @@ glUtils._createPiechartAngles = function(sectors) {
 }
 
 
-// Load barcode markers loaded from CSV file into vertex buffer
-glUtils.loadMarkers = function() {
+// Load markers loaded from CSV file into vertex buffer
+// TODO This function needs to be updated for new generic markers
+glUtils.loadMarkers = function(uid) {
     if (!glUtils._initialized) return;
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    const markerData = dataUtils.data["gene"]["ISS_processeddata"];
+    // Get marker data and other info like image size
+    const markerData = dataUtils.data[uid]["_processeddata"];
     let numPoints = markerData.length;
-    const keyName = document.getElementById("ISS_key_header").value;
+    const keyName = dataUtils.data[uid]["_gb_col"];
+    const xPosName = dataUtils.data[uid]["_X"];
+    const yPosName = dataUtils.data[uid]["_Y"];
+    const radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(uid);
+    const inputs = interfaceUtils._mGenUIFuncs.getTabDropDowns(uid);
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
     // If new marker data was loaded, we need to assign each barcode an index
     // that we can use with the LUT textures for color, visibility, etc.
-    glUtils._updateBarcodeToLUTIndexDict(markerData, keyName);
+    glUtils._updateBarcodeToLUTIndexDict(uid, markerData, keyName);
+    const barcodeToLUTIndex = glUtils._barcodeToLUTIndex[uid];
 
-    const colorPropertyName = markerUtils._uniqueColorSelector;
-    const useColorFromMarker = markerUtils._uniqueColor && (colorPropertyName in markerData[0]);
+    // Check how the user wants to draw the markers
+    const colorPropertyName = inputs["cb_col"].value;
+    const useColorFromMarker = radios["cb_col"].checked && (colorPropertyName in markerData[0]);
     let hexColor = "#000000";
 
-    const scalePropertyName = markerUtils._uniqueScaleSelector;
-    const useScaleFromMarker = markerUtils._uniqueScale && (scalePropertyName in markerData[0]);
+    const scalarPropertyName = inputs["gb_sr"].value;
+    const colorscaleName = inputs["cb_cmap"].value;
+    const useColorFromColormap = radios["cb_cmap"].checked && (scalarPropertyName in markerData[0]);
+    let scalarRange = [1e9, -1e9];  // This range will be computed from the data
 
-    const sectorsPropertyName = markerUtils._uniquePiechartSelector;
-    const usePiechartFromMarker = markerUtils._uniquePiechart && (sectorsPropertyName in markerData[0]);
+    const scalePropertyName = markerUtils._uniqueScaleSelector;  // TODO
+    const useScaleFromMarker = false;                            // TODO
+
+    const sectorsPropertyName = inputs["pie_col"].value;
+    const usePiechartFromMarker = radios["pie_check"].checked && (sectorsPropertyName in markerData[0]);
     const piechartPalette = glUtils._piechartPalette;
 
+    // Create vertex data for markers
     const positions = [], indices = [], scales = [];
     if (usePiechartFromMarker) {
         const numSectors = markerData[0][sectorsPropertyName].split(";").length;
@@ -346,9 +369,9 @@ glUtils.loadMarkers = function() {
             for (let j = 0; j < numSectors; ++j) {
                 const k = (i * numSectors + j);
                 hexColor = piechartPalette[j % piechartPalette.length];
-                positions[4 * k + 0] = markerData[i].global_X_pos / imageWidth;
-                positions[4 * k + 1] = markerData[i].global_Y_pos / imageHeight;
-                positions[4 * k + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters] +
+                positions[4 * k + 0] = markerData[i][xPosName] / imageWidth;
+                positions[4 * k + 1] = markerData[i][yPosName] / imageHeight;
+                positions[4 * k + 2] = barcodeToLUTIndex[markerData[i][keyName]] +
                                        Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
                 indices[k] = i;  // Store index needed for picking
@@ -360,96 +383,69 @@ glUtils.loadMarkers = function() {
     } else {
         for (let i = 0; i < numPoints; ++i) {
             if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
-            positions[4 * i + 0] = markerData[i].global_X_pos / imageWidth;
-            positions[4 * i + 1] = markerData[i].global_Y_pos / imageHeight;
-            positions[4 * i + 2] = glUtils._barcodeToLUTIndex[markerData[i].letters];
+            positions[4 * i + 0] = markerData[i][xPosName] / imageWidth;
+            positions[4 * i + 1] = markerData[i][yPosName] / imageHeight;
+            positions[4 * i + 2] = useColorFromColormap ? markerData[i][scalarPropertyName]
+                                                        : barcodeToLUTIndex[markerData[i][keyName]];
             positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
+
             if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
             else scales[i] = 1.0;  // Marker scale factor
+
+            if (useColorFromColormap) {
+                scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
+                scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
+            }
         }
     }
 
-    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
+    // Create WebGL objects (if this has not already been done)
+    if (!(uid + "_markers" in glUtils._buffers))
+        glUtils._buffers[uid + "_markers"] = glUtils._createMarkerBuffer(gl, numPoints);
+    if (!(uid + "_colorLUT" in glUtils._textures))
+        glUtils._textures[uid + "_colorLUT"] = glUtils._createColorLUTTexture(gl);
+    if (!(uid + "_colorscale" in glUtils._textures))
+        glUtils._textures[uid + "_colorscale"] = glUtils._createColorScaleTexture(gl);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
+    // Upload vertex data to buffer
+    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    glUtils._numBarcodePoints = numPoints;
-    glUtils._useColorFromMarker = useColorFromMarker;
-    glUtils._useScaleFromMarker = useScaleFromMarker;
-    glUtils._usePiechartFromMarker = usePiechartFromMarker;
-    glUtils.updateLUTTextures();
-}
-
-
-// Load cell morphology markers loaded from CSV file into vertex buffer
-glUtils.loadCPMarkers = function() {
-    if (!glUtils._initialized) return;
-    const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl", glUtils._options);
-
-    const markerData = dataUtils.data["morphology"]["CP_rawdata"];
-    const numPoints = markerData.length;
-    const propertyName = document.getElementById("CP_property_header").value;
-    const xColumnName = document.getElementById("CP_X_header").value;
-    const yColumnName = document.getElementById("CP_Y_header").value;
-    const colorscaleName = document.getElementById("CP_colorscale").value;
-    const imageWidth = OSDViewerUtils.getImageWidth();
-    const imageHeight = OSDViewerUtils.getImageHeight();
-
-    const useColorFromMarker = colorscaleName.includes("ownColorFromColumn");
-    let hexColor = "#000000";
-
-    const scalePropertyName = markerUtils._uniqueScaleSelector;
-    const useScaleFromMarker = markerUtils._uniqueScale && (scalePropertyName in markerData[0]);
-
-    const positions = [], indices = [], scales = [];
-    let scalarRange = [1e9, -1e9];
-    for (let i = 0; i < numPoints; ++i) {
-        if (useColorFromMarker) hexColor = markerData[i][propertyName];
-        positions[4 * i + 0] = Number(markerData[i][xColumnName]) / imageWidth;
-        positions[4 * i + 1] = Number(markerData[i][yColumnName]) / imageHeight;
-        positions[4 * i + 2] = Number(markerData[i][propertyName]);
-        positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
-        indices[i] = i;  // Store index needed for picking
-        if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
-        else scales[i] = 1.0;
-
-        scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
-        scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
+    // Update marker info and LUT + colormap textures
+    glUtils._numPoints[uid] = numPoints;
+    glUtils._markerOpacity[uid] = 1.0;  // TODO
+    glUtils._markerScalarRange[uid] = scalarRange;
+    glUtils._colorscaleName[uid] = colorscaleName;
+    glUtils._useColorFromMarker[uid] = useColorFromMarker;
+    glUtils._useColorFromColormap[uid] = useColorFromColormap;
+    glUtils._useScaleFromMarker[uid] = useScaleFromMarker;
+    glUtils._usePiechartFromMarker[uid] = usePiechartFromMarker;
+    if (useColorFromColormap) {
+        glUtils._updateColorScaleTexture(gl, uid, glUtils._textures[uid + "_colorscale"]);
+        glUtils._updateColorbarCanvas(colorscaleName, glUtils._colorscaleData[uid], scalarPropertyName, scalarRange);
+    } else {
+        glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
     }
-
-    const bytedata = new Float32Array(positions.concat(indices.concat(scales)));
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
-    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    glUtils._numCPPoints = numPoints;
-    glUtils._markerScalarRange = scalarRange;
-    glUtils._colorscaleName = colorscaleName;
-    glUtils._updateColorScaleTexture(gl, glUtils._textures["colorscale"]);
-    glUtils._updateColorbarCanvas(colorscaleName, glUtils._colorscaleData, propertyName, scalarRange);
-    glUtils.draw();  // Force redraw
 }
 
 
-glUtils._updateBarcodeToLUTIndexDict = function(markerData, keyName) {
+// TODO Fix naming of this function, since we now use it for generic markers
+glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {
     const barcodeToLUTIndex = {};
     const barcodeToKey = {};
     const numPoints = markerData.length;
     for (let i = 0, index = 0; i < numPoints; ++i) {
-        const barcode = markerData[i].letters;
-        const gene_name = markerData[i].gene_name;
+        const barcode = markerData[i][keyName];
         if (!(barcode in barcodeToLUTIndex)) {
             barcodeToLUTIndex[barcode] = index++;
-            barcodeToKey[barcode] = (keyName == "letters" ? barcode : gene_name);
+            barcodeToKey[barcode] = barcode;
         }
     }
-    glUtils._barcodeToLUTIndex = barcodeToLUTIndex;
-    glUtils._barcodeToKey = barcodeToKey;
+    glUtils._barcodeToLUTIndex[uid] = barcodeToLUTIndex;
+    glUtils._barcodeToKey[uid] = barcodeToKey;
 }
 
 
@@ -478,29 +474,28 @@ glUtils._createColorLUTTexture = function(gl) {
 }
 
 
-glUtils._updateColorLUTTexture = function(gl, texture) {
-    const allMarkersCheckbox = document.getElementById("AllMarkers-checkbox-ISS");
-    const showAll = allMarkersCheckbox && allMarkersCheckbox.checked;
+glUtils._updateColorLUTTexture = function(gl, uid, texture) {
+    if (!(uid + "_colorLUT" in glUtils._textures)) return;
+
+    // TODO Check if all markers for UID should be visible
+    //const allMarkersCheckbox = document.getElementById("AllMarkers-checkbox-ISS");
+    //const showAll = allMarkersCheckbox && allMarkersCheckbox.checked;
+
+    // HACK Assign markers a pleceholder color from UID
+    if (!(uid in glUtils._hexColorUID)) {
+        const index = Object.keys(glUtils._hexColorUID).length;
+        const piechartPalette = glUtils._piechartPalette;
+        glUtils._hexColorUID[uid] = piechartPalette[index % piechartPalette.length];
+    }
 
     const colors = new Array(4096 * 4);
-    for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex)) {
-        // Get color, shape, etc. from HTML input elements for barcode
-        const key = glUtils._barcodeToKey[barcode];  // Could be barcode or gene name
-        hexInput = document.getElementById(key + "-color-ISS")
-        if (hexInput) {
-            var hexColor = document.getElementById(key + "-color-ISS").value;
-        }
-        else {
-            var hexColor = "#000000";
-        }
-        shapeInput = document.getElementById(key + "-shape-ISS")
-        if (shapeInput) {
-            var shape = document.getElementById(key + "-shape-ISS").value;
-        }
-        else {
-            var shape = "";
-        };
-        const visible = showAll || markerUtils._checkBoxes[key].checked;
+    for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex[uid])) {
+        // TODO Get color, shape, etc. from HTML input elements for marker group
+        const key = glUtils._barcodeToKey[uid][barcode];
+        const hexColor = glUtils._hexColorUID[uid];  // TODO
+        const shape = 6;                             // TODO
+        const visible = true;                        // TODO
+
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
@@ -545,13 +540,15 @@ glUtils._formatHex = function(color) {
 }
 
 
-glUtils._updateColorScaleTexture = function(gl, texture) {
+glUtils._updateColorScaleTexture = function(gl, uid, texture) {
     const colors = [];
+    const colorscaleName = glUtils._colorscaleName[uid];
+    console.log(colorscaleName);
     for (let i = 0; i < 256; ++i) {
         const normalized = i / 255.0;
-        if (glUtils._colorscaleName.includes("interpolate") &&
-            !glUtils._colorscaleName.includes("Rainbow")) {
-            const color = d3[glUtils._colorscaleName](normalized);
+        if (colorscaleName.includes("interpolate") &&
+            !colorscaleName.includes("Rainbow")) {
+            const color = d3[colorscaleName](normalized);
             const hexColor = glUtils._formatHex(color);  // D3 sometimes returns RGB strings
             colors[4 * i + 0] = Number("0x" + hexColor.substring(1,3));
             colors[4 * i + 1] = Number("0x" + hexColor.substring(3,5));
@@ -570,7 +567,7 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
             colors[4 * i + 3] = 255.0;
         }
     }
-    glUtils._colorscaleData = colors;
+    glUtils._colorscaleData[uid] = colors;
 
     const bytedata = new Uint8Array(colors);
 
@@ -582,12 +579,15 @@ glUtils._updateColorScaleTexture = function(gl, texture) {
 
 
 glUtils._updateColorbarCanvas = function(colorscaleName, colorscaleData, propertyName, propertyRange) {
-    const canvas = document.getElementById("CP_colorbar");
+    const canvas = document.getElementById("colorbar_canvas");
     const ctx = canvas.getContext("2d");
 
+    // TODO We still need to sort out how to handle colorbars for multiple
+    // marker tabs, etc., so this code is commented out for now
+    /*
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (!glUtils._showColorbar || colorscaleName == "null" ||
-        colorscaleName == "ownColorFromColumn") return;
+        colorscaleName == "ownColorFromColumn") return;  // FIXME
 
     const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
     const numStops = 32;
@@ -623,6 +623,7 @@ glUtils._updateColorbarCanvas = function(colorscaleName, colorscaleData, propert
     ctx.fillText(propertyName, ctx.canvas.width/2, 32);
     ctx.fillText(propertyMin, ctx.canvas.width/2-128, 56);
     ctx.fillText(propertyMax, ctx.canvas.width/2+128, 56);
+    */
 }
 
 
@@ -632,7 +633,7 @@ glUtils._createColorbarCanvas = function() {
     const canvas = document.createElement("canvas");
     root.appendChild(canvas);
 
-    canvas.id = "CP_colorbar";
+    canvas.id = "colorbar_canvas";
     canvas.width = "384";  // Fixed width in pixels
     canvas.height = "96";  // Fixed height in pixels
     canvas.style = "position:relative; float:left; width:31%; left:68%; " +
@@ -682,66 +683,57 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
     const SCALE = gl.getAttribLocation(program, "a_scale");
+
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
-    gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity);
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
-    gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorscale"]);
-    gl.uniform1i(gl.getUniformLocation(program, "u_colorscale"), 1);
+    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
+    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
-    gl.enableVertexAttribArray(POSITION);
-    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(INDEX);
-    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
-    gl.enableVertexAttribArray(SCALE);
-    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 20);
-    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 0);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
-    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
-    gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker);
-    gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker);
-    gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"), glUtils._pickedMarker);
-    if (glUtils._usePiechartFromMarker) {
-        // 1st pass: draw alpha for whole marker shapes
-        gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
-        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
-        // 2nd pass: draw colors for individual piechart sectors
-        gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), false);
-        gl.colorMask(true, true, true, false);
-        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
-        gl.colorMask(true, true, true, true);
-    } else {
-        gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
+        if (numPoints == 0) continue;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["CPMarkers"]);
-    gl.enableVertexAttribArray(POSITION);
-    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(INDEX);
-    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 16);
-    gl.enableVertexAttribArray(SCALE);
-    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numCPPoints * 20);
-    gl.uniform1i(gl.getUniformLocation(program, "u_markerType"), 1);
-    gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
-    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
-    gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"),
-        glUtils._colorscaleName.includes("ownColorFromColumn"));
-    gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), false);
-    if (glUtils._colorscaleName != "null") {  // Only show markers when a colorscale is selected
-        gl.drawArrays(gl.POINTS, 0, glUtils._numCPPoints);
+        gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
+        gl.enableVertexAttribArray(POSITION);
+        gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(INDEX);
+        gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, numPoints * 16);
+        gl.enableVertexAttribArray(SCALE);
+        gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
+
+        gl.uniform1i(gl.getUniformLocation(program, "u_markerType"),
+            glUtils._useColorFromColormap[uid] ? 1 : 0);
+        gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange[uid]);
+        gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity[uid]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker[uid]);
+        gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"),
+            glUtils._pickedMarker[0] == uid ? glUtils._pickedMarker[1] : -1);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorscale"]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_colorscale"), 1);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
+
+        if (glUtils._usePiechartFromMarker[uid]) {
+            // 1st pass: draw alpha for whole marker shapes
+            gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
+            gl.drawArrays(gl.POINTS, 0, numPoints);
+            // 2nd pass: draw colors for individual piechart sectors
+            gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), false);
+            gl.colorMask(true, true, true, false);
+            gl.drawArrays(gl.POINTS, 0, numPoints);
+            gl.colorMask(true, true, true, true);
+        } else {
+            gl.drawArrays(gl.POINTS, 0, numPoints);
+        }
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     // Restore render pipeline state
     gl.blendFunc(gl.ONE, gl.ONE);
@@ -751,11 +743,6 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
 
 
 glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
-    if (!glUtils._usePiechartFromMarker) {
-        glUtils._pickedMarker = -1;
-        return;  // TODO: Right now, we only perform picking for piecharts
-    }
-
     // Set up render pipeline
     const program = glUtils._programs["picking"];
     gl.useProgram(program);
@@ -763,6 +750,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
     const SCALE = gl.getAttribLocation(program, "a_scale");
+
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
@@ -771,32 +759,39 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["colorLUT"]);
-    gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
+    glUtils._pickedMarker = [-1, -1];  // Reset to no picked marker
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
+        if (numPoints == 0) continue;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers["barcodeMarkers"]);
-    gl.enableVertexAttribArray(POSITION);
-    gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(INDEX);
-    gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 16);
-    gl.enableVertexAttribArray(SCALE);
-    gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, glUtils._numBarcodePoints * 20);
-    // 1st pass: clear the corner pixel
-    gl.uniform1i(gl.getUniformLocation(program, "u_op"), 0);
-    gl.drawArrays(gl.POINTS, 0, 1);
-    // 2nd pass: draw all the markers (as single pixels)
-    gl.uniform1i(gl.getUniformLocation(program, "u_op"), 1);
-    gl.drawArrays(gl.POINTS, 0, glUtils._numBarcodePoints);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
+        gl.enableVertexAttribArray(POSITION);
+        gl.vertexAttribPointer(POSITION, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(INDEX);
+        gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, numPoints * 16);
+        gl.enableVertexAttribArray(SCALE);
+        gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
-    // Read back pixel at location (0, 0) to get the picked object
-    const result = new Uint8Array(4);
-    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
-    const picked = Number(result[2] + result[1] * 256 + result[0] * 65536) - 1;
-    glUtils._pickedMarker = picked;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
+
+        // 1st pass: clear the corner pixel
+        gl.uniform1i(gl.getUniformLocation(program, "u_op"), 0);
+        gl.drawArrays(gl.POINTS, 0, 1);
+        // 2nd pass: draw all the markers (as single pixels)
+        gl.uniform1i(gl.getUniformLocation(program, "u_op"), 1);
+        gl.drawArrays(gl.POINTS, 0, numPoints);
+
+        // Read back pixel at location (0, 0) to get the picked object
+        const result = new Uint8Array(4);
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, result);
+        const picked = Number(result[2] + result[1] * 256 + result[0] * 65536) - 1;
+        if (picked >= 0)
+            glUtils._pickedMarker = [uid, picked];
+    }
 
     // Restore render pipeline state
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.useProgram(null);
 }
 
@@ -837,14 +832,18 @@ glUtils.pick = function(event) {
     if (event.quick) {
         glUtils._pickingEnabled = true;
         glUtils._pickingLocation = [event.position.x, event.position.y];
-        glUtils.draw();
+        glUtils.draw();  // This will update the value of glUtils._pickedMarker
+
+        const pickedMarker = glUtils._pickedMarker;
+        const hasPickedMarker = pickedMarker[1] >= 0;
 
         tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");
-        if (glUtils._pickedMarker >= 0 && glUtils._showMarkerInfo) {
+        if (hasPickedMarker && glUtils._showMarkerInfo) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.innerHTML = markerUtils.makePiechartTable(dataUtils.data["gene"]["ISS_processeddata"][glUtils._pickedMarker]);
+            div.innerHTML = pickedMarker;  // FIXME Show ID for now, until makePiechartTable is fixed
+            //div.innerHTML = markerUtils.makePiechartTable(dataUtils.data[uid]["ISS_processeddata"][pickedMarker]);
             div.classList.add("viewer-layer", "m-0", "p-1");
 
             tmapp["ISS_viewer"].addOverlay({
@@ -888,16 +887,6 @@ glUtils.updateMarkerScale = function() {
 }
 
 
-glUtils.updateLUTTextures = function() {
-    const canvas = document.getElementById("gl_canvas");
-    const gl = canvas.getContext("webgl", glUtils._options);
-
-    if (glUtils._numBarcodePoints > 0) {  // LUTs are currently only used for barcode data
-        glUtils._updateColorLUTTexture(gl, glUtils._textures["colorLUT"]);
-    }
-}
-
-
 glUtils.init = function() {
     if (glUtils._initialized) return;
 
@@ -912,10 +901,6 @@ glUtils.init = function() {
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
     this._programs["picking"] = this._loadShaderProgram(gl, this._pickingVS, this._pickingFS);
-    this._buffers["barcodeMarkers"] = this._createDummyMarkerBuffer(gl, this._numBarcodePoints);
-    this._buffers["CPMarkers"] = this._createDummyMarkerBuffer(gl, this._numCPMarkers);
-    this._textures["colorLUT"] = this._createColorLUTTexture(gl);
-    this._textures["colorscale"] = this._createColorScaleTexture(gl);
     this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, "misc/markershapes.png");
 
     this._createColorbarCanvas();  // The colorbar is drawn separately in a 2D-canvas
@@ -923,8 +908,6 @@ glUtils.init = function() {
     glUtils.updateMarkerScale();
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.updateMarkerScale);
     document.getElementById("ISS_globalmarkersize_text").addEventListener("input", glUtils.draw);
-    document.getElementById("ISS_markers").addEventListener("change", glUtils.updateLUTTextures);
-    document.getElementById("ISS_markers").addEventListener("change", glUtils.draw);
 
     tmapp["hideSVGMarkers"] = true;
     tmapp["ISS_viewer"].removeHandler('resize', glUtils.resizeAndDraw);

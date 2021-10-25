@@ -189,6 +189,8 @@ dataUtils.updateViewOptions = function(event){
 
     dataUtils.makeQuadTrees(data_id)
 
+    glUtils.loadMarkers(data_id);
+    glUtils.draw();
 }
 
 /** 
