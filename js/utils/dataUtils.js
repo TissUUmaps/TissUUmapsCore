@@ -200,6 +200,8 @@ dataUtils.updateViewOptions = function(event){
 
     }
 
+    glUtils.loadMarkers(data_id);
+    glUtils.draw();
 }
 
 /** 
