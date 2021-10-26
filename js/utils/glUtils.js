@@ -183,6 +183,7 @@ glUtils._pickingVS = `
     uniform mat2 u_viewportTransform;
     uniform vec2 u_canvasSize;
     uniform vec2 u_pickingLocation;
+    uniform int u_markerType;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
     uniform int u_op;
@@ -194,6 +195,8 @@ glUtils._pickingVS = `
 
     varying vec4 v_color;
 
+    #define MARKER_TYPE_BARCODE 0
+    #define MARKER_TYPE_CP 1
     #define OP_CLEAR 0
     #define OP_WRITE_INDEX 1
     #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
@@ -216,7 +219,9 @@ glUtils._pickingVS = `
         v_color = vec4(0.0);
         if (u_op == OP_WRITE_INDEX) {
             float barcodeID = mod(a_position.z, 4096.0);
-            float shapeID = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a;
+            float shapeID = (u_markerType == MARKER_TYPE_BARCODE)
+                          ? texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a
+                          : 7.0 / 255.0;  // Give CP markers a round shape;
             if (shapeID == 0.0) DISCARD_VERTEX;
 
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
@@ -791,6 +796,8 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
+        gl.uniform1i(gl.getUniformLocation(program, "u_markerType"),
+            glUtils._useColorFromColormap[uid] || glUtils._useColorFromMarker[uid] ? 1 : 0);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
         gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
