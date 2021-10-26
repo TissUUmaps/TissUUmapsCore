@@ -161,6 +161,12 @@ regionUtils.closePolygon = function () {
         return [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ];
     }
     function oldCoord2GeoJSONCoord(coordinates) {
+        // Check for older JSON format with only one list of coordinates
+        if (coordinates[0].x) {
+            return [[coordinates.map(function(x) {
+                return [x.x, x.y];
+            })]];
+        }
         return coordinates.map (function(coordinateList, i) {
             return coordinateList.map (function(coordinateList_i, index) {
                 return coordinateList_i.map(function(x) {
