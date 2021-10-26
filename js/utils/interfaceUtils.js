@@ -1349,3 +1349,21 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
 
     return table;
 }
+
+interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
+    const data_obj = dataUtils.data[uid];
+
+    let inputs = {};
+    if (data_obj["_groupgarden"].hasOwnProperty(key)) {
+        const tree = data_obj["_groupgarden"][key];
+        const escapedID = tree["treeID"].replace(" ","_");
+        const hasGroupUI = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape");
+
+        if (hasGroupUI) {
+            inputs["visible"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_check").checked;
+            inputs["shape"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape").value;
+            inputs["color"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_color").value;
+        }
+    }
+    return inputs;
+}

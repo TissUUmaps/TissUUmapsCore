@@ -28,7 +28,6 @@ glUtils = {
     _colorscaleData: {},         // {uid: array of RGBA values, ...}
     _barcodeToLUTIndex: {},      // {uid: dict, ...}
     _barcodeToKey: {},           // {uid: dict, ...}
-    _hexColorUID: {},            // {uid: hexColor, ...}
 
     // Global marker settings and info
     _markerScale: 1.0,
@@ -507,25 +506,20 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
     //const allMarkersCheckbox = document.getElementById("AllMarkers-checkbox-ISS");
     //const showAll = allMarkersCheckbox && allMarkersCheckbox.checked;
 
-    // HACK Assign markers a pleceholder color from UID
-    if (!(uid in glUtils._hexColorUID)) {
-        const index = Object.keys(glUtils._hexColorUID).length;
-        const piechartPalette = glUtils._piechartPalette;
-        glUtils._hexColorUID[uid] = piechartPalette[index % piechartPalette.length];
-    }
-
     const colors = new Array(4096 * 4);
     for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex[uid])) {
         // TODO Get color, shape, etc. from HTML input elements for marker group
         const key = glUtils._barcodeToKey[uid][barcode];
-        const hexColor = glUtils._hexColorUID[uid];  // TODO
-        const shape = 6;                             // TODO
-        const visible = true;                        // TODO
+        const inputs = interfaceUtils._mGenUIFuncs.getGroupInputs(uid, key);
+        const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
+        const shape = "shape" in inputs ? inputs["shape"] : "circle";
+        const visible = true;  // Use hardcoded value for now (TODO)
+        const shapeIndex = markerUtils._symbolStrings.indexOf(shape);
 
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
-        colors[4 * index + 3] = Number(visible) * (Number(shape) + 1);
+        colors[4 * index + 3] = Number(visible) * (Number(shapeIndex) + 1);
     }
 
     const bytedata = new Uint8Array(colors);
