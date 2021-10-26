@@ -1091,21 +1091,13 @@ regionUtils.regionsToJSON= function(){
 }
 
 regionUtils.JSONToRegions= function(filepath){
-    regions={};
     if(filepath!==undefined){
         fetch(filepath)
         .then((response) => {
             return response.json();
         })
         .then((regionsobj) => {
-            var maxregionid=0;
-            for(i in regionsobj){
-                //console.log(regions[i]);
-                regionUtils.createImportedRegion(regionsobj[i]);
-                var numbers = regionsobj[i].id.match(/\d+/g).map(Number);
-                if(numbers[0]>maxregionid) maxregionid=numbers[0];
-            }
-            regionUtils._currentRegionId=maxregionid;        
+            regionUtils.JSONValToRegions(regionsobj);
         });
     }
     else if(window.File && window.FileReader && window.FileList && window.Blob) {
