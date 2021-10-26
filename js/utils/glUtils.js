@@ -46,12 +46,12 @@ glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
     uniform mat2 u_viewportTransform;
-    uniform int u_markerType;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
     uniform vec2 u_markerScalarRange;
     uniform float u_markerOpacity;
     uniform bool u_useColorFromMarker;
+    uniform bool u_useColorFromColormap;
     uniform bool u_usePiechartFromMarker;
     uniform bool u_alphaPass;
     uniform float u_pickedMarker;
@@ -67,8 +67,8 @@ glUtils._markersVS = `
     varying float v_shapeSector;
     varying float v_shapeSize;
 
-    #define MARKER_TYPE_BARCODE 0
-    #define MARKER_TYPE_CP 1
+    #define SHAPE_INDEX_CIRCLE 7.0
+    #define SHAPE_INDEX_CIRCLE_NOSTROKE 16.0
     #define SHAPE_GRID_SIZE 4.0
     #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
 
@@ -87,25 +87,24 @@ glUtils._markersVS = `
         ndcPos.y = -ndcPos.y;
         ndcPos = u_viewportTransform * ndcPos;
 
-        if (u_markerType == MARKER_TYPE_BARCODE) {
-            float barcodeID = mod(a_position.z, 4096.0);
-            v_color = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5));
-
-            if (u_usePiechartFromMarker && v_color.a > 0.0) {
-                v_shapeSector = a_position.z / 16777215.0;
-                v_color.rgb = hex_to_rgb(a_position.w);
-                v_color.a = 16.0 / 255.0;  // Give markers a round shape
-                if (u_pickedMarker == a_index) v_color.a = 7.0 / 255.0;
-                if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
-            }
-        } else if (u_markerType == MARKER_TYPE_CP) {
+        if (u_useColorFromMarker || u_useColorFromColormap) {
             vec2 range = u_markerScalarRange;
             float normalized = (a_position.z - range[0]) / (range[1] - range[0]);
             v_color.rgb = texture2D(u_colorscale, vec2(normalized, 0.5)).rgb;
-            v_color.a = 7.0 / 255.0;  // Give CP markers a round shape
+            if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
+            v_color.a = SHAPE_INDEX_CIRCLE / 255.0;
+        } else {
+            float barcodeID = mod(a_position.z, 4096.0);
+            v_color = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5));
         }
 
-        if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
+        if (u_usePiechartFromMarker && v_color.a > 0.0) {
+            v_shapeSector = a_position.z / 16777215.0;
+            v_color.rgb = hex_to_rgb(a_position.w);
+            v_color.a = SHAPE_INDEX_CIRCLE_NOSTROKE / 255.0;
+            if (u_pickedMarker == a_index) v_color.a = SHAPE_INDEX_CIRCLE / 255.0;
+            if (u_alphaPass) v_color.a *= float(v_shapeSector > 0.999);
+        }
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
         gl_PointSize = max(2.0, min(256.0, a_scale * u_markerScale * u_globalMarkerScale / u_viewportRect.w));
@@ -183,9 +182,10 @@ glUtils._pickingVS = `
     uniform mat2 u_viewportTransform;
     uniform vec2 u_canvasSize;
     uniform vec2 u_pickingLocation;
-    uniform int u_markerType;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
+    uniform bool u_useColorFromMarker;
+    uniform bool u_useColorFromColormap;
     uniform int u_op;
     uniform sampler2D u_colorLUT;
 
@@ -195,10 +195,10 @@ glUtils._pickingVS = `
 
     varying vec4 v_color;
 
-    #define MARKER_TYPE_BARCODE 0
-    #define MARKER_TYPE_CP 1
     #define OP_CLEAR 0
     #define OP_WRITE_INDEX 1
+
+    #define SHAPE_INDEX_CIRCLE 7.0
     #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
 
     vec3 hex_to_rgb(float v)
@@ -219,9 +219,9 @@ glUtils._pickingVS = `
         v_color = vec4(0.0);
         if (u_op == OP_WRITE_INDEX) {
             float barcodeID = mod(a_position.z, 4096.0);
-            float shapeID = (u_markerType == MARKER_TYPE_BARCODE)
-                          ? texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a
-                          : 7.0 / 255.0;  // Give CP markers a round shape;
+            float shapeID = (u_useColorFromMarker || u_useColorFromColormap)
+                          ? SHAPE_INDEX_CIRCLE / 255.0
+                          : texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a;
             if (shapeID == 0.0) DISCARD_VERTEX;
 
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
@@ -472,6 +472,8 @@ glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {
         if (!(barcode in barcodeToLUTIndex)) {
             barcodeToLUTIndex[barcode] = index++;
             barcodeToKey[barcode] = barcode;
+            index = index % 4096;  // Prevent index from becoming >= the maximum LUT size,
+                                   // since this causes problems with pie-chart markers
         }
     }
     glUtils._barcodeToLUTIndex[uid] = barcodeToLUTIndex;
@@ -729,11 +731,10 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
-        gl.uniform1i(gl.getUniformLocation(program, "u_markerType"),
-            glUtils._useColorFromColormap[uid] || glUtils._useColorFromMarker[uid] ? 1 : 0);
         gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange[uid]);
         gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromColormap"), glUtils._useColorFromColormap[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker[uid]);
         gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"),
             glUtils._pickedMarker[0] == uid ? glUtils._pickedMarker[1] : -1);
@@ -796,8 +797,11 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
-        gl.uniform1i(gl.getUniformLocation(program, "u_markerType"),
-            glUtils._useColorFromColormap[uid] || glUtils._useColorFromMarker[uid] ? 1 : 0);
+        // Note: these two uniforms are not used for determining the piechart
+        // color but whether markers are grouped or not
+        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromColormap"), glUtils._useColorFromColormap[uid]);
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
         gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
