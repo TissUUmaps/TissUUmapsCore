@@ -725,7 +725,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
         gl.uniform1i(gl.getUniformLocation(program, "u_markerType"),
-            glUtils._useColorFromColormap[uid] ? 1 : 0);
+            glUtils._useColorFromColormap[uid] || glUtils._useColorFromMarker[uid] ? 1 : 0);
         gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange[uid]);
         gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
