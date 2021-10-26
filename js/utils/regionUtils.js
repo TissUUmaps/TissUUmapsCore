@@ -27,7 +27,8 @@ regionUtils = {
     _handleRadius: 0.1,
     _epsilonDistance: 0.004,
     _regions: {},
-    _drawingclass: "drawPoly"
+    _drawingclass: "drawPoly",
+    _maxRegionsInMenu: 200
 }
 
 /** 
@@ -129,7 +130,9 @@ regionUtils.closePolygon = function () {
     regionsobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionid].points)).attr("id", regionid + "_poly")
         .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
         .style("stroke", hexcolor).style("fill", "none");
-    
+    regionUtils.updateAllRegionClassUI();
+    $(document.getElementById("regionClass-")).collapse("show");
+
 }
 
 /** 
@@ -260,17 +263,20 @@ regionUtils.geoJSON2regions = function (geoJSONObjects) {
             });
         })
         var regionId = "Region_geoJSON_" + geoJSONObjIndex;
-        regionUtils.addRegion(coordinates, regionId, hexColor);
-
-        document.getElementById(regionId + "_class_ta").value = geoJSONObjClass;
-        document.getElementById(regionId + "_name_ta").value = regionName;
-
+        regionUtils.addRegion(coordinates, regionId, hexColor, geoJSONObjClass);
         regionobj = d3.select(canvas).append('g').attr('class', "mydrawingclass");
         regionobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionId].points)).attr("id", regionId + "_poly")
             .attr("class", "regionpoly").attr("polycolor", hexColor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
             .style("stroke", hexColor).style("fill", "none");
         
-        regionUtils.changeRegion(regionId);
+        if (document.getElementById(regionId + "_class_ta")) {
+            document.getElementById(regionId + "_class_ta").value = geoJSONObjClass;
+            document.getElementById(regionId + "_name_ta").value = regionName;
+            regionUtils.changeRegion(regionId);
+        }
+        else {
+            regionUtils._regions[regionId].regionName = regionName;
+        }
     });
 }
 
@@ -326,10 +332,10 @@ regionUtils.distance = function (p1, p2) {
 /** 
  *  @param {Number[]} points Array of 2D points in normalized coordinates
  *  Create a region object and store it in the regionUtils._regions container */
-regionUtils.addRegion = function (points, regionid, color) {
+regionUtils.addRegion = function (points, regionid, color, regionClass) {
     var op = tmapp["object_prefix"];
     var imageWidth = OSDViewerUtils.getImageWidth();
-    var region = { "id": regionid, "points": [], "globalPoints": [], "regionName": regionid, "regionClass": null, "barcodeHistogram": [] };
+    var region = { "id": regionid, "points": [], "globalPoints": [], "regionName": regionid, "regionClass": regionClass, "barcodeHistogram": [] };
     region.len = points.length;
     var _xmin = points[0][0][0][0], _xmax = points[0][0][0][0], _ymin = points[0][0][0][1], _ymax = points[0][0][0][1];
     var objectPointsArray = [];
@@ -367,13 +373,23 @@ regionUtils.addRegion = function (points, regionid, color) {
 regionUtils.regionUI = function (regionid) {
 
     var op = tmapp["object_prefix"];
-    if (regionUtils._regions[regionid].regionClass) {
-        regionUtils.addRegionClassUI (regionUtils._regions[regionid].regionClass)
-        regionClassID = HTMLElementUtils.stringToId(regionUtils._regions[regionid].regionClass);
+    regionClass = regionUtils._regions[regionid].regionClass;
+    console.log(regionClass);
+    if (regionClass) {
+        regionUtils.addRegionClassUI (regionClass)
+        regionClassID = HTMLElementUtils.stringToId(regionClass);
         var regionsPanel = document.getElementById("markers-regions-panel-" + regionClassID);
+        numRegions = Object.values(regionUtils._regions).filter(x => x.regionClass==regionClass).length
+        console.log("numRegions:",numRegions);
+        if (numRegions > regionUtils._maxRegionsInMenu) {
+            spanEl = document.getElementById("regionGroupWarning-" + regionClassID)
+            if (spanEl) spanEl.innerHTML = "<i class='bi bi-exclamation-triangle'></i> Max "+regionUtils._maxRegionsInMenu+" regions displayed below";
+            return;
+        }
     }
     else {
-        var regionsPanel = document.getElementById("markers-regions-panel");
+        regionUtils.addRegionClassUI (null)
+        var regionsPanel = document.getElementById("markers-regions-panel-");
     }
     var rPanel = HTMLElementUtils.createElement({
         type: "div",
@@ -399,13 +415,6 @@ regionUtils.regionUI = function (regionid) {
         }
     });
     rpanelbody.appendChild(rpanelheading);
-    var rpanelsubheading = HTMLElementUtils.createElement({
-        type: "div",
-        extraAttributes: {
-            class: "card-subtitle mb-2 text-muted"
-        }
-    });
-    rpanelbody.appendChild(rpanelsubheading);
     var rpanelcontent = HTMLElementUtils.createElement({
         type: "div",
         extraAttributes: {
@@ -553,8 +562,7 @@ regionUtils.regionUI = function (regionid) {
     regionText = rName;
 
     if (rClass) {
-        regionText = regionText;
-        rpanelsubheading.innerHTML = rClass;
+        regionText = regionText + " (" + rClass + ")";
     }
 
     rpanelheading.innerHTML = regionText;
@@ -637,7 +645,7 @@ regionUtils.fillRegion = function (regionid) {
     }else{
         regionUtils._regions[regionid].filled=!regionUtils._regions[regionid].filled;
     }
-    var newregioncolor = document.getElementById(regionid + "_color_input").value;
+    var newregioncolor = regionUtils._regions[regionid].polycolor;
     var d3color = d3.rgb(newregioncolor);
     var newStyle="";
     if(regionUtils._regions[regionid].filled){
@@ -659,7 +667,9 @@ regionUtils.deleteRegion = function (regionid) {
     delete regionUtils._regions[regionid];
     var op = tmapp["object_prefix"];
     var rPanel = document.getElementById(op + regionid + "_panel");
-    rPanel.parentElement.removeChild(rPanel);
+    if (rPanel) {
+        rPanel.parentElement.removeChild(rPanel);
+    }
     regionUtils.updateAllRegionClassUI();
 }
 /** 
@@ -678,6 +688,7 @@ regionUtils.deleteAllRegions = function () {
 }
 regionUtils.updateAllRegionClassUI = function (regionClass) {
     // get all region classes
+    console.log("updateAllRegionClassUI");
     var allRegionClasses = Object.values(regionUtils._regions).map(function(e) { return e.regionClass; })
     // get only unique values
     var singleRegionClasses = allRegionClasses.filter((v, i, a) => a.indexOf(v) === i);
@@ -685,7 +696,11 @@ regionUtils.updateAllRegionClassUI = function (regionClass) {
         regionClassID = HTMLElementUtils.stringToId(regionClass);
         numRegions = allRegionClasses.filter(x => x==regionClass).length
         spanEl = document.getElementById("numRegions-" + regionClassID)
-        spanEl.innerText = numRegions;
+        if (spanEl) {
+            spanEl.innerText = numRegions;
+            spanElS = document.getElementById("numRegionsS-" + regionClassID)
+            if (numRegions > 1) spanElS.innerText = "s"; else spanElS.innerText = ""; 
+        }
     })
     Array.from(document.getElementsByClassName("accordion-item")).forEach(function(accordionItem) {
         if (Array.from(accordionItem.getElementsByClassName("card")).length == 0) {
@@ -718,9 +733,10 @@ regionUtils.addRegionClassUI = function (regionClass) {
             }
         });
         accordion_item.appendChild(accordion_header);
+        if (!regionClass) regionClassName = "Unclassified"; else regionClassName = regionClass;
         var accordion_header_button = HTMLElementUtils.createElement({
             type: "button",
-            innerHTML: regionClass + " (<span id='numRegions-" + regionClassID + "'>1</span>&nbsp;region)",
+            innerHTML: "<i class='bi bi-pentagon'></i>&nbsp;" + regionClassName + " (<span id='numRegions-" + regionClassID + "'>1</span>&nbsp;region<span id='numRegionsS-" + regionClassID + "'></span>)&nbsp;<span class='text-warning' id='regionGroupWarning-" + regionClassID + "'></span>",
             extraAttributes: {
                 "type": "button",
                 "class": "accordion-button collapsed",
@@ -844,7 +860,8 @@ regionUtils.changeRegion = function (regionid) {
             $(rPanel).detach().appendTo('#markers-regions-panel-' + classID)
         } else {
             regionUtils._regions[regionid].regionClass = null;
-            $(rPanel).detach().appendTo('#markers-regions-panel')
+            regionUtils.addRegionClassUI (null)
+            $(rPanel).detach().appendTo('#markers-regions-panel-')
         }
         regionUtils.updateAllRegionClassUI();
     }
@@ -884,11 +901,6 @@ regionUtils.loadTextRegionUI = function (regionid) {
         rName = regionid;
     }
     regionText = rName;
-
-    if (rClass) {
-        regionText = regionText;
-        HTMLElementUtils.getFirstChildByClass(rPanel, "card-subtitle").innerHTML = rClass;
-    }
 
     console.log(rName + rClass + regionText);
 
@@ -938,43 +950,44 @@ regionUtils.analyzeRegion = function (regionid) {
     regionUtils._regions[regionid].barcodeHistogram.sort(compare);
 
     var rPanel = document.getElementById(op + regionid + "_panel");
-    var rpanelbody = rPanel.getElementsByClassName("region-histogram")[0];
-    histodiv = document.getElementById(regionid + "_histogram");
-    if (histodiv) {
-        histodiv.parentNode.removeChild(histodiv);
-    }
-
-    var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "_histogram" });
-    var histogram = regionUtils._regions[regionid].barcodeHistogram;
-    var table = div.appendChild(HTMLElementUtils.createElement({
-        type: "table",
-        extraAttributes: {
-            class: "table table-striped",
-            style: "overflow-y: auto;"
+    if (rPanel) {
+        var rpanelbody = rPanel.getElementsByClassName("region-histogram")[0];
+        histodiv = document.getElementById(regionid + "_histogram");
+        if (histodiv) {
+            histodiv.parentNode.removeChild(histodiv);
         }
-    }));
-    thead = HTMLElementUtils.createElement({type: "thead"});
-    thead.innerHTML = `<tr>
-      <th scope="col">Name</th>
-      <th scope="col">Barcode</th>
-      <th scope="col">Count</th>
-    </tr>`;
-    tbody = HTMLElementUtils.createElement({type: "tbody"});
-    table.appendChild(thead);
-    table.appendChild(tbody);
 
-    for (var i in histogram) {
-        var innerHTML = "";
-        innerHTML += "<td>" + histogram[i].gene_name + "</td>";
-        innerHTML += "<td>" + histogram[i].barcode + "</td>";
-        innerHTML += "<td>" + histogram[i].count + "</td>";
-        tbody.appendChild(HTMLElementUtils.createElement({
-            type: "tr",
-            "innerHTML": innerHTML
+        var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "_histogram" });
+        var histogram = regionUtils._regions[regionid].barcodeHistogram;
+        var table = div.appendChild(HTMLElementUtils.createElement({
+            type: "table",
+            extraAttributes: {
+                class: "table table-striped",
+                style: "overflow-y: auto;"
+            }
         }));
-    }
-    rpanelbody.appendChild(div);
+        thead = HTMLElementUtils.createElement({type: "thead"});
+        thead.innerHTML = `<tr>
+        <th scope="col">Name</th>
+        <th scope="col">Barcode</th>
+        <th scope="col">Count</th>
+        </tr>`;
+        tbody = HTMLElementUtils.createElement({type: "tbody"});
+        table.appendChild(thead);
+        table.appendChild(tbody);
 
+        for (var i in histogram) {
+            var innerHTML = "";
+            innerHTML += "<td>" + histogram[i].gene_name + "</td>";
+            innerHTML += "<td>" + histogram[i].barcode + "</td>";
+            innerHTML += "<td>" + histogram[i].count + "</td>";
+            tbody.appendChild(HTMLElementUtils.createElement({
+                type: "tr",
+                "innerHTML": innerHTML
+            }));
+        }
+        rpanelbody.appendChild(div);
+    }
 }
 /** 
  *  regionUtils */
@@ -1114,4 +1127,6 @@ regionUtils.JSONValToRegions= function(jsonVal){
     // The file's text will be printed here
     var regions=jsonVal;
     regionUtils.geoJSON2regions(regions);
+    regionUtils.updateAllRegionClassUI();
+    $('[data-bs-target="#markers-regions-project-gui"]').tab('show');
 }

@@ -350,6 +350,7 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
 
 /** Create an id from any string */
 HTMLElementUtils.stringToId = function (inputString) {
+    if (!inputString) return "";
     return inputString.replace(/\W/g, '')
 }
 
