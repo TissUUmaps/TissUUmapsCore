@@ -269,6 +269,9 @@ regionUtils.geoJSON2regions = function (geoJSONObjects) {
             });
         })
         var regionId = "Region_geoJSON_" + geoJSONObjIndex;
+        if (regionId in regionUtils._regions) {
+            regionId += "_" + (Math.random() + 1).toString(36).substring(7);
+        }
         regionUtils.addRegion(coordinates, regionId, hexColor, geoJSONObjClass);
         regionobj = d3.select(canvas).append('g').attr('class', "mydrawingclass");
         regionobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionId].points)).attr("id", regionId + "_poly")
