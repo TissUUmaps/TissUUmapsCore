@@ -779,6 +779,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         });
         var checkinput = HTMLElementUtils.inputTypeCheckbox({
             class: "form-check-input",
+            id: regionClassID + "_group_fill_ta",
             value: false,
             eventListeners: { click: function () {
                 var newFill = this.checked;
@@ -797,7 +798,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         
         var tdPanel = HTMLElementUtils.createElement({
             type: "td",
-            innerHTML: "All"
+            innerHTML: "<label style='cursor:pointer' for='"+regionClassID+"_group_fill_ta'>All</label>"
         });
         trPanel.appendChild(tdPanel);
         var tdPanel = HTMLElementUtils.createElement({
