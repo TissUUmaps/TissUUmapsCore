@@ -204,6 +204,13 @@ regionUtils.closePolygon = function () {
  *  When regions are imported, create all objects for it from a region object */
 regionUtils.geoJSON2regions = function (geoJSONObjects) {
     // Helper functions for converting colors to hexadecimal
+    var viewer = tmapp[tmapp["object_prefix"] + "_viewer"]
+    if (!viewer.world || !viewer.world.getItemAt(0)) {
+        setTimeout(function() {
+            regionUtils.geoJSON2regions(geoJSONObjects);
+        }, 100);
+        return;
+    }
     function rgbToHex(rgb) {
         return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
     }
@@ -211,7 +218,6 @@ regionUtils.geoJSON2regions = function (geoJSONObjects) {
         if (number < 0){ number = 0xFFFFFFFF + number + 1; }
         return "#" + number.toString(16).toUpperCase().substring(2, 8);
     }
-    var viewer = tmapp[tmapp["object_prefix"] + "_viewer"]
     var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
     geoJSONObjects = regionUtils.oldRegions2GeoJSON(geoJSONObjects);
     if (!Array.isArray(geoJSONObjects)) {
@@ -307,8 +313,7 @@ regionUtils.createImportedRegion = function (region) {
         .style("stroke", hexcolor).style("fill", "none");
     regionUtils.regionUI(region.id);
     if (region.filled) {
-        region.filled = false;
-        regionUtils.fillRegion(region.id)
+        regionUtils.fillRegion(region.id, region.filled)
     }
 }
 
@@ -383,13 +388,11 @@ regionUtils.regionUI = function (regionid) {
 
     var op = tmapp["object_prefix"];
     regionClass = regionUtils._regions[regionid].regionClass;
-    console.log(regionClass);
     if (regionClass) {
         regionUtils.addRegionClassUI (regionClass)
         regionClassID = HTMLElementUtils.stringToId(regionClass);
         var regionsPanel = document.getElementById("markers-regions-panel-" + regionClassID);
         numRegions = Object.values(regionUtils._regions).filter(x => x.regionClass==regionClass).length
-        console.log("numRegions:",numRegions);
         if (numRegions > regionUtils._maxRegionsInMenu) {
             spanEl = document.getElementById("regionGroupWarning-" + regionClassID)
             if (spanEl) spanEl.innerHTML = "<i class='bi bi-exclamation-triangle'></i> Max "+regionUtils._maxRegionsInMenu+" regions displayed below";
@@ -400,181 +403,136 @@ regionUtils.regionUI = function (regionid) {
         regionUtils.addRegionClassUI (null)
         var regionsPanel = document.getElementById("markers-regions-panel-");
     }
-    var rPanel = HTMLElementUtils.createElement({
-        type: "div",
-        id: op + regionid + "_panel",
-        headingInnerText: regionid,
+    var trPanel = HTMLElementUtils.createElement({
+        type: "tr",
         extraAttributes: {
-            class: "card"
+            class: "regiontr",
+            id: op + regionid + "_tr"
         }
     });
-    regionsPanel.appendChild(rPanel);
-    var rpanelbody = HTMLElementUtils.createElement({
-        type: "div",
+    regionsPanel.appendChild(trPanel);
+    
+    // Get Class name and Region name
+    if (regionUtils._regions[regionid].regionClass) {
+        rClass = regionUtils._regions[regionid].regionClass;
+        //regionclasstext.value = rClass;
+    }
+    else {
+        rClass = "";
+    }
+    if (regionUtils._regions[regionid].regionName) {
+        rName = regionUtils._regions[regionid].regionName;
+        //if (regionUtils._regions[regionid].regionName != regionid)
+        //    regionnametext.value = rName;
+    } else {
+        rName = regionid;
+    }
+    var tdPanel = HTMLElementUtils.createElement({
+        type: "td",
+    });
+    var checkinput = HTMLElementUtils.inputTypeCheckbox({
+        id: regionid + "_fill_ta",
+        class: "form-check-input",
+        value: regionUtils._regions[regionid].filled,
+        eventListeners: { click: function () {
+            regionUtils._regions[regionid].filled = this.checked;
+            regionUtils.fillRegion(regionid, regionUtils._regions[regionid].filled);
+        }}
+    });
+    tdPanel.appendChild(checkinput);
+    trPanel.appendChild(tdPanel);
+    
+    var tdPanel = HTMLElementUtils.createElement({
+        type: "td",
+        id: op + regionid + "_name",
+    });
+    var regionnametext = HTMLElementUtils.inputTypeText({
+        id: regionid + "_name_ta",
         extraAttributes: {
-            class: "card-body"
+            size:9,
+            placeholder: "name",
+            value: rName,
+            class: "col mx-1 input-sm form-control form-control-sm"
         }
     });
-    rPanel.appendChild(rpanelbody);
-
-    var rpanelheading = HTMLElementUtils.createElement({
-        type: "div",
+    regionnametext.addEventListener('change', function () {
+        regionUtils.changeRegion(regionid);
+    });
+    tdPanel.appendChild(regionnametext);
+    trPanel.appendChild(tdPanel);
+    var tdPanel = HTMLElementUtils.createElement({
+        type: "td",
+    });
+    var regionclasstext = HTMLElementUtils.inputTypeText({
+        id: regionid + "_class_ta",
         extraAttributes: {
-            class: "card-title"
+            size: 9,
+            placeholder: "class",
+            value: rClass,
+            class: "col mx-1 input-sm form-control form-control-sm"
         }
     });
-    rpanelbody.appendChild(rpanelheading);
-    var rpanelcontent = HTMLElementUtils.createElement({
-        type: "div",
-        extraAttributes: {
-            class: "card-body py-0"
-        }
+    regionclasstext.addEventListener('change', function () {
+        regionUtils.changeRegion(regionid);
     });
-    rpanelbody.appendChild(rpanelcontent);
-
-    // Content of the card
-    var form = HTMLElementUtils.createForm({
-        extraAttributes: {
-            class:"form-inline",
-            onsubmit:"return false;"
-        }
-    });
-    rpanelcontent.appendChild(form);
-    var row1 = HTMLElementUtils.createElement({
-        type: "div",
-        extraAttributes: {
-            class: "row my-1"
-        }
-    });
-    var row2 = HTMLElementUtils.createElement({
-        type: "div",
-        extraAttributes: {
-            class: "row my-1"
-        }
-    });
-    var row3 = HTMLElementUtils.createElement({
-        type: "div",
-        extraAttributes: {
-            class: "row region-histogram my-1"
-        }
-    });
-    form.appendChild(row1);
-    form.appendChild(row2);
-    form.appendChild(row3);
+    tdPanel.appendChild(regionclasstext);
+    trPanel.appendChild(tdPanel);
 
     var regioncolorinput = HTMLElementUtils.inputTypeColor({
         id: regionid + "_color_input",
         extraAttributes: {
-            class: "col-2 mx-1 form-control form-control-color"
+            class: "mx-1 form-control form-control-sm form-control-color-sm"
         }
     });
-
+    regioncolorinput.addEventListener('change', function () {
+        regionUtils.changeRegion(regionid);
+    });
     if (document.getElementById(regionid + "_poly")) {
         var regionpoly = document.getElementById(regionid + "_poly");
         regioncolorinput.setAttribute("value", regionpoly.getAttribute("polycolor"));
     } else if (regionUtils._regions[regionid].polycolor) {
         regioncolorinput.setAttribute("value", regionUtils._regions[regionid].polycolor);
     }
-    row1.appendChild(regioncolorinput);
+    var tdPanel = HTMLElementUtils.createElement({
+        type: "td",
+    });
+    tdPanel.appendChild(regioncolorinput);
+    trPanel.appendChild(tdPanel);
 
-    var regionnametext = HTMLElementUtils.inputTypeText({
-        id: regionid + "_name_ta",
-        extraAttributes: {
-            size:9,
-            placeholder: "name",
-            class: "col mx-1 input-sm form-control"
-        }
+    trPanel.appendChild(tdPanel);
+    var tdPanel = HTMLElementUtils.createElement({
+        type: "td"
     });
-    row1.appendChild(regionnametext);
-
-    var regionclasstext = HTMLElementUtils.inputTypeText({
-        id: regionid + "_class_ta",
-        extraAttributes: {
-            size: 9,
-            placeholder: "class",
-            class: "col mx-1 input-sm form-control"
-        }
-    });
-    row1.appendChild(regionclasstext);
-
-    //button to set new features of region
-    var regionsetbutton = HTMLElementUtils.createButton({
-        id: regionid + "_set_btn",
-        innerText: "Set",
-        extraAttributes: {
-            parentRegion: regionid,
-            class: "col btn btn-primary btn-sm form-control mx-1"
-        }
-    });
-    regionsetbutton.addEventListener('click', function () {
-        interfaceUtils.changeRegionUI($(this));
-    });
-
-    //button to fill polygon
-    var regionsfillbutton = HTMLElementUtils.createButton({
-        id: regionid + "_fill_btn",
-        innerText: "Fill",
-        extraAttributes: {
-            parentRegion: regionid,
-            class: "col btn btn-primary btn-sm form-control mx-1"
-        }
-    });
-    regionsfillbutton.addEventListener('click', function () {
-        interfaceUtils.fillRegionUI($(this));
-    });
-
-    var regionanalyzebutton = HTMLElementUtils.createButton({
-        id: regionid + "_analyze_btn",
-        innerText: "Analyze",
-        extraAttributes: {
-            parentRegion: regionid,
-            class: "col btn btn-primary btn-sm form-control mx-1"
-        }
-    });
-    regionanalyzebutton.addEventListener('click', function () {
-        interfaceUtils.analyzeRegionUI($(this));
-    });
-
-    //button to remove region
     var regionsdeletebutton = HTMLElementUtils.createButton({
         id: regionid + "_delete_btn",
-        innerText: "Delete",
+        innerText: "<i class='bi bi-trash'></i>",
         extraAttributes: {
             parentRegion: regionid,
-            class: "col btn btn-primary btn-sm form-control mx-1"
+            class: "col btn btn-sm btn-primary form-control-sm mx-1"
         }
     });
     regionsdeletebutton.addEventListener('click', function () {
-        interfaceUtils.deleteRegionUI($(this));
+        regionUtils.deleteRegion(regionid);
     });
-
-    row2.appendChild(regionsetbutton);
-    row2.appendChild(regionanalyzebutton);
-    row2.appendChild(regionsfillbutton);
-    row2.appendChild(regionsdeletebutton);
-
-    var regionText = "";
-    var rClass = null;
-    var rName = null;
-
-    if (regionUtils._regions[regionid].regionClass) {
-        rClass = regionUtils._regions[regionid].regionClass;
-        regionclasstext.value = rClass;
-    }
-    if (regionUtils._regions[regionid].regionName) {
-        rName = regionUtils._regions[regionid].regionName;
-        if (regionUtils._regions[regionid].regionName != regionid)
-            regionnametext.value = rName;
-    } else {
-        rName = regionid;
-    }
-    regionText = rName;
-
-    if (rClass) {
-        regionText = regionText + " (" + rClass + ")";
-    }
-
-    rpanelheading.innerHTML = regionText;
+    tdPanel.appendChild(regionsdeletebutton);
+    trPanel.appendChild(tdPanel);
+    
+    var trPanelHist = HTMLElementUtils.createElement({
+        type: "tr",
+        extraAttributes: {
+            id: op + regionid + "_tr_hist"
+        }
+    });
+    trPanelHist.style.display="none";
+    regionsPanel.appendChild(trPanelHist);
+    var row = HTMLElementUtils.createElement({
+        type: "td",
+        extraAttributes: {
+            class: "region-histogram my-1",
+            colspan: "52"
+        }
+    });
+    trPanelHist.appendChild(row);
 }
 
 /**
@@ -638,9 +596,12 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
 
 /** Fill all regions  */
 regionUtils.fillAllRegions=function(){
-    for(var region in regionUtils._regions){
-        if (regionUtils._regions.hasOwnProperty(region)) {
-            regionUtils.fillRegion(region);
+    var allFilled = Object.values(regionUtils._regions).map(function(e) { return e.filled; }).includes(false);
+    for(var regionid in regionUtils._regions){
+        if (regionUtils._regions.hasOwnProperty(regionid)) {
+            regionUtils.fillRegion(regionid, allFilled);
+            if(document.getElementById(regionid + "_fill_ta"))
+                document.getElementById(regionid + "_fill_ta").checked = allFilled;
         }
     }
 }
@@ -648,12 +609,17 @@ regionUtils.fillAllRegions=function(){
 /** 
  * @param {String} regionid String id of region to fill
  * Given a region id, fill this region in the interface */
-regionUtils.fillRegion = function (regionid) {
-    if(regionUtils._regions[regionid].filled === 'undefined'){
-        regionUtils._regions[regionid].filled=true;
-    }else{
-        regionUtils._regions[regionid].filled=!regionUtils._regions[regionid].filled;
+regionUtils.fillRegion = function (regionid, value) {
+    if (value === undefined) {
+        // we toggle
+        if(regionUtils._regions[regionid].filled === 'undefined'){
+            value = true;
+        }
+        else {
+            value = !regionUtils._regions[regionid].filled;
+        }
     }
+    regionUtils._regions[regionid].filled=value;
     var newregioncolor = regionUtils._regions[regionid].polycolor;
     var d3color = d3.rgb(newregioncolor);
     var newStyle="";
@@ -675,9 +641,11 @@ regionUtils.deleteRegion = function (regionid) {
     regionPoly.parentElement.removeChild(regionPoly);
     delete regionUtils._regions[regionid];
     var op = tmapp["object_prefix"];
-    var rPanel = document.getElementById(op + regionid + "_panel");
+    var rPanel = document.getElementById(op + regionid + "_tr");
     if (rPanel) {
         rPanel.parentElement.removeChild(rPanel);
+        var rPanelHist = document.getElementById(op + regionid + "_tr_hist");
+        rPanelHist.parentElement.removeChild(rPanelHist);
     }
     regionUtils.updateAllRegionClassUI();
 }
@@ -697,7 +665,6 @@ regionUtils.deleteAllRegions = function () {
 }
 regionUtils.updateAllRegionClassUI = function (regionClass) {
     // get all region classes
-    console.log("updateAllRegionClassUI");
     var allRegionClasses = Object.values(regionUtils._regions).map(function(e) { return e.regionClass; })
     // get only unique values
     var singleRegionClasses = allRegionClasses.filter((v, i, a) => a.indexOf(v) === i);
@@ -712,7 +679,7 @@ regionUtils.updateAllRegionClassUI = function (regionClass) {
         }
     })
     Array.from(document.getElementsByClassName("accordion-item")).forEach(function(accordionItem) {
-        if (Array.from(accordionItem.getElementsByClassName("card")).length == 0) {
+        if (Array.from(accordionItem.getElementsByClassName("regiontr")).length == 0) {
             accordionItem.remove();
         }
     });
@@ -757,14 +724,6 @@ regionUtils.addRegionClassUI = function (regionClass) {
             }
         });
         accordion_header.appendChild(accordion_header_button);
-        var buttonRow = HTMLElementUtils.createElement({
-            type: "div",
-            extraAttributes: {
-                class: "row my-1 mx-2"
-            }
-        });
-        accordion_header.appendChild(buttonRow);
-            
         
         var accordion_content = HTMLElementUtils.createElement({
             type: "div",
@@ -776,31 +735,143 @@ regionUtils.addRegionClassUI = function (regionClass) {
             }
         });
         accordion_item.appendChild(accordion_content);
-        var regionPanel = HTMLElementUtils.createElement({
+        var buttonRow = HTMLElementUtils.createElement({
             type: "div",
             extraAttributes: {
-                class: "my-1",
-                id: "markers-regions-panel-" + regionClassID
+                class: "row my-1 mx-2"
             }
         });
-        accordion_content.appendChild(regionPanel);
-            
-        //button to fill polygon
-        var regionsfillbutton = HTMLElementUtils.createButton({
-            id: regionClassID + "_fill_btn",
-            innerText: "Fill group",
+        accordion_content.appendChild(buttonRow);
+        
+        var regionTable = HTMLElementUtils.createElement({
+            type: "table",
             extraAttributes: {
-                parentRegion: regionClassID,
-                class: "col btn btn-primary btn-sm form-control mx-1"
+                class: "table regions_table",
+                id: "markers-regions-table-" + regionClassID
             }
         });
-        regionsfillbutton.addEventListener('click', function () {
-            Object.values(regionUtils._regions).filter(
-                x => x.regionClass==regionClass
-            ).forEach(function(region){
-                regionUtils.fillRegion(region.id);
-            });
+        accordion_content.appendChild(regionTable);
+        var colg=document.createElement ("colgroup");
+        colg.innerHTML='<col width="5%"><col width="38%"><col width="37%"><col width="10%"><col width="10%">';
+        regionTable.appendChild(colg);
+        var tblHead = document.createElement("thead");
+        var tblHeadTr = document.createElement("tr");
+        tblHead.appendChild(tblHeadTr);
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Fill"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Name"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Class"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Color"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Delete"}));
+        regionTable.appendChild(tblHead);
+        var regionTbody = HTMLElementUtils.createElement({
+            type: "tbody",
+            id: "markers-regions-panel-" + regionClassID
         });
+        regionTable.appendChild(regionTbody);
+            
+        var trPanel = HTMLElementUtils.createElement({
+            type: "tr"
+        });
+        regionTbody.appendChild(trPanel);
+        
+        var tdPanel = HTMLElementUtils.createElement({
+            type: "td",
+        });
+        var checkinput = HTMLElementUtils.inputTypeCheckbox({
+            class: "form-check-input",
+            value: false,
+            eventListeners: { click: function () {
+                var newFill = this.checked;
+                groupRegions = Object.values(regionUtils._regions).filter(
+                    x => x.regionClass==regionClass
+                ).forEach(function (region) {
+                    region.filled = newFill;
+                    if (document.getElementById(region.id + "_fill_ta"))
+                        document.getElementById(region.id + "_fill_ta").checked = newFill;
+                    regionUtils.fillRegion(region.id, newFill);
+                });
+            }}
+        });
+        tdPanel.appendChild(checkinput);
+        trPanel.appendChild(tdPanel);
+        
+        var tdPanel = HTMLElementUtils.createElement({
+            type: "td",
+            innerHTML: "All"
+        });
+        trPanel.appendChild(tdPanel);
+        var tdPanel = HTMLElementUtils.createElement({
+            type: "td",
+        });
+        if (regionClass) rClass = regionClass; else rClass = "";
+        var regionclasstext = HTMLElementUtils.inputTypeText({
+            extraAttributes: {
+                size: 9,
+                placeholder: "class",
+                value: rClass,
+                class: "col mx-1 input-sm form-control form-control-sm"
+            }
+        });
+        regionclasstext.addEventListener('change', function () {
+            var newClass = this.value;
+            groupRegions = Object.values(regionUtils._regions).filter(
+                x => x.regionClass==regionClass
+            );
+            for (region of groupRegions) {
+                if (document.getElementById(region.id + "_class_ta"))
+                    document.getElementById(region.id + "_class_ta").value = newClass;
+                regionUtils.changeRegion(region.id);
+                region.regionClass = newClass;
+            };
+            regionUtils.updateAllRegionClassUI();
+        });
+        tdPanel.appendChild(regionclasstext);
+        trPanel.appendChild(tdPanel);
+    
+        var regioncolorinput = HTMLElementUtils.inputTypeColor({
+            extraAttributes: {
+                class: "mx-1 form-control form-control-sm form-control-color-sm"
+            }
+        });
+        regioncolorinput.addEventListener('change', function () {
+            var newColor = this.value;
+            groupRegions = Object.values(regionUtils._regions).filter(
+                x => x.regionClass==regionClass
+            )
+            for (region of groupRegions) {
+                region.polycolor = newColor;
+                if (document.getElementById(region.id + "_color_input"))
+                    document.getElementById(region.id + "_color_input").value = newColor;
+                regionUtils.changeRegion(region.id);
+            };
+        });
+        var tdPanel = HTMLElementUtils.createElement({
+            type: "td",
+        });
+        tdPanel.appendChild(regioncolorinput);
+        trPanel.appendChild(tdPanel);
+    
+        trPanel.appendChild(tdPanel);
+        var tdPanel = HTMLElementUtils.createElement({
+            type: "td"
+        });
+        var regionsdeletebutton = HTMLElementUtils.createButton({
+            innerText: "<i class='bi bi-trash'></i>",
+            extraAttributes: {
+                class: "col btn btn-sm btn-primary form-control-sm mx-1"
+            }
+        });
+        regionsdeletebutton.addEventListener('click', function () {
+            if (confirm('Are you sure you want to delete the whole '+regionClass+' group?')) {
+                groupRegions = Object.values(regionUtils._regions).filter(
+                    x => x.regionClass==regionClass
+                ).forEach(function (region) {
+                    regionUtils.deleteRegion(region.id);
+                });
+            }
+        });
+        tdPanel.appendChild(regionsdeletebutton);
+        trPanel.appendChild(tdPanel);
 
         var regionanalyzebutton = HTMLElementUtils.createButton({
             id: regionClassID + "_analyze_btn",
@@ -822,33 +893,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
                 regionUtils.analyzeRegion(region.id);
             });
         });
-
-        //button to remove region
-        var regionsdeletebutton = HTMLElementUtils.createButton({
-            id: regionClassID + "_delete_btn",
-            innerText: "Delete group",
-            extraAttributes: {
-                parentRegion: regionClassID,
-                class: "col btn btn-primary btn-sm form-control mx-1"
-            }
-        });
-        regionsdeletebutton.addEventListener('click', function () {
-            Object.values(regionUtils._regions).filter(
-                x => x.regionClass==regionClass
-            ).forEach(function(region){
-                regionUtils.deleteRegion(region.id);
-            });
-        });
-        emptyCol = HTMLElementUtils.createElement({
-            type: "div",
-            extraAttributes: {
-                class: "col-2"
-            }
-        });
-        buttonRow.appendChild(emptyCol);
         buttonRow.appendChild(regionanalyzebutton);
-        buttonRow.appendChild(regionsfillbutton);
-        buttonRow.appendChild(regionsdeletebutton);
 
     }
 }
@@ -857,64 +902,50 @@ regionUtils.addRegionClassUI = function (regionClass) {
  *     @param {String} regionid Region identifier
  *  Change the region properties like color, class name or region name */
 regionUtils.changeRegion = function (regionid) {
-    var op = tmapp["object_prefix"];
-    var newregioncolor = document.getElementById(regionid + "_color_input").value;
-    var d3color = d3.rgb(newregioncolor);
-    var rPanel = document.getElementById(op + regionid + "_panel");
-    if (regionUtils._regions[regionid].regionClass != document.getElementById(regionid + "_class_ta").value) {
-        if (document.getElementById(regionid + "_class_ta").value) {
-            regionUtils._regions[regionid].regionClass = document.getElementById(regionid + "_class_ta").value;
-            classID = HTMLElementUtils.stringToId(regionUtils._regions[regionid].regionClass);
-            regionUtils.addRegionClassUI (regionUtils._regions[regionid].regionClass)
-            $(rPanel).detach().appendTo('#markers-regions-panel-' + classID)
-        } else {
-            regionUtils._regions[regionid].regionClass = null;
-            regionUtils.addRegionClassUI (null)
-            $(rPanel).detach().appendTo('#markers-regions-panel-')
+    if (document.getElementById(regionid + "_name_ta")) {
+        var op = tmapp["object_prefix"];
+        var rPanel = document.getElementById(op + regionid + "_tr");
+        var rPanel_hist = document.getElementById(op + regionid + "_tr_hist");
+        if (regionUtils._regions[regionid].regionClass != document.getElementById(regionid + "_class_ta").value) {
+            if (document.getElementById(regionid + "_class_ta").value) {
+                regionUtils._regions[regionid].regionClass = document.getElementById(regionid + "_class_ta").value;
+                classID = HTMLElementUtils.stringToId(regionUtils._regions[regionid].regionClass);
+                regionUtils.addRegionClassUI (regionUtils._regions[regionid].regionClass)
+                $(rPanel).detach().appendTo('#markers-regions-panel-' + classID)
+                $(rPanel_hist).detach().appendTo('#markers-regions-panel-' + classID)
+            } else {
+                regionUtils._regions[regionid].regionClass = null;
+                regionUtils.addRegionClassUI (null)
+                classID = HTMLElementUtils.stringToId(regionUtils._regions[regionid].regionClass);
+                $(rPanel).detach().appendTo('#markers-regions-panel-')
+                $(rPanel_hist).detach().appendTo('#markers-regions-panel-')
+            }
+            regionUtils.updateAllRegionClassUI();
         }
-        regionUtils.updateAllRegionClassUI();
+        if (document.getElementById(regionid + "_name_ta").value) {
+            regionUtils._regions[regionid].regionName = document.getElementById(regionid + "_name_ta").value;
+        } else {
+            regionUtils._regions[regionid].regionName = regionid;
+        }
+        var newregioncolor = document.getElementById(regionid + "_color_input").value;
+        regionUtils._regions[regionid].polycolor = newregioncolor;
     }
-    if (document.getElementById(regionid + "_name_ta").value) {
-        regionUtils._regions[regionid].regionName = document.getElementById(regionid + "_name_ta").value;
-    } else {
-        regionUtils._regions[regionid].regionName = regionid;
-    }
-    var regionClass = "";
-    if (regionUtils._regions[regionid].regionClass) regionClass = " (" + regionUtils._regions[regionid].regionClass + ")";
-    document.querySelector("#" + op + regionid + "_panel .card-title").innerHTML = regionUtils._regions[regionid].regionName + regionClass;
-
-    var newStyle = "stroke-width: " + regionUtils._polygonStrokeWidth.toString() + "; stroke: " + d3color.rgb().toString() + "; fill: none;";
-    regionUtils._regions[regionid].polycolor = newregioncolor;
-    //console.log(newStyle);
-
-    document.getElementById(regionid + "_poly").setAttribute("style", newStyle);
-
+    regionUtils.updateRegionDraw(regionid);
 }
 
 /** 
  *     @param {String} regionid Region identifier
- *  Change the panel to match the region properties */
-regionUtils.loadTextRegionUI = function (regionid) {
-    var op = tmapp["object_prefix"];
-    var rPanel = document.getElementById(op + regionid + "_panel");
-    var regionText = "";
-    var rClass = null;
-    var rName = null;
+ *  Change the region properties like color, class name or region name */
+ regionUtils.updateRegionDraw = function (regionid) {
+    var newregioncolor = regionUtils._regions[regionid].polycolor;
+    var d3color = d3.rgb(newregioncolor);
+    var newStyle = "stroke-width: " + regionUtils._polygonStrokeWidth.toString() + "; stroke: " + d3color.rgb().toString() + "; fill: none;";
+    document.getElementById(regionid + "_poly").setAttribute("style", newStyle);
+    if (regionUtils._regions[regionid].filled === undefined)
+        regionUtils._regions[regionid].filled = false;
+    regionUtils.fillRegion(regionid, regionUtils._regions[regionid].filled);
+ }
 
-    if (regionUtils._regions[regionid].regionClass) {
-        rClass = regionUtils._regions[regionid].regionClass;
-    }
-    if (regionUtils._regions[regionid].regionName) {
-        rName = regionUtils._regions[regionid].regionName;
-    } else {
-        rName = regionid;
-    }
-    regionText = rName;
-
-    console.log(rName + rClass + regionText);
-
-    HTMLElementUtils.getFirstChildByClass(rPanel, "card-title").innerHTML = regionText;
-}
 /** 
  *  regionUtils */
 regionUtils.analyzeRegion = function (regionid) {
@@ -958,7 +989,7 @@ regionUtils.analyzeRegion = function (regionid) {
     }
     regionUtils._regions[regionid].barcodeHistogram.sort(compare);
 
-    var rPanel = document.getElementById(op + regionid + "_panel");
+    var rPanel = document.getElementById(op + regionid + "_tr_hist");
     if (rPanel) {
         var rpanelbody = rPanel.getElementsByClassName("region-histogram")[0];
         histodiv = document.getElementById(regionid + "_histogram");
@@ -996,6 +1027,7 @@ regionUtils.analyzeRegion = function (regionid) {
             }));
         }
         rpanelbody.appendChild(div);
+        $(rPanel).show();
     }
 }
 /** 
@@ -1034,7 +1066,6 @@ regionUtils.pointsInRegionsToCSV=function(){
             p.regionClass=regionUtils._regions[r].regionClass
             alldata.push(p);
         });
-        //console.log(alldata);    
     }
     var csvRows=[];
     var possibleheaders=Object.keys(alldata[0]);
