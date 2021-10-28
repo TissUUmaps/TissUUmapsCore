@@ -226,14 +226,7 @@
         });
     }
     if (state.regions) {
-        var maxregionid=0;
-        for(i in state.regions){
-            //console.log(regions[i]);
-            regionUtils.createImportedRegion(state.regions[i]);
-            var numbers = state.regions[i].id.match(/\d+/g).map(Number);
-            if(numbers[0]>maxregionid) maxregionid=numbers[0];
-        }
-        regionUtils._currentRegionId=maxregionid;		
+        regionUtils.regionUtils.JSONValToRegions(state.regions);
     }
     if (state.regionFile) {
         regionUtils.JSONToRegions(state.regionFile);

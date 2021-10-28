@@ -296,28 +296,6 @@ regionUtils.geoJSON2regions = function (geoJSONObjects) {
 }
 
 /** 
- * @param {Object} JSON formatted region to import
- *  When regions are imported, create all objects for it from a region object */
-regionUtils.createImportedRegion = function (region) {
-    var canvas = overlayUtils._d3nodes[tmapp["object_prefix"] + "_regions_svgnode"].node();
-    regionsobj = d3.select(canvas);
-
-    regionUtils._regions[region.id] = region;
-    var hexcolor = region.polycolor;
-    if(region.len==0){
-        console.log(region.id+" has length 0, recalculating length");
-        region.len=region.points.length;
-    }
-    regionsobj.append('path').attr("d", regionUtils.pointsToPath(region.points)).attr("id", region.id + "_poly")
-        .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-        .style("stroke", hexcolor).style("fill", "none");
-    regionUtils.regionUI(region.id);
-    if (region.filled) {
-        regionUtils.fillRegion(region.id, region.filled)
-    }
-}
-
-/** 
  * @param {List} points List of list of list of points representing a path
  * Given points' coordinates, returns a path string */
 regionUtils.pointsToPath = function (points) {
