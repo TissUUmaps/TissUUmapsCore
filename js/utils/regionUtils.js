@@ -656,7 +656,7 @@ regionUtils.updateAllRegionClassUI = function (regionClass) {
             if (numRegions > 1) spanElS.innerText = "s"; else spanElS.innerText = ""; 
         }
     })
-    Array.from(document.getElementsByClassName("accordion-item")).forEach(function(accordionItem) {
+    Array.from(document.getElementsByClassName("region-accordion")).forEach(function(accordionItem) {
         if (Array.from(accordionItem.getElementsByClassName("regiontr")).length == 0) {
             accordionItem.remove();
         }
@@ -674,7 +674,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         var accordion_item = HTMLElementUtils.createElement({
             type: "div",
             extraAttributes: {
-                class: "accordion-item",
+                class: "accordion-item region-accordion",
                 id: "regionClassItem-" + regionClassID
             }
         });
