@@ -129,7 +129,8 @@ regionUtils.closePolygon = function () {
     regionUtils._currentPoints = null;
     regionsobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionid].points)).attr("id", regionid + "_poly")
         .attr("class", "regionpoly").attr("polycolor", hexcolor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-        .style("stroke", hexcolor).style("fill", "none");
+        .style("stroke", hexcolor).style("fill", "none")
+        .append('title').text(regionid).attr("id","path-title-" + regionid);
     regionUtils.updateAllRegionClassUI();
     $(document.getElementById("regionClass-")).collapse("show");
 
@@ -279,18 +280,17 @@ regionUtils.geoJSON2regions = function (geoJSONObjects) {
             regionId += "_" + (Math.random() + 1).toString(36).substring(7);
         }
         regionUtils.addRegion(coordinates, regionId, hexColor, geoJSONObjClass);
+        regionUtils._regions[regionId].regionName = regionName;
         regionobj = d3.select(canvas).append('g').attr('class', "mydrawingclass");
         regionobj.append('path').attr("d", regionUtils.pointsToPath(regionUtils._regions[regionId].points)).attr("id", regionId + "_poly")
             .attr("class", "regionpoly").attr("polycolor", hexColor).style('stroke-width', regionUtils._polygonStrokeWidth.toString())
-            .style("stroke", hexColor).style("fill", "none");
+            .style("stroke", hexColor).style("fill", "none")
+            .append('title').text(regionName).attr("id","path-title-" + regionId);
         
         if (document.getElementById(regionId + "_class_ta")) {
             document.getElementById(regionId + "_class_ta").value = geoJSONObjClass;
             document.getElementById(regionId + "_name_ta").value = regionName;
             regionUtils.changeRegion(regionId);
-        }
-        else {
-            regionUtils._regions[regionId].regionName = regionName;
         }
     });
 }
@@ -923,6 +923,9 @@ regionUtils.changeRegion = function (regionid) {
     if (regionUtils._regions[regionid].filled === undefined)
         regionUtils._regions[regionid].filled = false;
     regionUtils.fillRegion(regionid, regionUtils._regions[regionid].filled);
+    if (regionUtils._regions[regionid].regionName) {rName = regionUtils._regions[regionid].regionName;}
+    else {rName = regionid;}
+    document.getElementById("path-title-" + regionid).innerHTML = rName;
  }
 
 /** 
