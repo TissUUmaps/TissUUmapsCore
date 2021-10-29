@@ -1302,6 +1302,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             escapedName=tree["treeName"];
 
         var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_check","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+        check0.checked = true; 
         td0.appendChild(check0);
 
         //var p1=HTMLElementUtils.createElement({"kind":"p","id":uid+"_"+escapedID+"_group"});

@@ -404,6 +404,11 @@ glUtils.loadMarkers = function(uid) {
         }
     }
 
+    if (!(uid + "_markers" in glUtils._buffers)) {
+        document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.updateColorLUTTextures);
+        document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.draw);
+    }
+
     // Create WebGL objects (if this has not already been done)
     if (!(uid + "_markers" in glUtils._buffers))
         glUtils._buffers[uid + "_markers"] = glUtils._createMarkerBuffer(gl, numPoints);
@@ -520,7 +525,7 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
         const inputs = interfaceUtils._mGenUIFuncs.getGroupInputs(uid, key);
         const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
         const shape = "shape" in inputs ? inputs["shape"] : "circle";
-        const visible = true;  // Use hardcoded value for now (TODO)
+        const visible = "visible" in inputs ? inputs["visible"] : true;
         const shapeIndex = markerUtils._symbolStrings.indexOf(shape);
 
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
@@ -535,6 +540,16 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4096, 1, 0, gl.RGBA,
                   gl.UNSIGNED_BYTE, bytedata);
     gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+glUtils.updateColorLUTTextures = function() {
+    const canvas = document.getElementById("gl_canvas");
+    const gl = canvas.getContext("webgl", glUtils._options);
+
+    for (let [uid, data] of Object.entries(dataUtils.data)) {
+        glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
+    }
 }
 
 
