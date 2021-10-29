@@ -19,6 +19,7 @@ glUtils = {
     // and is easy to delete when closing a marker tab...)
     _numPoints: {},              // {uid: numPoints, ...}
     _markerScalarRange: {},      // {uid: [minval, maxval], ...}
+    _markerScalarPropertyName: {},  // {uid: string, ...}
     _markerOpacity: {},          // {uid: alpha, ...}
     _useColorFromMarker: {},     // {uid: boolean, ...}
     _useColorFromColormap: {},   // {uid: boolean, ...}
@@ -427,6 +428,7 @@ glUtils.loadMarkers = function(uid) {
     glUtils._numPoints[uid] = numPoints;
     glUtils._markerOpacity[uid] = 1.0;  // TODO
     glUtils._markerScalarRange[uid] = scalarRange;
+    glUtils._markerScalarPropertyName[uid] = scalarPropertyName;
     glUtils._colorscaleName[uid] = colorscaleName;
     glUtils._useColorFromMarker[uid] = useColorFromMarker;
     glUtils._useColorFromColormap[uid] = useColorFromColormap;
@@ -434,7 +436,7 @@ glUtils.loadMarkers = function(uid) {
     glUtils._usePiechartFromMarker[uid] = usePiechartFromMarker;
     if (useColorFromColormap) {
         glUtils._updateColorScaleTexture(gl, uid, glUtils._textures[uid + "_colorscale"]);
-        glUtils._updateColorbarCanvas(colorscaleName, glUtils._colorscaleData[uid], scalarPropertyName, scalarRange);
+        glUtils._updateColorbarCanvas();
     } else {
         glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
     }
@@ -547,7 +549,7 @@ glUtils.updateColorLUTTextures = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
 
-    for (let [uid, data] of Object.entries(dataUtils.data)) {
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
         glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
     }
 }
@@ -620,52 +622,72 @@ glUtils._updateColorScaleTexture = function(gl, uid, texture) {
 }
 
 
-glUtils._updateColorbarCanvas = function(colorscaleName, colorscaleData, propertyName, propertyRange) {
+glUtils._updateColorbarCanvas = function() {
     const canvas = document.getElementById("colorbar_canvas");
     const ctx = canvas.getContext("2d");
 
-    // TODO We still need to sort out how to handle colorbars for multiple
-    // marker tabs, etc., so this code is commented out for now
-    /*
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if (!glUtils._showColorbar || colorscaleName == "null" ||
-        colorscaleName == "ownColorFromColumn") return;  // FIXME
-
-    const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
-    const numStops = 32;
-    for (let i = 0; i < numStops; ++i) {
-        const normalized = i / (numStops - 1);
-        const index = Math.floor(normalized * 255.99);
-        const r = Math.floor(colorscaleData[4 * index + 0]);
-        const g = Math.floor(colorscaleData[4 * index + 1]);
-        const b = Math.floor(colorscaleData[4 * index + 2]);
-        gradient.addColorStop(normalized, "rgb(" + r + "," + g + "," + b + ")");
+    // Determine canvas height needed to show colorbars for all markersets that
+    // have colormaps
+    let canvasHeight = 0;
+    const rowHeight = 96;  // Note: hardcoded value
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
+        if (glUtils._showColorbar && glUtils._useColorFromColormap[uid])
+            canvasHeight += rowHeight;
     }
 
-    // Draw colorbar (with outline)
-    ctx.fillStyle = gradient;
-    ctx.fillRect(64, 64, 256, 16);
-    ctx.strokeStyle = "#555";
-    ctx.strokeRect(64, 64, 256, 16);
+    // Resize and clear canvas
+    ctx.canvas.height = canvasHeight;
+    ctx.canvas.style.marginTop = -canvasHeight + "px";
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    if (ctx.canvas.height == 0) return;  // Nothing more to do for empty canvas
 
-    // Convert range annotations to scientific notation if they may overflow
-    let propertyMin = propertyRange[0].toString();
-    let propertyMax = propertyRange[1].toString();
-    if (propertyMin.length > 9) propertyMin = propertyRange[0].toExponential(5);
-    if (propertyMax.length > 9) propertyMax = propertyRange[1].toExponential(5);
+    // Create colorbars for the markersets
+    let yOffset = 0;
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
+        if (!glUtils._useColorFromColormap[uid]) continue;
 
-    // Draw annotations (with drop shadow)
-    ctx.font = "16px Arial";
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#000";  // Shadow color
-    ctx.fillText(propertyName, ctx.canvas.width/2+1, 32+1);
-    ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 56+1);
-    ctx.fillText(propertyMax, ctx.canvas.width/2+128+1, 56+1);
-    ctx.fillStyle = "#fff";  // Text color
-    ctx.fillText(propertyName, ctx.canvas.width/2, 32);
-    ctx.fillText(propertyMin, ctx.canvas.width/2-128, 56);
-    ctx.fillText(propertyMax, ctx.canvas.width/2+128, 56);
-    */
+        const propertyRange = glUtils._markerScalarRange[uid];
+        const propertyName = glUtils._markerScalarPropertyName[uid];
+        const colorscaleData = glUtils._colorscaleData[uid];
+
+        // Define gradient for color scale
+        const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
+        const numStops = 32;
+        for (let i = 0; i < numStops; ++i) {
+            const normalized = i / (numStops - 1);
+            const index = Math.floor(normalized * 255.99);
+            const r = Math.floor(colorscaleData[4 * index + 0]);
+            const g = Math.floor(colorscaleData[4 * index + 1]);
+            const b = Math.floor(colorscaleData[4 * index + 2]);
+            gradient.addColorStop(normalized, "rgb(" + r + "," + g + "," + b + ")");
+        }
+
+        // Draw colorbar (with outline)
+        ctx.fillStyle = gradient;
+        ctx.fillRect(64, 64 + yOffset, 256, 16);
+        ctx.strokeStyle = "#555";
+        ctx.strokeRect(64, 64 + yOffset, 256, 16);
+
+        // Convert range annotations to scientific notation if they may overflow
+        let propertyMin = propertyRange[0].toString();
+        let propertyMax = propertyRange[1].toString();
+        if (propertyMin.length > 9) propertyMin = propertyRange[0].toExponential(5);
+        if (propertyMax.length > 9) propertyMax = propertyRange[1].toExponential(5);
+
+        // Draw annotations (with drop shadow)
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#000";  // Shadow color
+        ctx.fillText(propertyName, ctx.canvas.width/2+1, 32+1 + yOffset);
+        ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 56+1 + yOffset);
+        ctx.fillText(propertyMax, ctx.canvas.width/2+128+1, 56+1 + yOffset);
+        ctx.fillStyle = "#fff";  // Text color
+        ctx.fillText(propertyName, ctx.canvas.width/2, 32 + yOffset);
+        ctx.fillText(propertyMin, ctx.canvas.width/2-128, 56 + yOffset);
+        ctx.fillText(propertyMax, ctx.canvas.width/2+128, 56 + yOffset);
+
+        yOffset += rowHeight;  // Move to next colorbar row
+    }
 }
 
 
@@ -678,8 +700,8 @@ glUtils._createColorbarCanvas = function() {
     canvas.id = "colorbar_canvas";
     canvas.width = "384";  // Fixed width in pixels
     canvas.height = "96";  // Fixed height in pixels
-    canvas.style = "position:relative; float:left; width:31%; left:68%; " +
-                   "margin-top:-9%; z-index:20; pointer-events:none";
+    canvas.style = "position:relative; float:right; width:384px; right:0px; " +
+                   "margin-top:-96px; z-index:20; pointer-events:none";
 }
 
 
