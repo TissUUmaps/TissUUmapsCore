@@ -200,6 +200,10 @@ dataUtils.updateViewOptions = function(event){
 
     }
 
+    // Make sure that slider for global marker size is shown
+    if (interfaceUtils.getElementById("ISS_globalmarkersize"))
+        interfaceUtils.getElementById("ISS_globalmarkersize").classList.remove("d-none");
+
     glUtils.loadMarkers(data_id);
     glUtils.draw();
 }
