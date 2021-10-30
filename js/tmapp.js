@@ -165,7 +165,8 @@ tmapp.options_osd = {
     visibilityRatio: 1,
     showNavigationControl: false,
     maxImageCacheCount:500,
-    imageSmoothingEnabled:false
+    imageSmoothingEnabled:false,
+    preserveImageSizeOnResize: true
 }
 
 function toggleFullscreen() {

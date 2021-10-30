@@ -353,6 +353,12 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
     return thisChild;
 }
 
+/** Create an id from any string */
+HTMLElementUtils.stringToId = function (inputString) {
+    if (!inputString) return "";
+    return inputString.replace(/\W/g, '')
+}
+
 HTMLElementUtils.createDLSelect = function(downloadRow, innerText, callback, comment, options) {
     var row = HTMLElementUtils.createRow(null);
     var selectDiv = document.createElement("div");
@@ -389,7 +395,7 @@ HTMLElementUtils.createDLSelect = function(downloadRow, innerText, callback, com
     return row;
 }
 
-HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, expectedCSV, settings) {
+HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, expectedCSV, autoLoad, settings) {
     var downloadRow = document.getElementById("ISS_rowDownloadMarkers");
     callback = function(e, params){
         if (settings) {
@@ -399,19 +405,27 @@ HTMLElementUtils.createDLSelectMarkers = function(innerText, dataURLs, comment, 
         }
         var dataURL = params.selected;
         if (dataURL == "") return;
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"gene");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("gene", expectedCSV);
         dataUtils.XHRCSV(dataURL);
     }
-    options = [{"value":"","text":"Select a gene"}];
+    if (autoLoad) {
+        options = [];
+    }
+    else {
+        options = [{"value":"","text":"Select from list"}];
+    }
     dataURLs.forEach (function (dataURL) {
         options.push({
             "value": dataURL,
-            "text": dataURL.split('/').reverse()[0]
+            "text": dataURL.split('/').reverse()[0].replaceAll('_', ' ').replaceAll('.csv', '')
         })
     });
     HTMLElementUtils.createDLSelect(downloadRow, innerText, callback, comment, options);
-    var label = document.getElementById("label_ISS_csv");
-    label.innerHTML = "Or import gene expression from CSV file:";
+    //var label = document.getElementById("label_ISS_csv");
+    if (autoLoad) {
+        callback(null, {'selected':dataURLs[0]});
+    }
+    //else { label.innerHTML = "Or import gene expression from CSV file:"; }
 }
 
 HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
@@ -445,16 +459,16 @@ HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment, e
                 window[setting.module][setting.function] = setting.value;
             });
         }
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"gene");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("gene", expectedCSV);
         dataUtils.XHRCSV(dataURL);
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_ISS_csv");
+    //var label = document.getElementById("label_ISS_csv");
     if (autoLoad) {
         callback(null);
         buttonRow.style.display="none";
     }
-    else {label.innerHTML = "Or import gene expression from CSV file:";}
+    //else {label.innerHTML = "Or import gene expression from CSV file:";}
 }
 
 HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment, expectedCSV, autoLoad, settings) {
@@ -465,16 +479,16 @@ HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment,
                 window[setting.module][setting.function] = setting.value;
             });
         }
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV,"morphology");
+        if (expectedCSV !== undefined) dataUtils.setExpectedCSV("morphology", expectedCSV);
         dataUtils.readCSV("morphology",dataURL)
     }
     var buttonRow = HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_CP_csv");
+    //var label = document.getElementById("label_CP_csv");
     if (autoLoad) {
         callback(null);
         buttonRow.style.display="none";
     }
-    else {label.innerHTML = "Or import cell morphology from CSV file:";}
+    //else {label.innerHTML = "Or import cell morphology from CSV file:";}
 }
 
 HTMLElementUtils.createDLButtonRegions = function(innerText, dataURL, comment, autoLoad, settings) {

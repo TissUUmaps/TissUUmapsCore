@@ -226,14 +226,7 @@
         });
     }
     if (state.regions) {
-        var maxregionid=0;
-        for(i in state.regions){
-            //console.log(regions[i]);
-            regionUtils.createImportedRegion(state.regions[i]);
-            var numbers = state.regions[i].id.match(/\d+/g).map(Number);
-            if(numbers[0]>maxregionid) maxregionid=numbers[0];
-        }
-        regionUtils._currentRegionId=maxregionid;		
+        regionUtils.regionUtils.JSONValToRegions(state.regions);
     }
     if (state.regionFile) {
         regionUtils.JSONToRegions(state.regionFile);
@@ -251,6 +244,7 @@
                     markerFile.path,
                     markerFile.comment,
                     markerFile.expectedCSV,
+                    markerFile.autoLoad,
                     markerFile.settings
                 );        
             }
@@ -289,7 +283,11 @@
     }
     if (state.filename) {
         tmapp.slideFilename = state.filename;
-        document.getElementById("project_title").innerText = state.filename;
+        document.getElementById("project_title").innerHTML = state.filename;
+    }
+    if (state.link) {
+        document.getElementById("project_title").href = state.link;
+        document.getElementById("project_title").target = "_blank";
     }
     tmapp.layers = [];
     subfolder = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
@@ -326,9 +324,13 @@
     }
     if (projectUtils._hideCSVImport) {
         document.getElementById("ISS_data_panel").style.display="none";
-        document.getElementById("CP_data_panel").style.display="none";
     }
     setTimeout(function(){
+        if (state.rotate) {
+            var op = tmapp["object_prefix"];
+            var vname = op + "_viewer";
+            tmapp[vname].viewport.setRotation(state.rotate);
+        }
         if (state.boundingBox) {
             setTimeout(function() {
                 tmapp[tmapp["object_prefix"] + "_viewer"].viewport.fitBounds(new OpenSeadragon.Rect(state.boundingBox.x, state.boundingBox.y, state.boundingBox.width, state.boundingBox.height), false);

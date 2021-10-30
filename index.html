@@ -8,6 +8,8 @@
     <script src="vendor/d3/d3.v4.min.js"></script>
     <script src="vendor/d3-plugins/d3-scale-chromaticV3.js"></script>
     <script src="vendor/jquery-3.5.1/jquery-3.5.1.min.js"></script>
+    <script src="vendor/chosen/chosen.jquery.min.js"></script>
+    <link rel="stylesheet" href="vendor/chosen/chosen.min.css">
     <link rel="stylesheet" href="vendor/bootstrap-5.1.1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="vendor/bootstrap-icons-1.5.0/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
@@ -46,7 +48,7 @@
 
         <div class="row mx-0 flex-grow-1 overflow-hidden">
             <!-- Row for viewer  -->
-            <div class="col-8 px-0" id="ISS_viewer_container">
+            <div class="col px-0" id="ISS_viewer_container">
                 <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize
                 The ID will give the prefix for all the objects related to the viewer in this case ISS-->
                 <div id="ISS_viewer" class="ISS_viewer h-100">
@@ -62,7 +64,7 @@
                 </div>
             </div>
 
-            <div id="ISS_menu" class="ISS_menu col-4 mh-100 overflow-auto">
+            <div id="ISS_menu" class="ISS_menu col-xl-4 col-lg-5 col-md-6 col-sm-8 col-xs-12 mh-100 overflow-auto">
                 <div class="row pb-2">
                     <!-- Level 0 tabs -->
                     <ul id="main-tabs-menu" class="nav nav-tabs mt-1">
@@ -123,7 +125,9 @@
                                                                 <i id="ISS_drawregions_icon" class="bi bi-circle"></i>
                                                                 Draw regions
                                                             </button>
-                                                            <button id="ISS_fillregions_btn" class="btn btn-primary col mx-1" type="button">Fill regions</button>
+                                                            <button id="ISS_fillregions_btn" class="btn btn-primary col mx-1" type="button">Fill all regions</button>
+                                                        </div>
+                                                        <div id="regionAccordions">
                                                         </div>
                                                         <div id="markers-regions-div">
                                                             <div class="my-1" id="markers-regions-panel">
