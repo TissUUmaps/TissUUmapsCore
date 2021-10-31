@@ -685,10 +685,13 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
 
     allinputs["cb_cmap"]=interfaceUtils.getElementById(uid+"_cb-cmap-value");
     allinputs["cb_col"]=interfaceUtils.getElementById(uid+"_cb-col-value");    
+    allinputs["cb_gr_dict"]=interfaceUtils.getElementById(uid+"_cb-bygroup-dict-val");
 
     allinputs["scale_col"]=interfaceUtils.getElementById(uid+"_scale-col");   
-    allinputs["pie_col"]=interfaceUtils.getElementById(uid+"_piechart-col");   
-    allinputs["shape_col"]=interfaceUtils.getElementById(uid+"_shape-col");   
+    allinputs["pie_col"]=interfaceUtils.getElementById(uid+"_piechart-col");
+    allinputs["shape_col"]=interfaceUtils.getElementById(uid+"_shape-col-value");
+    allinputs["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed-value");
+    allinputs["shape_gr_dict"]=interfaceUtils.getElementById(uid+"_shape-bygroup-dict-val");
     console.log(allinputs);
     return allinputs;
 }
@@ -707,11 +710,15 @@ interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
 
     allradios["cb_gr_rand"]=interfaceUtils.getElementById(uid+"_cb-bygroup-rand");
     allradios["cb_gr_dict"]=interfaceUtils.getElementById(uid+"_cb-bygroup-dict");
-    allradios["cb_gr_key"]=interfaceUtils.getElementById(uid+"_cb-bygroup-key"); 
+    allradios["cb_gr_key"]=interfaceUtils.getElementById(uid+"_cb-bygroup-key");
 
-    allradios["pie_check"]=interfaceUtils.getElementById(uid+"_use-piecharts"); 
-    allradios["scale_check"]=interfaceUtils.getElementById(uid+"_use-scales"); 
-    allradios["shape_check"]=interfaceUtils.getElementById(uid+"_use-shapes"); 
+    allradios["pie_check"]=interfaceUtils.getElementById(uid+"_use-piecharts");
+    allradios["scale_check"]=interfaceUtils.getElementById(uid+"_use-scales");
+    allradios["shape_gr"]=interfaceUtils.getElementById(uid+"_shape-bygroup");
+    allradios["shape_gr_rand"]=interfaceUtils.getElementById(uid+"_shape-bygroup-rand");
+    allradios["shape_gr_dict"]=interfaceUtils.getElementById(uid+"_shape-bygroup-dict");
+    allradios["shape_col"]=interfaceUtils.getElementById(uid+"_shape-bypoint");
+    allradios["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed");
     
     
     
@@ -1153,43 +1160,103 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     //row 0
     row0=HTMLElementUtils.createRow({id:generated+"_shape_0"});
         collab=HTMLElementUtils.createColumn({"width":12});
-            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape-label"});
             labellab.innerHTML="<strong>Marker shape</strong>";
 
-        col00=HTMLElementUtils.createColumn({"width":6});
-            divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
-                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-shapes","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
-                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-shapes-label", "extraAttributes":{ "for":generated+"_use-shapes" }});
-                label0001.innerText="Use different shape per marker"
-                
-        col01=HTMLElementUtils.createColumn({"width":6});
-            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape-col-label", "extraAttributes":{ "for":generated+"_shape-col" }});
-            label010.innerText="Shape column"
-            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_shape-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
-            select011.disabled=true
+        colshape2=HTMLElementUtils.createColumn({"width":4});
+            divformcheck1shape=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
+                inputradio1shape=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup","extraAttributes":{ "name":generated+"_flexRadioShapeBy", "class":"form-check-input", "type":"radio", "checked":true}});
+                labelshapegroup=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-bygroup"}});
+                labelshapegroup.innerText="Shape by group";
+            
+            divformcheck2shape=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputradio2shape=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bypoint","extraAttributes":{"name":generated+"_flexRadioShapeBy","class":"form-check-input","type":"radio"}});
+                labelshapepoint=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-bypoint"}});
+                labelshapepoint.innerText="Shape by marker";
+            
+            divformcheck3shape=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputradio3shape=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-fixed","extraAttributes":{"name":generated+"_flexRadioShapeBy","class":"form-check-input","type":"radio"}});
+                labelshapefixed=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-fixed"}});
+                labelshapefixed.innerText="Use a fixed shape";
+        
+        //------------------------
+    
+        colshape3=HTMLElementUtils.createColumn({"width":8});
+            //create a whole group for shape by group, random, key and group name
+            divoptionscolgroup=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-col-group-options","extraAttributes":{"class": "renderOptionContainer"}});
+    
+                rowrand=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-shape-gr-rand","extraAttributes":{"class": "form-check"}});
+                    inputradioshapegrrand=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup-rand","extraAttributes":{ "name":generated+"_flexRadioShapeByGroup", "class":"form-check-input", "type":"radio", "checked":true}});
+                    labelshapegrouprand=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-bygroup-rand"}});
+                    labelshapegrouprand.innerHTML="Select shape iteratively<br>";
+    
+                rowdict=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-shape-gr-dict","extraAttributes":{"class": "form-check"}});
+                    inputradioshapegrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup-dict","extraAttributes":{ "name":generated+"_flexRadioShapeByGroup", "class":"form-check-input", "type":"radio"}});
+                    labelshapegroupdict=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-bygroup-dict"}});
+                    labelshapegroupdict.innerHTML="Use shape from dictionary<br>";
+                    inputtextshapegrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup-dict-val","extraAttributes":{ "class":"form-text-input", "type":"text", "placeholder":"{'key1':''#FFFFFF',...}"}});
+                    inputtextshapegrdict.disabled=true
+    
+            divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-col-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+                selectshapecol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_shape-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
+                labelshapecol=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape_col-colname-label","extraAttributes":{"for":generated+"_shape-col-value"} });
+                labelshapecol.innerText="Select shape column";
+            
+            divoptionsfixed=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-fixed-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+                labelfixedshapevalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_shape-fixed-label","extraAttributes":{"for":generated+"_shape-fixed-value"}});
+                labelfixedshapevalue.innerText="Select shape";
+                shapeoptions=[];
+                markerUtils._symbolStrings.forEach((sho)=>{ shapeoptions.push({"text":sho,"value":sho}) })
+                shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":generated+"_shape-fixed-value","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
+                shapeinput2.value=markerUtils._symbolStrings[0]
 
-    inputcheck0000.addEventListener("change", (event)=>{
-        var value=event.target.checked;
-        //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
-        //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
-        if(value)
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_shape-col","_use-piecharts","_piechart-col"],[0])
-        else 
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_shape-col","_use-piecharts"],[1])
-    })
 
+        //listeners
+
+    inputradio1shape.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_shape-col-options","_shape-col-group-options","_shape-fixed-options"],[1])
+    });
+    inputradio2shape.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_shape-col-options","_shape-col-group-options","_shape-fixed-options"],[0])
+    });
+    inputradio3shape.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_shape-col-options","_shape-col-group-options","_shape-fixed-options"],[2])
+    });
+    inputradioshapegrdict.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_shape-bygroup-dict-val"],[0])
+    });
+    inputradioshapegrrand.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_shape-bygroup-dict-val"],[])
+    });
+    
     row0.appendChild(collab)
         collab.appendChild(labellab)
 
-    row0.appendChild(col00)
-        col00.appendChild(divformcheck000)
-            divformcheck000.appendChild(inputcheck0000);
-            divformcheck000.appendChild(label0001);
-
-    row0.appendChild(col01);
-        col01.appendChild(label010);
-        col01.appendChild(select011);
-
+    row0.appendChild(colshape2);
+        colshape2.appendChild(divformcheck1shape);
+            divformcheck1shape.appendChild(inputradio1shape);
+            divformcheck1shape.appendChild(labelshapegroup);
+        colshape2.appendChild(divformcheck2shape);
+            divformcheck2shape.appendChild(inputradio2shape);
+            divformcheck2shape.appendChild(labelshapepoint);
+        colshape2.appendChild(divformcheck3shape);
+            divformcheck3shape.appendChild(inputradio3shape);
+            divformcheck3shape.appendChild(labelshapefixed);
+    row0.appendChild(colshape3);
+        colshape3.appendChild(divoptionscolgroup);    
+            divoptionscolgroup.appendChild(rowrand);
+                rowrand.appendChild(inputradioshapegrrand);
+                rowrand.appendChild(labelshapegrouprand);        
+            divoptionscolgroup.appendChild(rowdict);
+                rowdict.appendChild(inputradioshapegrdict);
+                rowdict.appendChild(labelshapegroupdict);
+                rowdict.appendChild(inputtextshapegrdict);
+        colshape3.appendChild(divoptionscol);
+            divoptionscol.appendChild(labelshapecol);
+            divoptionscol.appendChild(selectshapecol);
+        colshape3.appendChild(divoptionsfixed);
+            divoptionsfixed.appendChild(labelfixedshapevalue);
+            divoptionsfixed.appendChild(shapeinput2);
 
     return row0;
 }
@@ -1224,10 +1291,10 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
         //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
         //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
         if(value){
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_use-shapes","_shape-col","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[0]);
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_shape-bygroup","_shape-bypoint","_shape-fixed","_shape-bygroup-rand","_shape-bygroup-dict","_shape-col-value","_shape-fixed-value","_shape-col","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[0]);
         }
         else 
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_use-shapes","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[1,2,3,4,5,6]);
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_shape-bygroup","_shape-bypoint","_shape-fixed","_shape-bygroup-rand","_shape-bygroup-dict","_shape-col-value","_shape-fixed-value","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[1,2,3,4,5,6,7,8,9,10,11,12]);
     })
 
     row0.appendChild(collab)
@@ -1319,7 +1386,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     var data_obj = dataUtils.data[uid];
 
     var _selectedOptions=interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked(uid);
-
+    var _selectedDropDown=interfaceUtils._mGenUIFuncs.getTabDropDowns(uid);
 
     //I do this to know if I have name selected, and also to know where to draw the 
     //color from
@@ -1338,7 +1405,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     }
     else { 
         headopts.push("Group");
-        sortable["Group"] = "sorttable_sort";
+        sortable["Group"] = "sorttable_nosort";
     }
     
     var usename=false;
@@ -1464,12 +1531,24 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         if(!data_obj["_shape_col"]){
             td2 = HTMLElementUtils.createElement({"kind":"td"});
             var shapeoptions=[];
-            markerUtils._symbolStrings.forEach((sho)=>{ shapeoptions.push({"text":sho,"value":sho}) })
+            markerUtils._symbolStrings.forEach((sho,index)=>{ shapeoptions.push({"text":markerUtils._symbolUnicodes[index],"value":sho}) })
             shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
-            shapeinput2.value=markerUtils._symbolStrings[count]
-
-            count+=1;
-            count=count % markerUtils._symbolStrings.length;
+            if(_selectedOptions["shape_fixed"]){
+                shapeinput2.value=_selectedDropDown["shape_fixed"].value;
+            }else if(_selectedOptions["shape_gr_rand"]){
+                shapeinput2.value=markerUtils._symbolStrings[count];
+                count+=1;
+                count=count % markerUtils._symbolStrings.length;
+            }else if(_selectedOptions["shape_gr_dict"]){
+                try {
+                    shapeinput2.value=JSON.parse(_selectedDropDown["shape_gr_dict"].value)[tree["treeID"]];
+                }
+                catch (err){
+                    shapeinput2.value=markerUtils._symbolStrings[count];
+                    count+=1;
+                    count=count % markerUtils._symbolStrings.length;
+                }
+            }
 
             tr.appendChild(td2);
             td2.appendChild(shapeinput2);
@@ -1482,7 +1561,12 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             }else if(_selectedOptions["cb_gr_key"]){
                 thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
             }else if(_selectedOptions["cb_gr_dict"]){
-                thecolor=HTMLElementUtils.determinsticHTMLColor(escapedName);
+                try {
+                    thecolor=JSON.parse(_selectedDropDown["cb_gr_dict"].value)[tree["treeID"]];
+                }
+                catch (err){
+                    thecolor=overlayUtils.randomColor("hex");
+                }
             }
 
             var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});

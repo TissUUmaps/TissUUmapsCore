@@ -199,7 +199,7 @@ dataUtils.updateViewOptions = function(event){
         alert("No size column selected. Impossible to update view.");return;
     }
     // Use shape column
-    data_obj["_shape_col"]=(radios["shape_check"].checked ? inputs["shape_col"].value : null);
+    data_obj["_shape_col"]=(radios["shape_col"].checked ? inputs["shape_col"].value : null);
     if (data_obj["_shape_col"]=="null") {
         alert("No shape column selected. Impossible to update view.");return;
     }
@@ -215,6 +215,10 @@ dataUtils.updateViewOptions = function(event){
 
     menuui.appendChild(table);
     sorttable.makeSortable(table);
+    if(data_obj["_gb_col"]){
+        var myTH = table.getElementsByTagName("th")[1];
+        sorttable.innerSortFunction.apply(myTH, []);
+    }
     //shape UXXXX_grname_shape, color UXXXX_grname_color
 
     // Make sure that slider for global marker size is shown
@@ -241,6 +245,7 @@ dataUtils.createMenuFromCSV = function(data_id,datumExample) {
     var namesymbols=Object.getOwnPropertyNames(alldrops);
     namesymbols.forEach((drop)=>{
         if(drop=="cb_cmap") return; //if its colormaps dont fill it with csv but with d3 luts which are already there
+        if(drop=="shape_fixed") return; //if its shapes dont fill it with csv but with shape symbols which are already there
         if (!alldrops[drop]) return;
         alldrops[drop].innerHTML = "";
         var option = document.createElement("option");
