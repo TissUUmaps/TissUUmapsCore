@@ -214,6 +214,7 @@ dataUtils.updateViewOptions = function(event){
     menuui.innerText="";
 
     menuui.appendChild(table);
+    sorttable.makeSortable(table);
     //shape UXXXX_grname_shape, color UXXXX_grname_color
 
     // Make sure that slider for global marker size is shown
