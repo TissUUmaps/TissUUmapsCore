@@ -1326,31 +1326,39 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
 
     var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped marker_table"}});
     var thead=HTMLElementUtils.createElement({"kind":"thead"});
+    var thead2=HTMLElementUtils.createElement({"kind":"thead"});
     var theadrow=HTMLElementUtils.createElement({"kind":"tr"});
     var tbody=HTMLElementUtils.createElement({"kind":"tbody"});
 
     var headopts=[""];
+    var sortable = {}
     if(data_obj["_gb_col"]){
         headopts.push(data_obj["_gb_col"]);
+        sortable[data_obj["_gb_col"]] = "sorttable_sort";
     }
     else { 
         headopts.push("Group");
+        sortable["Group"] = "sorttable_sort";
     }
     
     var usename=false;
     if(data_obj["_gb_name"]){
         headopts.push(data_obj["_gb_name"]);
+        sortable[data_obj["_gb_name"]] = "sorttable_sort";
         usename=true;
     }
     headopts.push("Counts");
+    sortable["Counts"] = "sorttable_sort";
     if(!data_obj["_shape_col"]){
         headopts.push("Shape");
+        sortable["Shape"] = "sorttable_nosort";
     }
     if(!data_obj["_cb_col"]){
         headopts.push("Color");
+        sortable["Color"] = "sorttable_nosort";
     }
     headopts.forEach((opt)=>{
-        var th=HTMLElementUtils.createElement({"kind":"th","extraAttributes":{"scope":"col"}});
+        var th=HTMLElementUtils.createElement({"kind":"th","extraAttributes":{"scope":"col","class":sortable[opt]}});
         th.innerText=opt
         theadrow.appendChild(th);
     });
@@ -1361,7 +1369,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         // add All row
         
         //row
-        var tr=HTMLElementUtils.createElement({"kind":"tr"});
+        var tr=HTMLElementUtils.createElement({"kind":"tr","extraAttributes":{"class":"sorttable_nosort"}});
         //first spot for a check
         var td0=HTMLElementUtils.createElement({"kind":"td"});
         var td1=HTMLElementUtils.createElement({"kind":"td"});
@@ -1377,7 +1385,6 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         check0.checked = true; 
         td0.appendChild(check0);
         check0.addEventListener("input",(event)=>{
-            console.log("Click all!");
             clist = interfaceUtils.getElementsByClassName(uid+"-marker-input");
             for (var i = 0; i < clist.length; ++i) { clist[i].checked = event.target.checked; }
         });
@@ -1407,7 +1414,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             tr.appendChild(td3);
         }
 
-        tbody.appendChild(tr);
+        thead2.appendChild(tr);
     }
 
     var count=0;
@@ -1487,6 +1494,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     }
 
     table.appendChild(thead);
+    table.appendChild(thead2);
     table.appendChild(tbody);
 
     return table;
