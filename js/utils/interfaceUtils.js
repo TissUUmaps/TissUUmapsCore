@@ -1591,7 +1591,8 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
     if (data_obj["_groupgarden"].hasOwnProperty(key)) {
         const tree = data_obj["_groupgarden"][key];
         const escapedID = tree["treeID"].replace(" ","_");
-        const hasGroupUI = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape");
+        // Assume that element for visibility checkbox always exists in the UI
+        const hasGroupUI = interfaceUtils.getElementById(uid + "_" + escapedID + "_check");
 
         if (hasGroupUI) {
             inputs["visible"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_check").checked;

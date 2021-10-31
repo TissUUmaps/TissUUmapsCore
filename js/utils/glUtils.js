@@ -25,6 +25,7 @@ glUtils = {
     _useColorFromColormap: {},   // {uid: boolean, ...}
     _useScaleFromMarker: {},     // {uid: boolean, ...}
     _usePiechartFromMarker: {},  // {uid: boolean, ...}
+    _useShapeFromMarker: {},     // {uid: boolean, ...}
     _colorscaleName: {},         // {uid: colorscaleName, ...}
     _colorscaleData: {},         // {uid: array of RGBA values, ...}
     _barcodeToLUTIndex: {},      // {uid: dict, ...}
@@ -54,6 +55,7 @@ glUtils._markersVS = `
     uniform bool u_useColorFromMarker;
     uniform bool u_useColorFromColormap;
     uniform bool u_usePiechartFromMarker;
+    uniform bool u_useShapeFromMarker;
     uniform bool u_alphaPass;
     uniform float u_pickedMarker;
     uniform sampler2D u_colorLUT;
@@ -96,6 +98,12 @@ glUtils._markersVS = `
             float normalized = (a_position.w - range[0]) / (range[1] - range[0]);
             v_color.rgb = texture2D(u_colorscale, vec2(normalized, 0.5)).rgb;
             if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
+        }
+
+        if (u_useShapeFromMarker && v_color.a > 0.0) {
+            // Add one to marker index and normalize, to make things consistent
+            // with how marker visibility and shape is stored in the LUT
+            v_color.a = (floor(a_position.z / 4096.0) + 1.0) / 255.0;
         }
 
         if (u_usePiechartFromMarker && v_color.a > 0.0) {
@@ -355,6 +363,11 @@ glUtils.loadMarkers = function(uid) {
     const usePiechartFromMarker = dataUtils.data[uid]["_pie_col"] != null;
     const piechartPalette = glUtils._piechartPalette;
 
+    const shapePropertyName = dataUtils.data[uid]["_shape_col"];
+    const useShapeFromMarker = dataUtils.data[uid]["_shape_col"] != null;
+    const numShapes = Object.keys(markerUtils._symbolStrings).length;
+    let shapeIndex = 0;
+
     // Create vertex data for markers
     const positions = [], indices = [], scales = [];
     if (usePiechartFromMarker) {
@@ -380,16 +393,22 @@ glUtils.loadMarkers = function(uid) {
         for (let i = 0; i < numPoints; ++i) {
             if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
             if (useColorFromColormap) scalarValue = markerData[i][scalarPropertyName];
+            if (useShapeFromMarker) {
+                // Assume that it is the shape name that is stored in the data
+                shapeIndex = markerUtils._symbolStrings.indexOf(markerData[i][shapePropertyName]);
+                shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
+            }
+
             positions[4 * i + 0] = markerData[i][xPosName] / imageWidth;
             positions[4 * i + 1] = markerData[i][yPosName] / imageHeight;
-            positions[4 * i + 2] = barcodeToLUTIndex[markerData[i][keyName]];
+            positions[4 * i + 2] = barcodeToLUTIndex[markerData[i][keyName]] +
+                                   Number(shapeIndex) * 4096.0;
             positions[4 * i + 3] = useColorFromColormap ? Number(scalarValue)
                                                         : Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
 
             if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
             else scales[i] = 1.0;  // Marker scale factor
-
             if (useColorFromColormap) {
                 scalarRange[0] = Math.min(scalarRange[0], scalarValue);
                 scalarRange[1] = Math.max(scalarRange[1], scalarValue);
@@ -426,6 +445,7 @@ glUtils.loadMarkers = function(uid) {
     glUtils._useColorFromColormap[uid] = useColorFromColormap;
     glUtils._useScaleFromMarker[uid] = useScaleFromMarker;
     glUtils._usePiechartFromMarker[uid] = usePiechartFromMarker;
+    glUtils._useShapeFromMarker[uid] = useShapeFromMarker;
     if (useColorFromColormap) {
         glUtils._updateColorScaleTexture(gl, uid, glUtils._textures[uid + "_colorscale"]);
         glUtils._updateColorbarCanvas();
@@ -520,7 +540,8 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
         const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
         const shape = "shape" in inputs ? inputs["shape"] : "circle";
         const visible = "visible" in inputs ? inputs["visible"] : true;
-        const shapeIndex = markerUtils._symbolStrings.indexOf(shape);
+        // OBS! Need to clamp this value, since indexOf() can return -1
+        const shapeIndex = Math.max(0, markerUtils._symbolStrings.indexOf(shape));
 
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
@@ -765,6 +786,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromColormap"), glUtils._useColorFromColormap[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker[uid]);
+        gl.uniform1i(gl.getUniformLocation(program, "u_useShapeFromMarker"), glUtils._useShapeFromMarker[uid]);
         gl.uniform1f(gl.getUniformLocation(program, "u_pickedMarker"),
             glUtils._pickedMarker[0] == uid ? glUtils._pickedMarker[1] : -1);
         gl.activeTexture(gl.TEXTURE1);
