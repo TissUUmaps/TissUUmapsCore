@@ -337,8 +337,6 @@ glUtils.loadMarkers = function(uid) {
     const keyName = dataUtils.data[uid]["_gb_col"];
     const xPosName = dataUtils.data[uid]["_X"];
     const yPosName = dataUtils.data[uid]["_Y"];
-    const radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(uid);
-    const inputs = interfaceUtils._mGenUIFuncs.getTabDropDowns(uid);
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
@@ -348,20 +346,20 @@ glUtils.loadMarkers = function(uid) {
     const barcodeToLUTIndex = glUtils._barcodeToLUTIndex[uid];
 
     // Check how the user wants to draw the markers
-    const colorPropertyName = inputs["cb_col"].value;
-    const useColorFromMarker = radios["cb_col"].checked && (colorPropertyName in markerData[0]);
+    const colorPropertyName = dataUtils.data[uid]["_cb_col"];
+    const useColorFromMarker = (dataUtils.data[uid]["_cb_col"] != null && dataUtils.data[uid]["_cb_cmap"] == null);
     let hexColor = "#000000";
 
-    const scalarPropertyName = inputs["gb_sr"].value;
-    const colorscaleName = inputs["cb_cmap"].value;
-    const useColorFromColormap = radios["cb_cmap"].checked && (scalarPropertyName in markerData[0]);
+    const scalarPropertyName = dataUtils.data[uid]["_cb_col"];
+    const colorscaleName = dataUtils.data[uid]["_cb_cmap"];
+    const useColorFromColormap = dataUtils.data[uid]["_cb_cmap"] != null;
     let scalarRange = [1e9, -1e9];  // This range will be computed from the data
 
-    const scalePropertyName = markerUtils._uniqueScaleSelector;  // TODO
-    const useScaleFromMarker = false;                            // TODO
+    const scalePropertyName = dataUtils.data[uid]["_scale_col"];
+    const useScaleFromMarker = dataUtils.data[uid]["_scale_col"] != null;
 
-    const sectorsPropertyName = inputs["pie_col"].value;
-    const usePiechartFromMarker = radios["pie_check"].checked && (sectorsPropertyName in markerData[0]);
+    const sectorsPropertyName = dataUtils.data[uid]["_pie_col"];
+    const usePiechartFromMarker = dataUtils.data[uid]["_pie_col"] != null;
     const piechartPalette = glUtils._piechartPalette;
 
     // Create vertex data for markers
@@ -485,6 +483,7 @@ glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {
     }
     glUtils._barcodeToLUTIndex[uid] = barcodeToLUTIndex;
     glUtils._barcodeToKey[uid] = barcodeToKey;
+    console.log("barcodeToLUTIndex, barcodeToKey", barcodeToLUTIndex, barcodeToKey);
 }
 
 
@@ -516,14 +515,10 @@ glUtils._createColorLUTTexture = function(gl) {
 glUtils._updateColorLUTTexture = function(gl, uid, texture) {
     if (!(uid + "_colorLUT" in glUtils._textures)) return;
 
-    // TODO Check if all markers for UID should be visible
-    //const allMarkersCheckbox = document.getElementById("AllMarkers-checkbox-ISS");
-    //const showAll = allMarkersCheckbox && allMarkersCheckbox.checked;
-
     const colors = new Array(4096 * 4);
     for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex[uid])) {
-        // TODO Get color, shape, etc. from HTML input elements for marker group
-        const key = glUtils._barcodeToKey[uid][barcode];
+        const key = (barcode != "undefined" ? glUtils._barcodeToKey[uid][barcode] : "All");
+        console.log("key",key, barcode);
         const inputs = interfaceUtils._mGenUIFuncs.getGroupInputs(uid, key);
         const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
         const shape = "shape" in inputs ? inputs["shape"] : "circle";

@@ -382,7 +382,7 @@ regionUtils.regionUI = function (regionid) {
         var regionsPanel = document.getElementById("markers-regions-panel-");
     }
     var trPanel = HTMLElementUtils.createElement({
-        type: "tr",
+        kind: "tr",
         extraAttributes: {
             class: "regiontr",
             id: op + regionid + "_tr"
@@ -406,7 +406,7 @@ regionUtils.regionUI = function (regionid) {
         rName = regionid;
     }
     var tdPanel = HTMLElementUtils.createElement({
-        type: "td",
+        kind: "td",
     });
     var checkinput = HTMLElementUtils.inputTypeCheckbox({
         id: regionid + "_fill_ta",
@@ -421,7 +421,7 @@ regionUtils.regionUI = function (regionid) {
     trPanel.appendChild(tdPanel);
     
     var tdPanel = HTMLElementUtils.createElement({
-        type: "td",
+        kind: "td",
         id: op + regionid + "_name",
     });
     var regionnametext = HTMLElementUtils.inputTypeText({
@@ -439,7 +439,7 @@ regionUtils.regionUI = function (regionid) {
     tdPanel.appendChild(regionnametext);
     trPanel.appendChild(tdPanel);
     var tdPanel = HTMLElementUtils.createElement({
-        type: "td",
+        kind: "td",
     });
     var regionclasstext = HTMLElementUtils.inputTypeText({
         id: regionid + "_class_ta",
@@ -472,14 +472,14 @@ regionUtils.regionUI = function (regionid) {
         regioncolorinput.setAttribute("value", regionUtils._regions[regionid].polycolor);
     }
     var tdPanel = HTMLElementUtils.createElement({
-        type: "td",
+        kind: "td",
     });
     tdPanel.appendChild(regioncolorinput);
     trPanel.appendChild(tdPanel);
 
     trPanel.appendChild(tdPanel);
     var tdPanel = HTMLElementUtils.createElement({
-        type: "td"
+        kind: "td"
     });
     var regionsdeletebutton = HTMLElementUtils.createButton({
         id: regionid + "_delete_btn",
@@ -496,7 +496,7 @@ regionUtils.regionUI = function (regionid) {
     trPanel.appendChild(tdPanel);
     
     var trPanelHist = HTMLElementUtils.createElement({
-        type: "tr",
+        kind: "tr",
         extraAttributes: {
             id: op + regionid + "_tr_hist"
         }
@@ -504,7 +504,7 @@ regionUtils.regionUI = function (regionid) {
     trPanelHist.style.display="none";
     regionsPanel.appendChild(trPanelHist);
     var row = HTMLElementUtils.createElement({
-        type: "td",
+        kind: "td",
         extraAttributes: {
             class: "region-histogram my-1",
             colspan: "52"
@@ -672,15 +672,16 @@ regionUtils.addRegionClassUI = function (regionClass) {
     if (!accordion_item) {
         var regionAccordions = document.getElementById("regionAccordions");
         var accordion_item = HTMLElementUtils.createElement({
-            type: "div",
+            kind: "div",
             extraAttributes: {
                 class: "accordion-item region-accordion",
                 id: "regionClassItem-" + regionClassID
             }
         });
+        console.log(regionAccordions, accordion_item);
         regionAccordions.appendChild(accordion_item);
         var accordion_header = HTMLElementUtils.createElement({
-            type: "h2",
+            kind: "h2",
             extraAttributes: {
                 class: "accordion-header",
                 id: "regionClassHeading-" + regionClassID
@@ -689,7 +690,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         accordion_item.appendChild(accordion_header);
         if (!regionClass) regionClassName = "Unclassified"; else regionClassName = regionClass;
         var accordion_header_button = HTMLElementUtils.createElement({
-            type: "button",
+            kind: "button",
             innerHTML: "<i class='bi bi-pentagon'></i>&nbsp;" + regionClassName + " (<span id='numRegions-" + regionClassID + "'>1</span>&nbsp;region<span id='numRegionsS-" + regionClassID + "'></span>)&nbsp;<span class='text-warning' id='regionGroupWarning-" + regionClassID + "'></span>",
             extraAttributes: {
                 "type": "button",
@@ -704,7 +705,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         accordion_header.appendChild(accordion_header_button);
         
         var accordion_content = HTMLElementUtils.createElement({
-            type: "div",
+            kind: "div",
             extraAttributes: {
                 class: "accordion-collapse collapse px-2",
                 id: "regionClass-" + regionClassID,
@@ -714,7 +715,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         });
         accordion_item.appendChild(accordion_content);
         var buttonRow = HTMLElementUtils.createElement({
-            type: "div",
+            kind: "div",
             extraAttributes: {
                 class: "row my-1 mx-2"
             }
@@ -722,7 +723,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         accordion_content.appendChild(buttonRow);
         
         var regionTable = HTMLElementUtils.createElement({
-            type: "table",
+            kind: "table",
             extraAttributes: {
                 class: "table regions_table",
                 id: "markers-regions-table-" + regionClassID
@@ -735,25 +736,25 @@ regionUtils.addRegionClassUI = function (regionClass) {
         var tblHead = document.createElement("thead");
         var tblHeadTr = document.createElement("tr");
         tblHead.appendChild(tblHeadTr);
-        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Fill"}));
-        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Name"}));
-        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Class"}));
-        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Color"}));
-        tblHeadTr.appendChild(HTMLElementUtils.createElement({type:"th",innerText:"Delete"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({kind:"th",innerText:"Fill"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({kind:"th",innerText:"Name"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({kind:"th",innerText:"Class"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({kind:"th",innerText:"Color"}));
+        tblHeadTr.appendChild(HTMLElementUtils.createElement({kind:"th",innerText:"Delete"}));
         regionTable.appendChild(tblHead);
         var regionTbody = HTMLElementUtils.createElement({
-            type: "tbody",
+            kind: "tbody",
             id: "markers-regions-panel-" + regionClassID
         });
         regionTable.appendChild(regionTbody);
             
         var trPanel = HTMLElementUtils.createElement({
-            type: "tr"
+            kind: "tr"
         });
         regionTbody.appendChild(trPanel);
         
         var tdPanel = HTMLElementUtils.createElement({
-            type: "td",
+            kind: "td",
         });
         var checkinput = HTMLElementUtils.inputTypeCheckbox({
             class: "form-check-input",
@@ -775,12 +776,12 @@ regionUtils.addRegionClassUI = function (regionClass) {
         trPanel.appendChild(tdPanel);
         
         var tdPanel = HTMLElementUtils.createElement({
-            type: "td",
+            kind: "td",
             innerHTML: "<label style='cursor:pointer' for='"+regionClassID+"_group_fill_ta'>All</label>"
         });
         trPanel.appendChild(tdPanel);
         var tdPanel = HTMLElementUtils.createElement({
-            type: "td",
+            kind: "td",
         });
         if (regionClass) rClass = regionClass; else rClass = "";
         var regionclasstext = HTMLElementUtils.inputTypeText({
@@ -825,14 +826,14 @@ regionUtils.addRegionClassUI = function (regionClass) {
             };
         });
         var tdPanel = HTMLElementUtils.createElement({
-            type: "td",
+            kind: "td",
         });
         tdPanel.appendChild(regioncolorinput);
         trPanel.appendChild(tdPanel);
     
         trPanel.appendChild(tdPanel);
         var tdPanel = HTMLElementUtils.createElement({
-            type: "td"
+            kind: "td"
         });
         var regionsdeletebutton = HTMLElementUtils.createButton({
             innerText: "<i class='bi bi-trash'></i>",
@@ -979,22 +980,22 @@ regionUtils.analyzeRegion = function (regionid) {
             histodiv.parentNode.removeChild(histodiv);
         }
 
-        var div = HTMLElementUtils.createElement({ type: "div", id: regionid + "_histogram" });
+        var div = HTMLElementUtils.createElement({ kind: "div", id: regionid + "_histogram" });
         var histogram = regionUtils._regions[regionid].barcodeHistogram;
         var table = div.appendChild(HTMLElementUtils.createElement({
-            type: "table",
+            kind: "table",
             extraAttributes: {
                 class: "table table-striped",
                 style: "overflow-y: auto;"
             }
         }));
-        thead = HTMLElementUtils.createElement({type: "thead"});
+        thead = HTMLElementUtils.createElement({kind: "thead"});
         thead.innerHTML = `<tr>
         <th scope="col">Name</th>
         <th scope="col">Barcode</th>
         <th scope="col">Count</th>
         </tr>`;
-        tbody = HTMLElementUtils.createElement({type: "tbody"});
+        tbody = HTMLElementUtils.createElement({kind: "tbody"});
         table.appendChild(thead);
         table.appendChild(tbody);
 
@@ -1004,7 +1005,7 @@ regionUtils.analyzeRegion = function (regionid) {
             innerHTML += "<td>" + histogram[i].barcode + "</td>";
             innerHTML += "<td>" + histogram[i].count + "</td>";
             tbody.appendChild(HTMLElementUtils.createElement({
-                type: "tr",
+                kind: "tr",
                 "innerHTML": innerHTML
             }));
         }
@@ -1078,7 +1079,7 @@ regionUtils.pointsInRegionsToCSV=function(){
 }
 
 regionUtils.downloadPointsInRegionsCSV=function(data){
-    var blob = new Blob([data],{type:"text/csv"});
+    var blob = new Blob([data],{kind:"text/csv"});
     var url=window.URL.createObjectURL(blob);
     var a=document.createElement("a");
     a.setAttribute("hidden","");
@@ -1094,7 +1095,7 @@ regionUtils.regionsToJSON= function(){
     if (window.Blob) {
         var op=tmapp["object_prefix"];
         var jsonse = JSON.stringify(regionUtils.regions2GeoJSON(regionUtils._regions));
-        var blob = new Blob([jsonse], {type: "application/json"});
+        var blob = new Blob([jsonse], {kind: "application/json"});
         var url  = URL.createObjectURL(blob);
         var a=document.createElement("a");// document.getElementById("invisibleRegionJSON");
         if(document.getElementById(op+"_region_file_name")){

@@ -680,15 +680,16 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
     allinputs["X"]=interfaceUtils.getElementById(uid+"_x-value");
     allinputs["Y"]=interfaceUtils.getElementById(uid+"_y-value");
 
-    allinputs["gb_sr"]=interfaceUtils.getElementById(uid+"_gb-feature-value");
     allinputs["gb_col"]=interfaceUtils.getElementById(uid+"_gb-col-value");
     allinputs["gb_name"]=interfaceUtils.getElementById(uid+"_gb-col-name");
 
     allinputs["cb_cmap"]=interfaceUtils.getElementById(uid+"_cb-cmap-value");
     allinputs["cb_col"]=interfaceUtils.getElementById(uid+"_cb-col-value");    
 
+    allinputs["scale_col"]=interfaceUtils.getElementById(uid+"_scale-col");   
     allinputs["pie_col"]=interfaceUtils.getElementById(uid+"_piechart-col");   
-    
+    allinputs["shape_col"]=interfaceUtils.getElementById(uid+"_shape-col");   
+    console.log(allinputs);
     return allinputs;
 }
 
@@ -700,18 +701,17 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
  */
 interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
     allradios={}
-    allradios["gb_sr"]=interfaceUtils.getElementById(uid+"_gb-single");
-    allradios["gb_col"]=interfaceUtils.getElementById(uid+"_gb-col");
 
-    allradios["cb_cmap"]=interfaceUtils.getElementById(uid+"_cb-colormap");
     allradios["cb_col"]=interfaceUtils.getElementById(uid+"_cb-bypoint");
     allradios["cb_gr"]=interfaceUtils.getElementById(uid+"_cb-bygroup");
 
     allradios["cb_gr_rand"]=interfaceUtils.getElementById(uid+"_cb-bygroup-rand");
-    allradios["cb_gr_gene"]=interfaceUtils.getElementById(uid+"_cb-bygroup-gene");
-    allradios["cb_gr_name"]=interfaceUtils.getElementById(uid+"_cb-bygroup-name"); 
+    allradios["cb_gr_dict"]=interfaceUtils.getElementById(uid+"_cb-bygroup-dict");
+    allradios["cb_gr_key"]=interfaceUtils.getElementById(uid+"_cb-bygroup-key"); 
 
     allradios["pie_check"]=interfaceUtils.getElementById(uid+"_use-piecharts"); 
+    allradios["scale_check"]=interfaceUtils.getElementById(uid+"_use-scales"); 
+    allradios["shape_check"]=interfaceUtils.getElementById(uid+"_use-shapes"); 
     
     
     
@@ -768,9 +768,10 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     li1=HTMLElementUtils.createElement({"kind":"li", "id":generated+"_li-tab", "extraAttributes":{ "class":"nav-item", "role":"presentation"}});
     button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-name","extraAttributes":{ "class":"nav-link", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
 
-    button1.innerHTML=generated;
+    button1.innerHTML="New dataset";
 
     li1.appendChild(button1);
+    setTimeout(function(){button1.click()},0);
     ultabs1=interfaceUtils.getElementById("level-1-tabs");
     plusone=interfaceUtils.getElementById("plus-1");
     if(plusone && ultabs1) ultabs1.insertBefore(li1,plusone);
@@ -804,7 +805,7 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
     //now 3 accordion items
     accordionitems=[];
     accordioncontents=[];
-    ["File and coordinates","Render options","Charts"].forEach(function(title,index){
+    ["File and coordinates","Render options","Advanced options"].forEach(function(title,index){
         divaccordionitem=HTMLElementUtils.createElement({ "kind":"div","extraAttributes":{"class":"accordion-item"}});
         h2accordionitem=HTMLElementUtils.createElement({ "kind":"h2","id":"flush-heading"+index.toString(),"extraAttributes":{"class":"accordion-header"}});
         buttonaccordionitem=HTMLElementUtils.createElement({ "kind":"button", "extraAttributes":{ "class":"accordion-button collapsed", "type":"button", "data-bs-toggle":"collapse", "data-bs-target":"#flush-collapse"+index.toString(), "aria-expanded":"false", "aria-controls":"flush-collapse"+index.toString()}})
@@ -860,7 +861,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
         div121=HTMLElementUtils.createElement({"kind":"div","id":"input-group"});
             label1221=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":generated+"_tab-name"}});
             label1221.innerText="Tab name";
-            input1222=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_tab-name", "extraAttributes":{ "name":generated+"_tab-name", "class":"form-control","type":"text", "placeholder":generated, "aria-label":"Tab name" }});
+            input1222=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_tab-name", "extraAttributes":{ "name":generated+"_tab-name", "class":"form-control","type":"text", "placeholder":"New dataset", "aria-label":"Tab name" }});
             input1222.innerText=generated; 
             input1222.addEventListener("change",(event)=>{interfaceUtils._mGenUIFuncs.ChangeTabName(event);})
 
@@ -910,91 +911,10 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
 }
 
  /**
- *  Creates the forms to group by
- * @returns {array} array of rows
- */
-interfaceUtils._mGenUIFuncs.generateGroupByAccordion1= function(){
-    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
-
-    ///col 1
-
-    //------------------------------------
-    rowgb=HTMLElementUtils.createRow({"id":generated+"_groupby"});
-        colgb1=HTMLElementUtils.createColumn({"width":12});
-            labelgb11=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_gb-label"});
-            labelgb11.innerHTML="<strong>Group by</strong>";
-
-    //col 2
-    //-----------------------------------
-
-    colgb2=HTMLElementUtils.createColumn({"width":6});
-        divformcheck1=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
-            inputradio1=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_gb-single","extraAttributes":{"name":generated+"_flexRadioGroupBy","class":"form-check-input","type":"radio" }});
-            inputradio1.checked=true;
-            labelgbnone=HTMLElementUtils.createElement({"kind":"label", "extraAttributes":{"class":"form-check-label","for":generated+"_gb-single" }});
-            labelgbnone.innerText="Single row";
-
-        divformcheck2=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"} });
-            inputradio2=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_gb-col", "extraAttributes":{ "name":generated+"_flexRadioGroupBy", "class":"form-check-input", "type":"radio"  }});
-            labelgbcol=HTMLElementUtils.createElement({"kind":"label", "extraAttributes":{ "class":"form-check-label", "for":generated+"_gb-col" } });
-            labelgbcol.innerText="By Column";
-
-    //------------------------
-
-    colgb3=HTMLElementUtils.createColumn({"width":6});
-
-        divoptionsnone=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_gb-single-options"});
-            labelgbnonefeature=HTMLElementUtils.createElement({ "kind":"label","id":generated+"_gb_none-feature-label","extraAttributes":{"for":generated+"_gb-feature-value"}});
-            labelgbnonefeature.innerText="Feature to display";
-            selectgbnone=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-feature-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
-
-        divoptionscol=HTMLElementUtils.createElement({ "kind":"div","id":generated+"_gb-col-options" , "extraAttributes":{"style":'visibility:hidden;display:none;'}});
-            labelgbcolvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_gb-col-value-label","extraAttributes":{"for":generated+"_gb-col-value"}});
-            labelgbcolvalue.innerText="Column group";
-            selectgbcol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm" }});
-            labelgbcolname=HTMLElementUtils.createElement({"kind":"label","id":generated+"_gb-col-name-label","extraAttributes":{"for":generated+"_gb-col-name"}});
-            labelgbcolname.innerText="Group name";
-            selectgbcolname=HTMLElementUtils.createElement({"kind":"select","id":generated+"_gb-col-name","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm" }});
-
-    inputradio1.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],[0]);
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[0])
-        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[0]);
-        interfaceUtils._mGenUIFuncs.selectDeselect(event,["_cb-colormap","_cb-bypoint","_cb-bygroup"],[0]);        
-    });
-    inputradio2.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_gb-single-options","_gb-col-options"],[1]);
-        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup"],[0]);
-    });
-
-    rowgb.appendChild(colgb1);
-        colgb1.appendChild(labelgb11);
-    rowgb.appendChild(colgb2);
-        colgb2.appendChild(divformcheck1);
-            divformcheck1.appendChild(inputradio1);
-            divformcheck1.appendChild(labelgbnone);
-        colgb2.appendChild(divformcheck2);
-            divformcheck2.appendChild(inputradio2);
-            divformcheck2.appendChild(labelgbcol);
-    rowgb.appendChild(colgb3);
-        colgb3.appendChild(divoptionsnone);
-            divoptionsnone.appendChild(labelgbnonefeature);
-            divoptionsnone.appendChild(selectgbnone);
-        colgb3.appendChild(divoptionscol);
-            divoptionscol.appendChild(labelgbcolvalue);
-            divoptionscol.appendChild(selectgbcol);
-            divoptionscol.appendChild(labelgbcolname);
-            divoptionscol.appendChild(selectgbcolname);
-
-    return rowgb;
-    
-}
-
- /**
  *  Creates the forms to color by
  * @returns {array} array of rows
  */
-interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
+interfaceUtils._mGenUIFuncs.generateColorByAccordion2= function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
     ///col 1
@@ -1011,65 +931,67 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     //col 2
     //-----------------------------------
 
-    colcb2=HTMLElementUtils.createColumn({"width":6});
+    colcb2=HTMLElementUtils.createColumn({"width":4});
         divformcheck1cb=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
-            inputradio1cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-colormap","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}});
-            labelcbcmap=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-colormap"}});
-            labelcbcmap.innerText="Color map";
+            inputradio1cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup","extraAttributes":{ "name":generated+"_flexRadioColorBy", "class":"form-check-input", "type":"radio", "checked":true}});
+            labelcbgroup=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup"}});
+            labelcbgroup.innerText="Color by group";
+        
         divformcheck2cb=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"form-check"}});
             inputradio2cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bypoint","extraAttributes":{"name":generated+"_flexRadioColorBy","class":"form-check-input","type":"radio"}});
             labelcbpoint=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bypoint"}});
-            labelcbpoint.innerText="Color by point";
-        divformcheck3cb=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
-            inputradio3cb=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup","extraAttributes":{ "name":generated+"_flexRadioColorBy", "class":"form-check-input", "type":"radio"}});
-            inputradio3cb.disabled=true;
-            labelcbgroup=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup"}});
-            labelcbgroup.innerText="Color by group";
+            labelcbpoint.innerText="Color by marker";
    
     //------------------------
 
-    colcb3=HTMLElementUtils.createColumn({"width":6});
-        divoptionscmap=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_cb-cmap-options","extraAttributes":{"class": "renderOptionContainer"}});
-            labelcbcmapvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_cb-cmap-label","extraAttributes":{"for":generated+"_cb-cmap-value"}});
-            labelcbcmapvalue.innerText="Color map";
-            cmapoptions=[];
-            dataUtils._d3LUTs.forEach((lut)=>{ cmapoptions.push({"text":lut.replace("interpolate",""),"value":lut}) })
-            selectcbcmap=HTMLElementUtils.selectTypeDropDown({ "id":generated+"_cb-cmap-value","class":"form-select form-select-sm","options":cmapoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
+    colcb3=HTMLElementUtils.createColumn({"width":8});
+        //create a whole group for color by group, random, key and group name
+        divoptionscolgroup=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-group-options","extraAttributes":{"class": "renderOptionContainer"}});
+
+            rowkey=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-key","extraAttributes":{"class": "form-check"}});
+                inputradiocbgrkey=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-key","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio", "checked":true}});
+                labelcbgroupkey=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-key"}});
+                labelcbgroupkey.innerHTML="Generate color from key value<br>";
+
+            rowrand=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-rand","extraAttributes":{"class": "form-check"}});
+                inputradiocbgrrand=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-rand","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
+                labelcbgrouprand=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-rand"}});
+                labelcbgrouprand.innerHTML="Generate color randomly<br>";
+
+            rowdict=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-dict","extraAttributes":{"class": "form-check"}});
+                inputradiocbgrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-dict","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
+                labelcbgroupdict=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-dict"}});
+                labelcbgroupdict.innerHTML="Use color from dictionary<br>";
+                inputtextcbgrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-dict-val","extraAttributes":{ "class":"form-text-input", "type":"text", "placeholder":"{'key1':''#FFFFFF',...}"}});
+                inputtextcbgrdict.disabled=true
 
         divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
             selectcbcol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_cb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
             labelcbcol=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb_col-colname-label","extraAttributes":{"for":generated+"_cb-col-value"} });
-            labelcbcol.innerText="Color column";
-
-        //create a whole group for color by group, random, gene and group name
-        divoptionscolgroup=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-group-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
-
-            rowrand=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-rand","extraAttributes":{"class": "renderOption"}});
-                inputradiocbgrrand=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-rand","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
-                labelcbgrouprand=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-rand"}});
-                labelcbgrouprand.innerHTML="Color randomly<br>";
-
-            rowgene=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-gene","extraAttributes":{"class": "renderOption"}});
-                inputradiocbgrgene=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-gene","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
-                labelcbgroupgene=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-gene"}});
-                labelcbgroupgene.innerHTML="Color by gene<br>";
-
-            rowname=HTMLElementUtils.createElement({"kind":"div","id":generated+"_row-cb-gr-name","extraAttributes":{"class": "renderOption"}});
-                inputradiocbgrname=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-name","extraAttributes":{ "name":generated+"_flexRadioColorByGroup", "class":"form-check-input", "type":"radio"}});
-                labelcbgroupname=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_cb-bygroup-name"}});
-                labelcbgroupname.innerHTML="Color by name<br>";
-
+            labelcbcol.innerText="Select color column";
+        divoptionscmap=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_cb-cmap-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+            labelcbcmapvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_cb-cmap-label","extraAttributes":{"for":generated+"_cb-cmap-value"}});
+            labelcbcmapvalue.innerText="Color map (only if color column is numeral)";
+            cmapoptions=[{"text":"None","value":""}];
+            dataUtils._d3LUTs.forEach((lut)=>{ cmapoptions.push({"text":lut.replace("interpolate",""),"value":lut}) })
+            selectcbcmap=HTMLElementUtils.selectTypeDropDown({ "id":generated+"_cb-cmap-value","class":"form-select form-select-sm","options":cmapoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
 
     //listeners
 
     inputradio1cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[0])
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[2])
     });
     inputradio2cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[1])
+        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[0,1])
     });
-    inputradio3cb.addEventListener("change",(event)=>{
-        interfaceUtils._mGenUIFuncs.hideShow(event,["_cb-cmap-options","_cb-col-options","_cb-col-group-options"],[2])
+    inputradiocbgrdict.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup-dict-val"],[0])
+    });
+    inputradiocbgrrand.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup-dict-val"],[])
+    });
+    inputradiocbgrkey.addEventListener("change",(event)=>{
+        interfaceUtils._mGenUIFuncs.enableDisable(event,["_cb-bygroup-dict-val"],[])
     });
 
     rowcb.appendChild(colcb1);
@@ -1077,33 +999,68 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion1= function(){
     rowcb.appendChild(colcb2);
         colcb2.appendChild(divformcheck1cb);
             divformcheck1cb.appendChild(inputradio1cb);
-            divformcheck1cb.appendChild(labelcbcmap);
+            divformcheck1cb.appendChild(labelcbgroup);
         colcb2.appendChild(divformcheck2cb);
             divformcheck2cb.appendChild(inputradio2cb);
             divformcheck2cb.appendChild(labelcbpoint);
-        colcb2.appendChild(divformcheck3cb);
-            divformcheck3cb.appendChild(inputradio3cb);
-            divformcheck3cb.appendChild(labelcbgroup);
     rowcb.appendChild(colcb3);
-        colcb3.appendChild(divoptionscmap);
-            divoptionscmap.appendChild(labelcbcmapvalue);
-            divoptionscmap.appendChild(selectcbcmap);
+        colcb3.appendChild(divoptionscolgroup);    
+            divoptionscolgroup.appendChild(rowkey);
+                rowkey.appendChild(inputradiocbgrkey);
+                rowkey.appendChild(labelcbgroupkey);   
+            divoptionscolgroup.appendChild(rowrand);
+                rowrand.appendChild(inputradiocbgrrand);
+                rowrand.appendChild(labelcbgrouprand);        
+            divoptionscolgroup.appendChild(rowdict);
+                rowdict.appendChild(inputradiocbgrdict);
+                rowdict.appendChild(labelcbgroupdict);
+                rowdict.appendChild(inputtextcbgrdict);
         colcb3.appendChild(divoptionscol);
             divoptionscol.appendChild(labelcbcol);
             divoptionscol.appendChild(selectcbcol);
-        colcb3.appendChild(divoptionscolgroup);
-            divoptionscolgroup.appendChild(rowrand);
-                rowrand.appendChild(inputradiocbgrrand);
-                rowrand.appendChild(labelcbgrouprand);            
-            divoptionscolgroup.appendChild(rowgene);
-                rowgene.appendChild(inputradiocbgrgene);
-                rowgene.appendChild(labelcbgroupgene);            
-            divoptionscolgroup.appendChild(rowname);
-                rowname.appendChild(inputradiocbgrname);
-                rowname.appendChild(labelcbgroupname);
+        colcb3.appendChild(divoptionscmap);
+            divoptionscmap.appendChild(labelcbcmapvalue);
+            divoptionscmap.appendChild(selectcbcmap);
 
     return rowcb;
     
+}
+
+ /**
+ *  Creates the forms to group by
+ * @returns {array} a single rows
+ */
+  interfaceUtils._mGenUIFuncs.generateKeyColAccordion2= function(){
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_key_0"});
+        collab=HTMLElementUtils.createColumn({"width":12});
+            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+            labellab.innerHTML="<strong>Group by</strong>";
+
+        col00=HTMLElementUtils.createColumn({"width":6});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_key-col-label", "extraAttributes":{ "for":generated+"_key-col" }});
+            label010.innerText="Key to group by (optional)"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_gb-col-value", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011.disabled=false
+            
+            label012=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_name-col-label", "extraAttributes":{ "for":generated+"_name-col" }});
+            label012.innerText="Extra column to display (optional)"
+            select013=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_gb-col-name", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select013.disabled=false
+
+    row0.appendChild(collab)
+        collab.appendChild(labellab)
+
+    row0.appendChild(col00);
+        col00.appendChild(label010);
+        col00.appendChild(select011);
+        col00.appendChild(label012);
+        col00.appendChild(select013);
+
+
+    return row0;
 }
 
  /**
@@ -1114,11 +1071,10 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     
-    rowgb=interfaceUtils._mGenUIFuncs.generateGroupByAccordion1();
-    rowcb=interfaceUtils._mGenUIFuncs.generateColorByAccordion1();
+    row1=interfaceUtils._mGenUIFuncs.generateKeyColAccordion2();
+    row2=interfaceUtils._mGenUIFuncs.generateColorByAccordion2();
 
-
-    return [rowgb,rowcb];
+    return [row1, row2];
 }
 
 /**
@@ -1128,56 +1084,166 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
  interfaceUtils._mGenUIFuncs.generateAccordionItem3=function(){
 
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    row2=interfaceUtils._mGenUIFuncs.generateAdvancedScaleAccordion3();
+    row4=interfaceUtils._mGenUIFuncs.generateAdvancedShapeAccordion3();
+    row3=interfaceUtils._mGenUIFuncs.generateAdvancedPiechartAccordion3();
     
+    return [row2,row3,row4];
+ }
+
+ /**
+ *  Creates the forms to scale by
+ * @returns {array} a single rows
+ */
+    interfaceUtils._mGenUIFuncs.generateAdvancedScaleAccordion3= function(){
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
     //row 0
-    row0=HTMLElementUtils.createRow({id:generated+"_piechart_0"});
+    row0=HTMLElementUtils.createRow({id:generated+"_scale_0"});
+        collab=HTMLElementUtils.createColumn({"width":12});
+            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+            labellab.innerHTML="<strong>Marker size</strong>";
 
         col00=HTMLElementUtils.createColumn({"width":6});
             divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
-                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-piecharts","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
-                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-piecharts-label", "extraAttributes":{ "for":generated+"_use-piecharts" }});
-                label0001.innerText="Use piecharts"
+                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-scales","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-scales-label", "extraAttributes":{ "for":generated+"_use-scales" }});
+                label0001.innerText="Use different size per marker"
                 
-
         col01=HTMLElementUtils.createColumn({"width":6});
-            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-col-label", "extraAttributes":{ "for":generated+"_piechart-col" }});
-            label010.innerText="Pie chart column"
-            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_piechart-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_scale-col-label", "extraAttributes":{ "for":generated+"_scale-col" }});
+            label010.innerText="Size column"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_scale-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
             select011.disabled=true
-
-    row1=HTMLElementUtils.createRow({id:generated+"_piechart_1"});
-        col10=HTMLElementUtils.createColumn({"width":12});
-            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-options-label", "extraAttributes":{ "for":generated+"_piechart-options-text" }});
-            label010.innerText="Piechart options"
-            area101=HTMLElementUtils.createElement({"kind":"textarea", "id":generated+"_piechart-options-text","extraAttributes":{ "class":"form-control" }});    
-            area101.disabled=true;
 
     inputcheck0000.addEventListener("change", (event)=>{
         var value=event.target.checked;
         //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
         //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
         if(value)
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text","_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value","_cb-cmap-value","_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name"],[0,1])
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_scale-col"],[0])
         else 
-            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_piechart-options-text","_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value","_cb-cmap-value","_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name"],[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_scale-col"],[])
     })
+
+    row0.appendChild(collab)
+        collab.appendChild(labellab)
 
     row0.appendChild(col00)
         col00.appendChild(divformcheck000)
             divformcheck000.appendChild(inputcheck0000);
             divformcheck000.appendChild(label0001);
 
-    row1.appendChild(col01);
+    row0.appendChild(col01);
         col01.appendChild(label010);
         col01.appendChild(select011);
 
 
-    row1.appendChild(col10);
-        col10.appendChild(label010);
-        col10.appendChild(area101);    
+    return row0;
+}
 
-    return [row0,row1];
+ /**
+ *  Creates the forms to shape by
+ * @returns {array} a single rows
+ */
+  interfaceUtils._mGenUIFuncs.generateAdvancedShapeAccordion3= function(){
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_shape_0"});
+        collab=HTMLElementUtils.createColumn({"width":12});
+            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+            labellab.innerHTML="<strong>Marker shape</strong>";
+
+        col00=HTMLElementUtils.createColumn({"width":6});
+            divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-shapes","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-shapes-label", "extraAttributes":{ "for":generated+"_use-shapes" }});
+                label0001.innerText="Use different shape per marker"
+                
+        col01=HTMLElementUtils.createColumn({"width":6});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape-col-label", "extraAttributes":{ "for":generated+"_shape-col" }});
+            label010.innerText="Shape column"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_shape-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011.disabled=true
+
+    inputcheck0000.addEventListener("change", (event)=>{
+        var value=event.target.checked;
+        //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
+        //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
+        if(value)
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_shape-col","_use-piecharts","_piechart-col"],[0])
+        else 
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_shape-col","_use-piecharts"],[1])
+    })
+
+    row0.appendChild(collab)
+        collab.appendChild(labellab)
+
+    row0.appendChild(col00)
+        col00.appendChild(divformcheck000)
+            divformcheck000.appendChild(inputcheck0000);
+            divformcheck000.appendChild(label0001);
+
+    row0.appendChild(col01);
+        col01.appendChild(label010);
+        col01.appendChild(select011);
+
+
+    return row0;
+}
+
+ /**
+ *  Creates the forms for piecharts
+ * @returns {array} a single rows
+ */
+  interfaceUtils._mGenUIFuncs.generateAdvancedPiechartAccordion3= function(){
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_piechart_0"});
+        collab=HTMLElementUtils.createColumn({"width":12});
+            labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb-label"});
+            labellab.innerHTML="<strong>Pie-charts</strong>";
+
+        col00=HTMLElementUtils.createColumn({"width":6});
+            divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-piecharts","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-piecharts-label", "extraAttributes":{ "for":generated+"_use-piecharts" }});
+                label0001.innerText="Use pie-charts"
+                
+        col01=HTMLElementUtils.createColumn({"width":6});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_piechart-col-label", "extraAttributes":{ "for":generated+"_piechart-col" }});
+            label010.innerText="Pie-chart column"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_piechart-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011.disabled=true
+
+    inputcheck0000.addEventListener("change", (event)=>{
+        var value=event.target.checked;
+        //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
+        //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
+        if(value){
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_use-shapes","_shape-col","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[0]);
+        }
+        else 
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_piechart-col","_cb-bygroup","_cb-bypoint","_use-shapes","_cb-bygroup-key","_cb-bygroup-rand","_cb-bygroup-dict"],[1,2,3,4,5,6]);
+    })
+
+    row0.appendChild(collab)
+        collab.appendChild(labellab)
+
+    row0.appendChild(col00)
+        col00.appendChild(divformcheck000)
+            divformcheck000.appendChild(inputcheck0000);
+            divformcheck000.appendChild(label0001);
+
+    row0.appendChild(col01);
+        col01.appendChild(label010);
+        col01.appendChild(select011);
+
+
+    return row0;
 }
 
  /**
@@ -1258,19 +1324,31 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     //I do this to know if I have name selected, and also to know where to draw the 
     //color from
 
-    var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped"}});
+    var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped marker_table"}});
     var thead=HTMLElementUtils.createElement({"kind":"thead"});
     var theadrow=HTMLElementUtils.createElement({"kind":"tr"});
     var tbody=HTMLElementUtils.createElement({"kind":"tbody"});
 
-    var headopts=["","group", "shape", "color"];
+    var headopts=[""];
+    if(data_obj["_gb_col"]){
+        headopts.push(data_obj["_gb_col"]);
+    }
+    else { 
+        headopts.push("Group");
+    }
+    
     var usename=false;
-
     if(data_obj["_gb_name"]){
-        headopts=["","group", "name", "shape", "color"]
+        headopts.push(data_obj["_gb_name"]);
         usename=true;
     }
-
+    headopts.push("Counts");
+    if(!data_obj["_shape_col"]){
+        headopts.push("Shape");
+    }
+    if(!data_obj["_cb_col"]){
+        headopts.push("Color");
+    }
     headopts.forEach((opt)=>{
         var th=HTMLElementUtils.createElement({"kind":"th","extraAttributes":{"scope":"col"}});
         th.innerText=opt
@@ -1278,6 +1356,59 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     });
 
     thead.appendChild(theadrow);
+
+    if(data_obj["_gb_col"]){
+        // add All row
+        
+        //row
+        var tr=HTMLElementUtils.createElement({"kind":"tr"});
+        //first spot for a check
+        var td0=HTMLElementUtils.createElement({"kind":"td"});
+        var td1=HTMLElementUtils.createElement({"kind":"td"});
+        var td15=null;
+        var td17=HTMLElementUtils.createElement({"kind":"td"});
+        var td2=null;
+        var td3=null;
+
+        tr.appendChild(td0);
+        tr.appendChild(td1);
+
+        var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_all_check","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+        check0.checked = true; 
+        td0.appendChild(check0);
+        check0.addEventListener("input",(event)=>{
+            console.log("Click all!");
+            clist = interfaceUtils.getElementsByClassName(uid+"-marker-input");
+            for (var i = 0; i < clist.length; ++i) { clist[i].checked = event.target.checked; }
+        });
+        var label1=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_all_check","class":"cursor-pointer"}});
+        label1.innerText="All";
+        td1.appendChild(label1);
+
+        if(usename){
+            var td15=HTMLElementUtils.createElement({"kind":"td"});
+            var label15=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_all_check","class":"cursor-pointer"}});
+            label15.innerText="All";
+            td15.appendChild(label15);
+            tr.appendChild(td15);
+        }
+
+        var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_all_check","class":"cursor-pointer"}});
+        label17.innerText=data_obj["_processeddata"].length;    
+        td17.appendChild(label17);        
+        tr.appendChild(td17);
+
+        if(!data_obj["_shape_col"]){
+            var td2=HTMLElementUtils.createElement({"kind":"td"});
+            tr.appendChild(td2);
+        }
+        if(!data_obj["_cb_col"]){
+            var td3=HTMLElementUtils.createElement({"kind":"td"});
+            tr.appendChild(td3);
+        }
+
+        tbody.appendChild(tr);
+    }
 
     var count=0;
     for(i in data_obj["_groupgarden"]){
@@ -1289,8 +1420,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         var td0=HTMLElementUtils.createElement({"kind":"td"});
         var td1=HTMLElementUtils.createElement({"kind":"td"});
         var td15=null;
-        var td2=HTMLElementUtils.createElement({"kind":"td"});
-        var td3=HTMLElementUtils.createElement({"kind":"td"});
+        var td17=HTMLElementUtils.createElement({"kind":"td"});
+        var td2=null;
+        var td3=null;
 
         tr.appendChild(td0);
         tr.appendChild(td1);
@@ -1301,46 +1433,55 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         if(usename)
             escapedName=tree["treeName"];
 
-        var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_check","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+        var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_check","extraAttributes":{"class":"form-check-input "+uid+"-marker-input","type":"checkbox" }});
         check0.checked = true; 
         td0.appendChild(check0);
 
-        //var p1=HTMLElementUtils.createElement({"kind":"p","id":uid+"_"+escapedID+"_group"});
-        td1.innerText=tree["treeID"];
-        //td1.appendChild(p1);
+        var label1=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
+        label1.innerText=tree["treeID"];
+        td1.appendChild(label1);
 
         if(usename){
             var td15=HTMLElementUtils.createElement({"kind":"td"});
-            //var p15=HTMLElementUtils.createElement({"kind":"p","id":uid+"_"+escapedID+"_name"});
-            td15.innerText=tree["treeName"];            
+            var label15=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
+            label15.innerText=tree["treeName"];    
+            td15.appendChild(label15);        
             tr.appendChild(td15);
-            //td15.appendChild(p15);
         }
 
-        var shapeoptions=[];
-        markerUtils._symbolStrings.forEach((sho)=>{ shapeoptions.push({"text":sho,"value":sho}) })
-        shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
-        shapeinput2.value=markerUtils._symbolStrings[count]
+        var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
+        label17.innerText=tree.size();    
+        td17.appendChild(label17);        
+        tr.appendChild(td17);
 
-        count+=1;
-        count=count % markerUtils._symbolStrings.length;
+        if(!data_obj["_shape_col"]){
+            td2 = HTMLElementUtils.createElement({"kind":"td"});
+            var shapeoptions=[];
+            markerUtils._symbolStrings.forEach((sho)=>{ shapeoptions.push({"text":sho,"value":sho}) })
+            shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
+            shapeinput2.value=markerUtils._symbolStrings[count]
 
-        tr.appendChild(td2);
-        td2.appendChild(shapeinput2);
+            count+=1;
+            count=count % markerUtils._symbolStrings.length;
 
-        //the color depends on 3 possibilities , "cb_gr_rand","cb_gr_gene","cb_gr_name"
-        if(_selectedOptions["cb_gr_rand"]){
-            thecolor=overlayUtils.randomColor("hex");
-        }else if(_selectedOptions["cb_gr_gene"]){
-            thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
-        }else if(_selectedOptions["cb_gr_name"]){
-            thecolor=HTMLElementUtils.determinsticHTMLColor(escapedName);
+            tr.appendChild(td2);
+            td2.appendChild(shapeinput2);
         }
+        if(!data_obj["_cb_col"]){
+            td3 = HTMLElementUtils.createElement({"kind":"td"});
+            //the color depends on 3 possibilities , "cb_gr_rand","cb_gr_gene","cb_gr_name"
+            if(_selectedOptions["cb_gr_rand"]){
+                thecolor=overlayUtils.randomColor("hex");
+            }else if(_selectedOptions["cb_gr_key"]){
+                thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
+            }else if(_selectedOptions["cb_gr_dict"]){
+                thecolor=HTMLElementUtils.determinsticHTMLColor(escapedName);
+            }
 
-        var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
-        tr.appendChild(td3);
-        td3.appendChild(colorinput3);
-
+            var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
+            tr.appendChild(td3);
+            td3.appendChild(colorinput3);
+        }
         tbody.appendChild(tr);
        
     }
@@ -1362,8 +1503,10 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
 
         if (hasGroupUI) {
             inputs["visible"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_check").checked;
-            inputs["shape"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape").value;
-            inputs["color"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_color").value;
+            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_shape"))
+                inputs["shape"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape").value;
+            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_color"))
+                inputs["color"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_color").value;
         }
     }
     return inputs;

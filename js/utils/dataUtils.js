@@ -11,13 +11,13 @@
  */
 dataUtils = {
     data:{
-        "gene":{
+        /*"gene":{
             _type: "GENE_DATA"
         },
         "morphology":{
             _type: "MORPHOLOGY_DATA",
             _name:""
-        },
+        },*/
         /*
         "U23423R":{
             _type: "GENERIC_DATA",
@@ -153,52 +153,68 @@ dataUtils.updateViewOptions = function(event){
         data_obj["_Y"]=inputs["Y"].value;
     }
 
-    //check options, there are only 2 really, or three? with charts
-    if(_selectedOptions["gb_sr"]){
-        if(inputs["gb_sr"].value){
-            data_obj["_gb_sr"]=inputs["gb_sr"].value;
-            data_obj["_gb_sr"]=inputs["gb_sr"].value;
-            //do something, maybe webgl comes here
-        }else{
-            message="Select feature to display. Can't be null";
-            alert(message); console.log(message);
-            return;
-        }
-    }else if(_selectedOptions["gb_col"]){
-        
-        //this will be trickier since trees need to be made and also a menu
-        if(inputs["gb_col"].value){
-            data_obj["_gb_col"]=inputs["gb_col"].value;
-
-            if(inputs["gb_name"].value){
-                data_obj["_gb_name"]=inputs["gb_name"].value;    
-            }else{
-                data_obj["_gb_name"]=null;    
-            }
-            //this function veryfies if a tree with these features exist and doesnt recreate it
-            dataUtils.makeQuadTrees(data_id);
-            //print a menu in the interface for the groups
-            table=interfaceUtils._mGenUIFuncs.groupUI(uid);
-
-            menuui=interfaceUtils.getElementById(data_id+"_menu-UI");
-            menuui.classList.remove("d-none")
-            menuui.innerText="";
-
-            menuui.appendChild(table);
-            //shape UXXXX_grname_shape, color UXXXX_grname_color
-
-        }else{
-            message="Select feature to group by. Can't be null. You can additionally, optionally, select a feature that contains the name of the group";
-            alert(message); console.log(message);
-            return;
-        }
-
-
-    }else if(radios["pie_check"].checked){
-        
-
-
+    //this will be trickier since trees need to be made and also a menu
+    
+    if(inputs["gb_col"].value && inputs["gb_col"].value != "null"){
+        data_obj["_gb_col"]=inputs["gb_col"].value;    
+    }else{
+        data_obj["_gb_col"]=null;    
     }
+
+    if(inputs["gb_name"].value && inputs["gb_name"].value != "null"){
+        data_obj["_gb_name"]=inputs["gb_name"].value;    
+    }else{
+        data_obj["_gb_name"]=null;    
+    }
+
+    // Load all settings inside of data_obj for easy access from glUtils
+    // adds: data_obj["_cb_col"], data_obj["_cb_cmap"]
+    //       data_obj["_pie_col"], data_obj["_scale_col"], data_obj["_shape_col"]
+    if (radios["cb_gr"].checked) { // Color by group
+        data_obj["_cb_col"]=null;
+        data_obj["_cb_cmap"]=null;
+    }
+    else if (radios["cb_col"].checked) { // Color by marker
+        if (inputs["cb_col"].value != "null") {
+            if (inputs["cb_cmap"].value != "") {
+                data_obj["_cb_cmap"]=inputs["cb_cmap"].value;
+            }
+            else {
+                data_obj["_cb_cmap"]=null;
+            }
+            data_obj["_cb_col"]=inputs["cb_col"].value;
+        }
+        else  {
+            alert("No color column selected. Impossible to update view.");return;
+        }
+    }
+    // Use piecharts column
+    data_obj["_pie_col"]=(radios["pie_check"].checked ? inputs["pie_col"].value : null);
+    if (data_obj["_pie_col"]=="null") {
+        alert("No piechart column selected. Impossible to update view.");return;
+    }
+    // Use scale colummn
+    data_obj["_scale_col"]=(radios["scale_check"].checked ? inputs["scale_col"].value : null);
+    if (data_obj["_scale_col"]=="null") {
+        alert("No size column selected. Impossible to update view.");return;
+    }
+    // Use shape column
+    data_obj["_shape_col"]=(radios["shape_check"].checked ? inputs["shape_col"].value : null);
+    if (data_obj["_shape_col"]=="null") {
+        alert("No shape column selected. Impossible to update view.");return;
+    }
+    
+    //this function veryfies if a tree with these features exist and doesnt recreate it
+    dataUtils.makeQuadTrees(data_id);
+    //print a menu in the interface for the groups
+    table=interfaceUtils._mGenUIFuncs.groupUI(data_id);
+    console.log(table);
+    menuui=interfaceUtils.getElementById(data_id+"_menu-UI");
+    menuui.classList.remove("d-none")
+    menuui.innerText="";
+
+    menuui.appendChild(table);
+    //shape UXXXX_grname_shape, color UXXXX_grname_color
 
     // Make sure that slider for global marker size is shown
     if (interfaceUtils.getElementById("ISS_globalmarkersize"))
@@ -367,7 +383,7 @@ dataUtils.makeQuadTrees = function(data_id) {
     //console.log(xselector,yselector,groupByCol,groupByColsName)
 
     //little optimization to not redoo the tree if we have it
-    if(inputs["gb_col"].value==data_obj["_gb_col"]){
+    /*if(inputs["gb_col"].value==data_obj["_gb_col"]){
         if(Object.keys(data_obj["_groupgarden"]).length > 0){
             message="Group garden exists, dont waste time recreating it";
             //alert(message); 
@@ -375,7 +391,7 @@ dataUtils.makeQuadTrees = function(data_id) {
             
             return; //because graden exists
         }
-    }
+    }*/
 
     var x = function (d) {
         return d[xselector];
@@ -383,22 +399,35 @@ dataUtils.makeQuadTrees = function(data_id) {
     var y = function (d) {
         return d[yselector];
     };
+    console.log("groupByCol", groupByCol);
+    if (groupByCol) {
+        var allgroups = d3.nest().key(function (d) { return d[groupByCol]; }).entries(data_obj["_processeddata"]);
 
-    var allgroups = d3.nest().key(function (d) { return d[groupByCol]; }).entries(data_obj["_processeddata"]);
-
-    data_obj["_groupgarden"] = {};
-    for (var i = 0; i < allgroups.length; i++) {
-        var treeKey = allgroups[i].values[0][groupByCol];
-        data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+        data_obj["_groupgarden"] = {};
+        for (var i = 0; i < allgroups.length; i++) {
+            var treeKey = allgroups[i].values[0][groupByCol];
+            data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+            data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
+            
+            if(groupByColsName){
+                var treeName = allgroups[i].values[0][groupByColsName] || "";
+                data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
+            }
+            //create the subsampled for all those that need it
+        }
+    }
+    else {
+        console.log("No group, we take everything!");
+        treeKey = "All";
+        data_obj["_groupgarden"] = {};
+        data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(data_obj["_processeddata"]);
         data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
         
         if(groupByColsName){
-            var treeName = allgroups[i].values[0][groupByColsName] || "";
+            var treeName = data_obj["_processeddata"][0][groupByColsName] || "";
             data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
         }
-        //create the subsampled for all those that need it
     }
-    
     //print UIs that are only for groups
     //markerUtils.printBarcodeUIs(data_obj._drawOptions);
     

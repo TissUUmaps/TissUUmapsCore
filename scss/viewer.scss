@@ -52,12 +52,12 @@ html {
     z-index: 13;
 }
 
-#ISS_table {
+.marker_table {
     user-select: none;
     font-size: 13px;
 }
 
-#ISS_table td {
+.marker_table td {
     vertical-align: middle;
 }
 
@@ -79,4 +79,8 @@ html {
 
 .regions_table td {
     vertical-align: middle;
+}
+
+.cursor-pointer {
+    cursor: pointer;
 }
