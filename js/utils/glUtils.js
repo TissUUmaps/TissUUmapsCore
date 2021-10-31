@@ -88,15 +88,14 @@ glUtils._markersVS = `
         ndcPos.y = -ndcPos.y;
         ndcPos = u_viewportTransform * ndcPos;
 
+        float barcodeID = mod(a_position.z, 4096.0);
+        v_color = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5));
+
         if (u_useColorFromMarker || u_useColorFromColormap) {
             vec2 range = u_markerScalarRange;
-            float normalized = (a_position.z - range[0]) / (range[1] - range[0]);
+            float normalized = (a_position.w - range[0]) / (range[1] - range[0]);
             v_color.rgb = texture2D(u_colorscale, vec2(normalized, 0.5)).rgb;
             if (u_useColorFromMarker) v_color.rgb = hex_to_rgb(a_position.w);
-            v_color.a = SHAPE_INDEX_CIRCLE / 255.0;
-        } else {
-            float barcodeID = mod(a_position.z, 4096.0);
-            v_color = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5));
         }
 
         if (u_usePiechartFromMarker && v_color.a > 0.0) {
@@ -185,8 +184,6 @@ glUtils._pickingVS = `
     uniform vec2 u_pickingLocation;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
-    uniform bool u_useColorFromMarker;
-    uniform bool u_useColorFromColormap;
     uniform int u_op;
     uniform sampler2D u_colorLUT;
 
@@ -199,7 +196,6 @@ glUtils._pickingVS = `
     #define OP_CLEAR 0
     #define OP_WRITE_INDEX 1
 
-    #define SHAPE_INDEX_CIRCLE 7.0
     #define DISCARD_VERTEX { gl_Position = vec4(2.0, 2.0, 2.0, 0.0); return; }
 
     vec3 hex_to_rgb(float v)
@@ -220,9 +216,7 @@ glUtils._pickingVS = `
         v_color = vec4(0.0);
         if (u_op == OP_WRITE_INDEX) {
             float barcodeID = mod(a_position.z, 4096.0);
-            float shapeID = (u_useColorFromMarker || u_useColorFromColormap)
-                          ? SHAPE_INDEX_CIRCLE / 255.0
-                          : texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a;
+            float shapeID = texture2D(u_colorLUT, vec2(barcodeID / 4095.0, 0.5)).a;
             if (shapeID == 0.0) DISCARD_VERTEX;
 
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
@@ -325,7 +319,6 @@ glUtils._createPiechartAngles = function(sectors) {
 
 
 // Load markers loaded from CSV file into vertex buffer
-// TODO This function needs to be updated for new generic markers
 glUtils.loadMarkers = function(uid) {
     if (!glUtils._initialized) return;
     const canvas = document.getElementById("gl_canvas");
@@ -386,19 +379,20 @@ glUtils.loadMarkers = function(uid) {
     } else {
         for (let i = 0; i < numPoints; ++i) {
             if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
+            if (useColorFromColormap) scalarValue = markerData[i][scalarPropertyName];
             positions[4 * i + 0] = markerData[i][xPosName] / imageWidth;
             positions[4 * i + 1] = markerData[i][yPosName] / imageHeight;
-            positions[4 * i + 2] = useColorFromColormap ? markerData[i][scalarPropertyName]
-                                                        : barcodeToLUTIndex[markerData[i][keyName]];
-            positions[4 * i + 3] = Number("0x" + hexColor.substring(1,7));
+            positions[4 * i + 2] = barcodeToLUTIndex[markerData[i][keyName]];
+            positions[4 * i + 3] = useColorFromColormap ? Number(scalarValue)
+                                                        : Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
 
             if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
             else scales[i] = 1.0;  // Marker scale factor
 
             if (useColorFromColormap) {
-                scalarRange[0] = Math.min(scalarRange[0], positions[4 * i + 2]);
-                scalarRange[1] = Math.max(scalarRange[1], positions[4 * i + 2]);
+                scalarRange[0] = Math.min(scalarRange[0], scalarValue);
+                scalarRange[1] = Math.max(scalarRange[1], scalarValue);
             }
         }
     }
@@ -435,10 +429,10 @@ glUtils.loadMarkers = function(uid) {
     if (useColorFromColormap) {
         glUtils._updateColorScaleTexture(gl, uid, glUtils._textures[uid + "_colorscale"]);
         glUtils._updateColorbarCanvas();
-    } else {
-        glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
     }
+    glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
 }
+
 
 glUtils.deleteMarkers = function(uid) {
     if (!glUtils._initialized) return;
@@ -828,11 +822,6 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.vertexAttribPointer(INDEX, 1, gl.FLOAT, false, 0, numPoints * 16);
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
-
-        // Note: these two uniforms are not used for determining the piechart
-        // color but whether markers are grouped or not
-        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);
-        gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromColormap"), glUtils._useColorFromColormap[uid]);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
