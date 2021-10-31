@@ -458,6 +458,9 @@ glUtils.deleteMarkers = function(uid) {
     gl.deleteBuffer(glUtils._buffers[uid + "_markers"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorLUT"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorscale"]);
+
+    // Make sure colorbar is also deleted from the 2D canvas
+    glUtils._updateColorbarCanvas();
 }
 
 
