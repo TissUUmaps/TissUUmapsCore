@@ -843,7 +843,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform2fv(gl.getUniformLocation(program, "u_canvasSize"), [gl.canvas.width, gl.canvas.height]);
     gl.uniform2fv(gl.getUniformLocation(program, "u_pickingLocation"), glUtils._pickingLocation);
-    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
+    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale * glUtils._markerScaleFactor[uid]);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
 
     glUtils._pickedMarker = [-1, -1];  // Reset to no picked marker
