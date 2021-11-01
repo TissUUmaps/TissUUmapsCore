@@ -653,7 +653,7 @@ glUtils._updateColorbarCanvas = function() {
     ctx.canvas.height = canvasHeight;
     ctx.canvas.style.marginTop = -canvasHeight + "px";
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if (ctx.canvas.height == 0) {
+    if (ctx.canvas.height == -10) {
         ctx.canvas.className = "d-none";
         return;  // Nothing more to do for empty canvas
     }
@@ -668,7 +668,7 @@ glUtils._updateColorbarCanvas = function() {
         const colorscaleData = glUtils._colorscaleData[uid];
 
         // Define gradient for color scale
-        const gradient = ctx.createLinearGradient(64, 0, 256+64, 0);
+        const gradient = ctx.createLinearGradient(5, 0, 256+5, 0);
         const numStops = 32;
         for (let i = 0; i < numStops; ++i) {
             const normalized = i / (numStops - 1);
@@ -690,12 +690,15 @@ glUtils._updateColorbarCanvas = function() {
         // Convert range annotations to scientific notation if they may overflow
         if (propertyMin.length > 9) propertyMin = propertyRange[0].toExponential(5);
         if (propertyMax.length > 9) propertyMax = propertyRange[1].toExponential(5);
+        // Get marker tab name to show together with property name
+        const tabName = interfaceUtils.getElementById(uid + "_marker-tab-name").textContent;
+        let label = propertyName + " (" + tabName + ")";
 
         // Draw annotations (with drop shadow)
         ctx.font = "16px Segoe UI";
         ctx.textAlign = "center";
         ctx.fillStyle = "#000";  // Shadow color
-        ctx.fillText(propertyName, ctx.canvas.width/2+1, 18+1 + yOffset);
+        ctx.fillText(label, ctx.canvas.width/2+1, 18+1 + yOffset);
         ctx.textAlign = "left";
         ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 40+1 + yOffset);
         ctx.textAlign = "right";
