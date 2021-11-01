@@ -927,12 +927,22 @@ glUtils.pick = function(event) {
 
         tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");
         if (hasPickedMarker && glUtils._showMarkerInfo) {
+            const uid = pickedMarker[0];
+            const markerIndex = pickedMarker[1];
+            const tabName = interfaceUtils.getElementById(uid + "_marker-tab-name").textContent;
+            const markerData = dataUtils.data[uid]["_processeddata"];
+            const keyName = dataUtils.data[uid]["_gb_col"];
+            const groupName = markerData[markerIndex][keyName];
+            const piechartPropertyName = dataUtils.data[uid]["_pie_col"];
+
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            const tabName = interfaceUtils.getElementById(pickedMarker[0] + "_marker-tab-name").textContent;
-            div.innerHTML = [tabName, pickedMarker[1]];  // FIXME Show ID for now, until makePiechartTable is fixed
-            //div.innerHTML = markerUtils.makePiechartTable(dataUtils.data[uid]["ISS_processeddata"][pickedMarker]);
+            if (glUtils._usePiechartFromMarker[uid]) {
+                div.innerHTML = markerUtils.makePiechartTable(markerData, markerIndex, piechartPropertyName);
+            } else {
+                div.innerHTML = [tabName, groupName, markerIndex];
+            }
             div.classList.add("viewer-layer", "m-0", "p-1");
 
             tmapp["ISS_viewer"].addOverlay({

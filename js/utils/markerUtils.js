@@ -143,20 +143,16 @@ markerUtils.addPiechartLegend = function () {
 }
 
 /** Adding piechart table on pickup */
-markerUtils.makePiechartTable = function (barcode) {
+markerUtils.makePiechartTable = function(markerData, markerIndex, piechartPropertyName) {
     var op = tmapp["object_prefix"];
     var sectors = [];
-    if (markerUtils._uniquePiechartSelector.split(";").length > 1) {
-        sectors = markerUtils._uniquePiechartSelector.split(";");
+    numSectors = markerData[markerIndex][piechartPropertyName].split(";").length;
+    for(var i = 0; i < numSectors; i++) {
+        sectors.push("Sector " + (i+1));
     }
-    else {
-        numSectors = dataUtils.data["gene"][op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
-        for(var i = 0; i < numSectors; i++) {
-            sectors.push("Sector " + (i+1));
-        }
-    }
+
     outText = "";
-    sectorValues = barcode[markerUtils._uniquePiechartSelector].split(";")
+    sectorValues = markerData[markerIndex][piechartPropertyName].split(";");
     sortedSectors = [];
     sectors.forEach(function (sector, index) {
         sortedSectors.push([parseFloat(sectorValues[index]), sector, index])
@@ -164,7 +160,6 @@ markerUtils.makePiechartTable = function (barcode) {
     console.dir(sortedSectors);
     sortedSectors.sort(
         function cmp(a, b) {
-
             return b[0]-a[0];
         }
     );
