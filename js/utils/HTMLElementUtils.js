@@ -294,10 +294,10 @@ HTMLElementUtils.determinsticHTMLColor = function (key) {
     var red = 0; var green = 0; var blue = 0;
     var U = 0; var V = 0; var y = 128;
        
-    ggroup = ['i', 's', 'd', 'g', 'w', 'z','1','5','9'];
-    agroup = ['e', 'o', 'l', 'p', 'b', 'k', 'j','2','6'];
-    cgroup = ['a', 't', 'c', 'm', 'f', 'v','3','7','q'];
-    tugroup = ['r', 'n', 'u', 'h', 'y', 'x','4','8','0' ];
+    ggroup = ['g', 'i', 's', 'd', 'w', 'z','1','5','9'];
+    agroup = ['a', 'e', 'o', 'l', 'p', 'b', 'k', 'j','2','6'];
+    cgroup = ['c', 'm', 'f', 'v','3','7','q'];
+    tugroup = ['t', 'r', 'n', 'u', 'h', 'y', 'x','4','8','0' ];
 
     if (ggroup.includes(maincolor)) { U = 0; V = 0; } 
     else if (tugroup.includes(maincolor)) { U = 0; V = 255; }
