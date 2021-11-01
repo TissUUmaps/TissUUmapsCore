@@ -1549,7 +1549,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                     count=count % markerUtils._symbolStrings.length;
                 }
             }
-
+            shapeinput2.addEventListener("change",(event)=>{
+                interfaceUtils.updateShapeDict(uid);
+            });
             tr.appendChild(td2);
             td2.appendChild(shapeinput2);
         }
@@ -1572,6 +1574,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
             tr.appendChild(td3);
             td3.appendChild(colorinput3);
+            colorinput3.addEventListener("change",(event)=>{
+                interfaceUtils.updateColorDict(uid);
+            });
         }
         tbody.appendChild(tr);
        
@@ -1583,6 +1588,38 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
 
     return table;
 }
+
+interfaceUtils.updateColorDict = function(uid) {
+    var data_obj = dataUtils.data[uid];
+    jsonDict = {};
+    for(i in data_obj["_groupgarden"]){
+        var tree = data_obj["_groupgarden"][i]
+        var escapedID=tree["treeID"].replace(" ","_");
+        var colorInput = interfaceUtils.getElementById(uid+"_"+escapedID+"_color");
+        jsonDict[tree["treeID"]] = colorInput.value;
+    }
+    var colorDictInput = interfaceUtils.getElementById(uid+"_cb-bygroup-dict-val");
+    colorDictInput.value = JSON.stringify(jsonDict);
+    var colorDictRadio = interfaceUtils.getElementById(uid+"_cb-bygroup-dict");
+    colorDictRadio.checked = true;
+};
+
+interfaceUtils.updateShapeDict = function(uid) {
+    var data_obj = dataUtils.data[uid];
+    jsonDict = {};
+    for(i in data_obj["_groupgarden"]){
+        var tree = data_obj["_groupgarden"][i]
+        var escapedID=tree["treeID"].replace(" ","_");
+        var shapeInput = interfaceUtils.getElementById(uid+"_"+escapedID+"_shape");
+        jsonDict[tree["treeID"]] = shapeInput.value;
+    }
+    var shapeDictInput = interfaceUtils.getElementById(uid+"_shape-bygroup-dict-val");
+    shapeDictInput.value = JSON.stringify(jsonDict);
+    var colorDictRadio1 = interfaceUtils.getElementById(uid+"_shape-bygroup");
+    colorDictRadio1.click();
+    var colorDictRadio2 = interfaceUtils.getElementById(uid+"_shape-bygroup-dict");
+    colorDictRadio2.checked = true;
+};
 
 interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
     const data_obj = dataUtils.data[uid];
