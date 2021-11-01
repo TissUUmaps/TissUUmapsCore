@@ -198,6 +198,7 @@ dataUtils.updateViewOptions = function(event){
     if (data_obj["_scale_col"]=="null") {
         alert("No size column selected. Impossible to update view.");return;
     }
+    data_obj["_scale_factor"]=inputs["scale_factor"].value;
     // Use shape column
     data_obj["_shape_col"]=(radios["shape_col"].checked ? inputs["shape_col"].value : null);
     if (data_obj["_shape_col"]=="null") {

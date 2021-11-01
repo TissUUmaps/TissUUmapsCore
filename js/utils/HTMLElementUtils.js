@@ -182,12 +182,12 @@ HTMLElementUtils.createPanel = function (params) {
 HTMLElementUtils.createRow = function (params) {
     if (!params) {
         var row = HTMLElementUtils.createElement({ kind: "div" });
-        row.setAttribute("class", "row");
+        row.setAttribute("class", "row py-1");
         return row;
     }
     var row = HTMLElementUtils.createElement({ kind: "div" });
     (params.id || null ? row.setAttribute("id", params.id) : null);
-    row.setAttribute("class", "row");
+    row.setAttribute("class", "row py-1");
     if (params.divisions) {
         params.divisions.forEach(function (division) {
             row.appendChild(HTMLElementUtils.createColumn(division));
