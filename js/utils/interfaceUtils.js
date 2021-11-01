@@ -579,9 +579,7 @@ interfaceUtils._mGenUIFuncs={ctx:{aUUID:0}}
 /** 
 * @param {HTMLEvent} event event that triggered function
 * Delete all trace of a tab including datautils.data.key*/
-interfaceUtils._mGenUIFuncs.deleteTab=function(event){
-    uid=event.target.id.split("_")[0];
-
+interfaceUtils._mGenUIFuncs.deleteTab=function(uid){
     tabbutton=interfaceUtils.getElementById(uid+"_li-tab")
     tabbutton.remove();
 
@@ -765,7 +763,7 @@ interfaceUtils._mGenUIFuncs.generateUUID=function(){
 interfaceUtils._mGenUIFuncs.generateTab=function(){
     //create the tab and the space for the content
     //fill context with generated value for ID of data type
-    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+    var generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
 
      /** 
      * TAB OBJECT
@@ -773,9 +771,19 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     
     //first thing is to add the tab in the level 1. Which is a li with a button
     li1=HTMLElementUtils.createElement({"kind":"li", "id":generated+"_li-tab", "extraAttributes":{ "class":"nav-item", "role":"presentation"}});
-    button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-name","extraAttributes":{ "class":"nav-link", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
+    button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"nav-link", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
 
     button1.innerHTML="New dataset";
+    span1=HTMLElementUtils.createElement({"kind":"span", "id":generated+"_marker-tab-name"})
+    button1.appendChild(span1);
+    closeButton=HTMLElementUtils.createElement({"kind":"a", "id":generated+"_marker-tab-close"})
+    closeButton.innerHTML="&nbsp;&nbsp;<i class='bi bi-x'></i>";
+    button1.appendChild(closeButton);
+    closeButton.addEventListener("click",function(event) {
+        if (confirm("Are you sure you want to delete this tab?"))
+            interfaceUtils._mGenUIFuncs.deleteTab(generated);
+    })
+
 
     li1.appendChild(button1);
     setTimeout(function(){button1.click()},0);
@@ -1320,15 +1328,15 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
 interfaceUtils._mGenUIFuncs.generateRowOptionsButtons=function(){
     generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     row0=HTMLElementUtils.createRow({"id":generated+"_row-option-buttons"});
-        col00=HTMLElementUtils.createColumn({"width":5});
-        col01=HTMLElementUtils.createColumn({"width":3});
-            button010=HTMLElementUtils.createButton({"id":generated+"_delete-button","innerText":"Close tab","class":"btn btn-secondary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}});
+        col00=HTMLElementUtils.createColumn({"width":8});
+        //col01=HTMLElementUtils.createColumn({"width":3});
+        //    button010=HTMLElementUtils.createButton({"id":generated+"_delete-button","innerText":"Close tab","class":"btn btn-secondary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}});
         col02=HTMLElementUtils.createColumn({"width":4});
             button020=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Update view","class":"btn btn-primary","eventListeners":{"click":(event)=> dataUtils.updateViewOptions(event) }});
     
     row0.appendChild(col00);
-    row0.appendChild(col01);
-        col01.appendChild(button010);
+    //row0.appendChild(col01);
+    //    col01.appendChild(button010);
     row0.appendChild(col02);
         col02.appendChild(button020);
 
