@@ -19,6 +19,7 @@ glUtils = {
     // and is easy to delete when closing a marker tab...)
     _numPoints: {},              // {uid: numPoints, ...}
     _markerScalarRange: {},      // {uid: [minval, maxval], ...}
+    _markerScaleFactor: {},      // {uid: float}
     _markerScalarPropertyName: {},  // {uid: string, ...}
     _markerOpacity: {},          // {uid: alpha, ...}
     _useColorFromMarker: {},     // {uid: boolean, ...}
@@ -359,6 +360,8 @@ glUtils.loadMarkers = function(uid) {
     const scalePropertyName = dataUtils.data[uid]["_scale_col"];
     const useScaleFromMarker = dataUtils.data[uid]["_scale_col"] != null;
 
+    const markerScaleFactor = dataUtils.data[uid]["_scale_factor"];
+    
     const sectorsPropertyName = dataUtils.data[uid]["_pie_col"];
     const usePiechartFromMarker = dataUtils.data[uid]["_pie_col"] != null;
     const piechartPalette = glUtils._piechartPalette;
@@ -440,6 +443,7 @@ glUtils.loadMarkers = function(uid) {
     glUtils._markerOpacity[uid] = 1.0;  // TODO
     glUtils._markerScalarRange[uid] = scalarRange;
     glUtils._markerScalarPropertyName[uid] = scalarPropertyName;
+    glUtils._markerScaleFactor[uid] = markerScaleFactor;
     glUtils._colorscaleName[uid] = colorscaleName;
     glUtils._useColorFromMarker[uid] = useColorFromMarker;
     glUtils._useColorFromColormap[uid] = useColorFromColormap;
@@ -463,6 +467,7 @@ glUtils.deleteMarkers = function(uid) {
 
     // Delete marker settings and info for UID
     delete glUtils._numPoints[uid];
+    delete glUtils._markerScaleFactor[uid];
     delete glUtils._markerScalarRange[uid];
     delete glUtils._markerOpacity[uid];
     delete glUtils._useColorFromMarker[uid];
@@ -770,7 +775,6 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
-    gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
@@ -786,6 +790,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
 
+        gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale * glUtils._markerScaleFactor[uid]);
         gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange[uid]);
         gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_useColorFromMarker"), glUtils._useColorFromMarker[uid]);

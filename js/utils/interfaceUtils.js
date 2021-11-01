@@ -686,6 +686,7 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
     allinputs["cb_gr_dict"]=interfaceUtils.getElementById(uid+"_cb-bygroup-dict-val");
 
     allinputs["scale_col"]=interfaceUtils.getElementById(uid+"_scale-col");   
+    allinputs["scale_factor"]=interfaceUtils.getElementById(uid+"_scale-factor");
     allinputs["pie_col"]=interfaceUtils.getElementById(uid+"_piechart-col");
     allinputs["shape_col"]=interfaceUtils.getElementById(uid+"_shape-col-value");
     allinputs["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed-value");
@@ -1126,6 +1127,10 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
                 inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-scales","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
                 label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-scales-label", "extraAttributes":{ "for":generated+"_use-scales" }});
                 label0001.innerText="Use different size per marker"
+            label0002=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_scale-factor"}});
+            label0002.innerHTML="Size factor:&nbsp;";
+            inputsizefactor=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_scale-factor","extraAttributes":{ "class":"form-text-input", "type":"text", "value":1}});
+            
                 
         col01=HTMLElementUtils.createColumn({"width":6});
             label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_scale-col-label", "extraAttributes":{ "for":generated+"_scale-col" }});
@@ -1150,6 +1155,8 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
         col00.appendChild(divformcheck000)
             divformcheck000.appendChild(inputcheck0000);
             divformcheck000.appendChild(label0001);
+        col00.appendChild(label0002);
+        col00.appendChild(inputsizefactor);
 
     row0.appendChild(col01);
         col01.appendChild(label010);
@@ -1172,7 +1179,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
             labellab=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape-label"});
             labellab.innerHTML="<strong>Marker shape</strong>";
 
-        colshape2=HTMLElementUtils.createColumn({"width":4});
+        colshape2=HTMLElementUtils.createColumn({"width":6});
             divformcheck1shape=HTMLElementUtils.createElement({"kind":"div","extraAttributes":{"class":"form-check"}});
                 inputradio1shape=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup","extraAttributes":{ "name":generated+"_flexRadioShapeBy", "class":"form-check-input", "type":"radio", "checked":true}});
                 labelshapegroup=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-bygroup"}});
@@ -1190,7 +1197,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
         
         //------------------------
     
-        colshape3=HTMLElementUtils.createColumn({"width":8});
+        colshape3=HTMLElementUtils.createColumn({"width":6});
             //create a whole group for shape by group, random, key and group name
             divoptionscolgroup=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-col-group-options","extraAttributes":{"class": "renderOptionContainer"}});
     
