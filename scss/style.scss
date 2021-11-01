@@ -21,8 +21,8 @@ $navbar-padding-y: 0;
 
 // All the overlays over the viewer inherit this class.
 .viewer-layer {
-    background-color: white;
-    opacity: 70%;
+    background-color: rgba(255,255,255,0.70);
+    opacity: 100%;
     border-radius: .3rem;
     color: black;
 }

@@ -642,18 +642,22 @@ glUtils._updateColorbarCanvas = function() {
     // Determine canvas height needed to show colorbars for all markersets that
     // have colormaps
     let canvasHeight = 0;
-    const rowHeight = 96;  // Note: hardcoded value
+    const rowHeight = 70;  // Note: hardcoded value
     for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
         if (glUtils._showColorbar && glUtils._useColorFromColormap[uid])
-            canvasHeight += rowHeight;
+            canvasHeight += rowHeight + 10;
     }
+    canvasHeight -= 10; // No margin for last colorbar 
 
     // Resize and clear canvas
     ctx.canvas.height = canvasHeight;
     ctx.canvas.style.marginTop = -canvasHeight + "px";
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    if (ctx.canvas.height == 0) return;  // Nothing more to do for empty canvas
-
+    if (ctx.canvas.height == 0) {
+        ctx.canvas.className = "d-none";
+        return;  // Nothing more to do for empty canvas
+    }
+    ctx.canvas.className = "viewer-layer";
     // Create colorbars for the markersets
     let yOffset = 0;
     for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
@@ -674,32 +678,29 @@ glUtils._updateColorbarCanvas = function() {
             const b = Math.floor(colorscaleData[4 * index + 2]);
             gradient.addColorStop(normalized, "rgb(" + r + "," + g + "," + b + ")");
         }
-
         // Draw colorbar (with outline)
         ctx.fillStyle = gradient;
-        ctx.fillRect(64, 64 + yOffset, 256, 16);
+        ctx.fillRect(5, 48 + yOffset, 256, 16);
         ctx.strokeStyle = "#555";
-        ctx.strokeRect(64, 64 + yOffset, 256, 16);
+        ctx.strokeRect(5, 48 + yOffset, 256, 16);
 
+        // Convert range annotations to precision 7 and remove trailing zeros
+        let propertyMin = propertyRange[0].toPrecision(7).replace(/\.([^0]+)0+$/,".$1");
+        let propertyMax = propertyRange[1].toPrecision(7).replace(/\.([^0]+)0+$/,".$1");
         // Convert range annotations to scientific notation if they may overflow
-        let propertyMin = propertyRange[0].toString();
-        let propertyMax = propertyRange[1].toString();
         if (propertyMin.length > 9) propertyMin = propertyRange[0].toExponential(5);
         if (propertyMax.length > 9) propertyMax = propertyRange[1].toExponential(5);
 
         // Draw annotations (with drop shadow)
-        ctx.font = "16px Arial";
+        ctx.font = "16px Segoe UI";
         ctx.textAlign = "center";
         ctx.fillStyle = "#000";  // Shadow color
-        ctx.fillText(propertyName, ctx.canvas.width/2+1, 32+1 + yOffset);
-        ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 56+1 + yOffset);
-        ctx.fillText(propertyMax, ctx.canvas.width/2+128+1, 56+1 + yOffset);
-        ctx.fillStyle = "#fff";  // Text color
-        ctx.fillText(propertyName, ctx.canvas.width/2, 32 + yOffset);
-        ctx.fillText(propertyMin, ctx.canvas.width/2-128, 56 + yOffset);
-        ctx.fillText(propertyMax, ctx.canvas.width/2+128, 56 + yOffset);
-
-        yOffset += rowHeight;  // Move to next colorbar row
+        ctx.fillText(propertyName, ctx.canvas.width/2+1, 18+1 + yOffset);
+        ctx.textAlign = "left";
+        ctx.fillText(propertyMin, ctx.canvas.width/2-128+1, 40+1 + yOffset);
+        ctx.textAlign = "right";
+        ctx.fillText(propertyMax, ctx.canvas.width/2+128+1, 40+1 + yOffset);
+        yOffset += rowHeight + 10;  // Move to next colorbar row
     }
 }
 
@@ -711,9 +712,10 @@ glUtils._createColorbarCanvas = function() {
     root.appendChild(canvas);
 
     canvas.id = "colorbar_canvas";
-    canvas.width = "384";  // Fixed width in pixels
+    canvas.className = "d-none";
+    canvas.width = "266";  // Fixed width in pixels
     canvas.height = "96";  // Fixed height in pixels
-    canvas.style = "position:relative; float:right; width:384px; right:0px; " +
+    canvas.style = "position:relative; float:right; width:266px; bottom: 11px; right: 14px; " +
                    "margin-top:-96px; z-index:20; pointer-events:none";
 }
 
