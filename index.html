@@ -202,15 +202,18 @@
                         <div class="tab-pane" id="image-gui">
                             <div class="panel panel-default">
                                 <div class="panel-body">
-                                    <div class="row overflow-auto" id="image-overlay-panel">
+                                    <div class="row overflow-auto mb-2" id="image-overlay-panel">
                                     </div>
-                                    <div class="row">
-                                        <div class="col-6 my-2">
-                                            <a class="btn btn-primary" href="#filterSettings" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="filterSettings">
-                                                Filter settings
-                                            </a>
-                                        </div>
-                                        <div class="col-12 collapse" id="filterSettings">
+                                    <div id="filterSettingsAccordions">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="filterSettingsHeaders">
+                                                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#filterSettings" aria-expanded="false" aria-controls="filterSettings">
+                                                    <i class="bi bi-gear-fill"></i>&nbsp;Filter settings
+                                                </button>
+                                            </h2>
+                                            <div class="accordion-collapse p-2 collapse" id="filterSettings" aria-labelledby="filterSettingsHeaders" data-bs-parent="#filterSettingsAccordions">
+                                                <div class="col-12 px-1" id="filterSettings"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
