@@ -773,8 +773,9 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     li1=HTMLElementUtils.createElement({"kind":"li", "id":generated+"_li-tab", "extraAttributes":{ "class":"nav-item", "role":"presentation"}});
     button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"nav-link", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
 
-    button1.innerHTML="New dataset";
     span1=HTMLElementUtils.createElement({"kind":"span", "id":generated+"_marker-tab-name"})
+    span1.innerHTML="New dataset";
+
     button1.appendChild(span1);
     closeButton=HTMLElementUtils.createElement({"kind":"a", "id":generated+"_marker-tab-close"})
     closeButton.innerHTML="&nbsp;&nbsp;<i class='bi bi-x'></i>";
@@ -876,7 +877,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
         div121=HTMLElementUtils.createElement({"kind":"div","id":"input-group"});
             label1221=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":generated+"_tab-name"}});
             label1221.innerText="Tab name";
-            input1222=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_tab-name", "extraAttributes":{ "name":generated+"_tab-name", "class":"form-control","type":"text", "placeholder":"New dataset", "aria-label":"Tab name" }});
+            input1222=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_tab-name", "extraAttributes":{ "name":generated+"_tab-name", "class":"form-control","type":"text", "placeholder":"New dataset", "value":"New dataset","aria-label":"Tab name" }});
             input1222.innerText=generated; 
             input1222.addEventListener("change",(event)=>{interfaceUtils._mGenUIFuncs.ChangeTabName(event);})
 
