@@ -924,7 +924,8 @@ glUtils.pick = function(event) {
             const div = document.createElement("div");
             div.id = "ISS_marker_info";
             div.width = "1px"; div.height = "1px";
-            div.innerHTML = pickedMarker;  // FIXME Show ID for now, until makePiechartTable is fixed
+            const tabName = interfaceUtils.getElementById(pickedMarker[0] + "_marker-tab-name").textContent;
+            div.innerHTML = [tabName, pickedMarker[1]];  // FIXME Show ID for now, until makePiechartTable is fixed
             //div.innerHTML = markerUtils.makePiechartTable(dataUtils.data[uid]["ISS_processeddata"][pickedMarker]);
             div.classList.add("viewer-layer", "m-0", "p-1");
 
