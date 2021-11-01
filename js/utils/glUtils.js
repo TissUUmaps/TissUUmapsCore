@@ -394,8 +394,9 @@ glUtils.loadMarkers = function(uid) {
             if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
             if (useColorFromColormap) scalarValue = markerData[i][scalarPropertyName];
             if (useShapeFromMarker) {
-                // Assume that it is the shape name that is stored in the data
-                shapeIndex = markerUtils._symbolStrings.indexOf(markerData[i][shapePropertyName]);
+                shapeIndex = markerData[i][shapePropertyName];
+                // Check if shapeIndex is a symbol names that needs to be converted to an index
+                if (isNaN(shapeIndex)) shapeIndex = markerUtils._symbolStrings.indexOf(shapeIndex);
                 shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
             }
 
