@@ -247,6 +247,7 @@ dataUtils.createMenuFromCSV = function(data_id,datumExample) {
     namesymbols.forEach((drop)=>{
         if(drop=="cb_cmap") return; //if its colormaps dont fill it with csv but with d3 luts which are already there
         if(drop=="shape_fixed") return; //if its shapes dont fill it with csv but with shape symbols which are already there
+        if(drop=="scale_factor" || drop=="shape_gr_dict" || drop=="cb_gr_dict") return; //not dropdowns
         if (!alldrops[drop]) return;
         alldrops[drop].innerHTML = "";
         var option = document.createElement("option");
