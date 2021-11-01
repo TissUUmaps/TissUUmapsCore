@@ -448,8 +448,8 @@ glUtils.loadMarkers = function(uid) {
     glUtils._useShapeFromMarker[uid] = useShapeFromMarker;
     if (useColorFromColormap) {
         glUtils._updateColorScaleTexture(gl, uid, glUtils._textures[uid + "_colorscale"]);
-        glUtils._updateColorbarCanvas();
     }
+    glUtils._updateColorbarCanvas();
     glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
 }
 
