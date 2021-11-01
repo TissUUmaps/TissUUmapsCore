@@ -825,7 +825,7 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
         divaccordionitem=HTMLElementUtils.createElement({ "kind":"div","extraAttributes":{"class":"accordion-item"}});
         h2accordionitem=HTMLElementUtils.createElement({ "kind":"h2","id":"flush-heading"+index.toString(),"extraAttributes":{"class":"accordion-header"}});
         buttonaccordionitem=HTMLElementUtils.createElement({ "kind":"button", "extraAttributes":{ "class":"accordion-button collapsed", "type":"button", "data-bs-toggle":"collapse", "data-bs-target":"#flush-collapse"+index.toString(), "aria-expanded":"false", "aria-controls":"flush-collapse"+index.toString()}})
-        divaccordioncontent=HTMLElementUtils.createElement({ "kind":"div", "id":"flush-collapse"+index.toString(), "extraAttributes":{ "class":"accordion-collapse collapse tm-accordion-collapse", "data-bs-parent":"#"+generated+"_accordion-flush", "aria-labelledby":"flush-heading"+index.toString()}})
+        divaccordioncontent=HTMLElementUtils.createElement({ "kind":"div", "id":"flush-collapse"+index.toString(), "extraAttributes":{ "class":"accordion-collapse collapse tm-accordion-collapse py-2", "data-bs-parent":"#"+generated+"_accordion-flush", "aria-labelledby":"flush-heading"+index.toString()}})
         buttonaccordionitem.innerText=title;
 
         h2accordionitem.appendChild(buttonaccordionitem);
@@ -1333,7 +1333,7 @@ interfaceUtils._mGenUIFuncs.generateRowOptionsButtons=function(){
         //col01=HTMLElementUtils.createColumn({"width":3});
         //    button010=HTMLElementUtils.createButton({"id":generated+"_delete-button","innerText":"Close tab","class":"btn btn-secondary","eventListeners":{"click":(event)=>interfaceUtils._mGenUIFuncs.deleteTab(event)}});
         col02=HTMLElementUtils.createColumn({"width":4});
-            button020=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Update view","class":"btn btn-primary","eventListeners":{"click":(event)=> dataUtils.updateViewOptions(event) }});
+            button020=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Update view","class":"btn btn-primary my-1","eventListeners":{"click":(event)=> dataUtils.updateViewOptions(event) }});
     
     row0.appendChild(col00);
     //row0.appendChild(col01);
