@@ -123,9 +123,8 @@ dataUtils.processRawData = function(data_id,data) {
 * Make sure that the options selected are correct an call the necessary functions to process the data so
 * its ready to be displayed.
 */
-dataUtils.updateViewOptions = function(event){
+dataUtils.updateViewOptions = function(data_id){
 
-    var data_id=event.target.id.split("_")[0];
     var data_obj = dataUtils.data[data_id];
 
     var _selectedOptions = interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked(data_id);
@@ -204,6 +203,8 @@ dataUtils.updateViewOptions = function(event){
     if (data_obj["_shape_col"]=="null") {
         alert("No shape column selected. Impossible to update view.");return;
     }
+    // Marker opacity
+    data_obj["_opacity"]=inputs["opacity"].value;
     
     //this function veryfies if a tree with these features exist and doesnt recreate it
     dataUtils.makeQuadTrees(data_id);
@@ -247,7 +248,7 @@ dataUtils.createMenuFromCSV = function(data_id,datumExample) {
     namesymbols.forEach((drop)=>{
         if(drop=="cb_cmap") return; //if its colormaps dont fill it with csv but with d3 luts which are already there
         if(drop=="shape_fixed") return; //if its shapes dont fill it with csv but with shape symbols which are already there
-        if(drop=="scale_factor" || drop=="shape_gr_dict" || drop=="cb_gr_dict") return; //not dropdowns
+        if(drop=="scale_factor" || drop=="shape_gr_dict" || drop=="cb_gr_dict" || drop=="opacity") return; //not dropdowns
         if (!alldrops[drop]) return;
         alldrops[drop].innerHTML = "";
         var option = document.createElement("option");
@@ -259,6 +260,11 @@ dataUtils.createMenuFromCSV = function(data_id,datumExample) {
             alldrops[drop].appendChild(option);
         });
     })
+    if (data_obj["expectedHeader"]) {
+        interfaceUtils._mGenUIFuncs.fillRadiosAndChecksIfExpectedCSV(data_id,data_obj["expectedRadios"]);
+        interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV(data_id,data_obj["expectedHeader"]);
+        dataUtils.updateViewOptions(data_id);
+    }
 }
 
 /** 
@@ -275,6 +281,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
 
     data_obj["_rawdata"] = {};
     data_obj["_csv_header"] = null;
+    data_obj["_csv_path"] = thecsv;
 
     var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
     progressParent.classList.remove("d-none");
@@ -313,21 +320,25 @@ dataUtils.readCSV = function(data_id, thecsv) {
 * It creates an XMLHttpRequest. In the future someone should implement it with Fetch to comply with the W3 API
 * Its not yet compatible with the new dataUtils.....
 */
-dataUtils.XHRCSV = function(thecsv) {
-
-    var data_obj = dataUtils.data["gene"];  // TODO
-
+dataUtils.XHRCSV = function(data_id, options) {
+    console.log(data_id, options, options.path, options["path"]);
+    dataUtils.createDataset(data_id,{"name":data_id});
+    
+    let data_obj = dataUtils.data[data_id];
+    data_obj["expectedHeader"] = options.expectedHeader
+    data_obj["expectedRadios"] = options.expectedRadios
+    data_obj["_csv_path"] = options["path"];
     var op = tmapp["object_prefix"];
 
-    var panel = interfaceUtils.getElementById(op + "_csv_headers");
+    var panel = interfaceUtils.getElementById(data_id+"_input_csv_col");
     panel.classList.add("d-none");
 
     var xhr = new XMLHttpRequest();
 
-    var progressParent=interfaceUtils.getElementById("ISS_csv_progress_parent");
+    var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
     progressParent.classList.remove("d-none");
-
-    var progressBar=interfaceUtils.getElementById("ISS_csv_progress");
+    var progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
+    
     var fakeProgress = 0;
     
     // Setup our listener to process compeleted requests
@@ -338,9 +349,9 @@ dataUtils.XHRCSV = function(thecsv) {
         if (xhr.status >= 200 && xhr.status < 300) {
             // What do when the request is successful
             progressBar.style.width = "100%";
-            data_obj[op + "_rawdata"] = d3.csvParse(xhr.responseText);
-            dataUtils.createMenuFromCSV("gene");
-            
+            progressParent.classList.add("d-none");
+            console.log(xhr);
+            dataUtils.processRawData(data_id,d3.csvParse(xhr.responseText));
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
             progressParent.classList.add("d-none");
@@ -366,7 +377,7 @@ dataUtils.XHRCSV = function(thecsv) {
         }
     }
 
-    xhr.open('GET', thecsv);
+    xhr.open('GET', options["path"]);
     xhr.send();
     
 }

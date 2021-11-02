@@ -370,6 +370,8 @@ glUtils.loadMarkers = function(uid) {
     const useShapeFromMarker = dataUtils.data[uid]["_shape_col"] != null;
     const numShapes = Object.keys(markerUtils._symbolStrings).length;
     let shapeIndex = 0;
+    
+    const markerOpacity = dataUtils.data[uid]["_opacity"];
 
     // Create vertex data for markers
     const positions = [], indices = [], scales = [];
@@ -441,7 +443,7 @@ glUtils.loadMarkers = function(uid) {
 
     // Update marker info and LUT + colormap textures
     glUtils._numPoints[uid] = numPoints;
-    glUtils._markerOpacity[uid] = 1.0;  // TODO
+    glUtils._markerOpacity[uid] = markerOpacity;
     glUtils._markerScalarRange[uid] = scalarRange;
     glUtils._markerScalarPropertyName[uid] = scalarPropertyName;
     glUtils._markerScaleFactor[uid] = markerScaleFactor;
@@ -485,7 +487,9 @@ glUtils.deleteMarkers = function(uid) {
     gl.deleteBuffer(glUtils._buffers[uid + "_markers"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorLUT"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorscale"]);
-
+    delete glUtils._buffers[uid + "_markers"];
+    delete glUtils._textures[uid + "_colorLUT"];
+    delete glUtils._textures[uid + "_colorscale"];
     // Make sure colorbar is also deleted from the 2D canvas
     glUtils._updateColorbarCanvas();
 

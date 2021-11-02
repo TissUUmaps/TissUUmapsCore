@@ -238,42 +238,20 @@
     }
     if (state.markerFiles) {
         state.markerFiles.forEach(function(markerFile) {
+            if (markerFile.expectedCSV) {
+                projectUtils.convertOldMarkerFile(markerFile);
+            }
             if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
-                HTMLElementUtils.createDLSelectMarkers(
-                    markerFile.title,
-                    markerFile.path,
-                    markerFile.comment,
-                    markerFile.expectedCSV,
-                    markerFile.autoLoad,
-                    markerFile.settings
-                );        
+                interfaceUtils.createDownloadDropdownMarkers(markerFile);
             }
             else {
-                HTMLElementUtils.createDLButtonMarkers(
-                    markerFile.title,
-                    markerFile.path,
-                    markerFile.comment,
-                    markerFile.expectedCSV,
-                    markerFile.autoLoad,
-                    markerFile.settings
-                );
+                interfaceUtils.createDownloadButtonMarkers(markerFile);
             }
-        });
-    }
-    if (state.CPFiles) {
-        state.CPFiles.forEach(function(CPFile) {
-            HTMLElementUtils.createDLButtonMarkersCP(
-                CPFile.title,
-                CPFile.path,
-                CPFile.comment,
-                CPFile.expectedCSV,
-                CPFile.autoLoad
-            );
         });
     }
     if (state.regionFiles) {
         state.regionFiles.forEach(function(regionFile) {
-            HTMLElementUtils.createDLButtonRegions(
+            interfaceUtils.createDownloadButtonRegions(
                 regionFile.title,
                 regionFile.path,
                 regionFile.comment,
@@ -322,9 +300,12 @@
             window[setting.module][setting.function] = setting.value;
         });
     }
-    if (projectUtils._hideCSVImport) {
-        document.getElementById("ISS_data_panel").style.display="none";
+    if (state.hideTabs) {
+        document.getElementById("level-1-tabs").classList.add("d-none");
     }
+    /*if (projectUtils._hideCSVImport) {
+        document.getElementById("ISS_data_panel").style.display="none";
+    }*/
     setTimeout(function(){
         if (state.rotate) {
             var op = tmapp["object_prefix"];
@@ -353,6 +334,64 @@
     },300);
     
     //tmapp[tmapp["object_prefix"] + "_viewer"].world.resetItems()
+}
+
+projectUtils.convertOldMarkerFile = function(markerFile) {
+    if (!markerFile.expectedHeader)
+        markerFile.expectedHeader = {}
+    markerFile.expectedHeader.X = markerFile.expectedCSV.X_col;
+    markerFile.expectedHeader.Y = markerFile.expectedCSV.Y_col;
+    if (markerFile.expectedCSV.key == "letters") {
+        markerFile.expectedHeader.gb_col = markerFile.expectedCSV.group;
+        markerFile.expectedHeader.gb_name = markerFile.expectedCSV.name;
+    }
+    else {
+        markerFile.expectedHeader.gb_col = markerFile.expectedCSV.name;
+        markerFile.expectedHeader.gb_name = markerFile.expectedCSV.group;
+    }
+
+    if (!markerFile.expectedRadios)
+        markerFile.expectedRadios = {}
+    if (markerFile.expectedCSV.piechart) {
+        markerFile.expectedRadios.pie_check = true;
+        markerFile.expectedHeader.pie_col = markerFile.expectedCSV.piechart
+    } else {markerFile.expectedRadios.pie_check = false;}
+    if (markerFile.expectedCSV.color) {
+        markerFile.expectedRadios.cb_col = true;
+        markerFile.expectedHeader.cb_col = markerFile.expectedCSV.color
+    } else {markerFile.expectedRadios.cb_col = false;}
+    if (markerFile.expectedCSV.scale) {
+        markerFile.expectedRadios.scale_check = true;
+        markerFile.expectedHeader.scale_col = markerFile.expectedCSV.scale
+    } else {markerFile.expectedRadios.scale_check = false;}
+    if (!markerFile.uid)
+        markerFile.uid = "uniquetab";
+    markerFile.name = markerFile.title.replace("Download","");
+    if (markerFile.settings) {
+        for (setting of markerFile.settings) {
+            if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
+                markerFile.expectedHeader.scale_factor = setting.value;
+            if (setting.module == "markerUtils" && setting.function == "_selectedShape"){
+                dictSymbol = {6:3}
+                if (dictSymbol[setting.value]) setting.value = dictSymbol[setting.value];
+                markerFile.expectedHeader.shape_fixed = markerUtils._symbolStrings[setting.value];
+            }
+            if (setting.module == "markerUtils" && setting.function == "_randomShape") {
+                markerFile.expectedRadios.shape_fixed = !setting.value;
+                if (!markerFile.expectedHeader.shape_fixed) {
+                    markerFile.expectedHeader.shape_fixed = markerUtils._symbolStrings[2];
+                }
+            }
+            if (setting.module == "markerUtils" && setting.function == "_colorsperkey") {
+                markerFile.expectedRadios.cb_gr = true;
+                markerFile.expectedRadios.cb_gr_dict = true;
+                markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
+            }
+        }
+    }
+    delete markerFile.expectedCSV;
+    markerFile["hideSettings"] = true;
+    console.log(markerFile);
 }
 
 /**

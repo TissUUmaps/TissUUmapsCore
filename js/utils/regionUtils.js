@@ -536,8 +536,8 @@ regionUtils.regionUI = function (regionid) {
 regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, regionid, options) {    
     if (options.globalCoords) {
         var pointInPath = regionUtils.globalPointInPath;
-        var xselector = "global_X_pos";
-        var yselector = "global_Y_pos";
+        var xselector = options.xselector;
+        var yselector = options.yselector;
     }else{
         throw {name : "NotImplementedError", message : "ViewerPointInPath not yet implemented."}; 
 
@@ -555,6 +555,7 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
                 var d = node.data;
                 d.scanned = true;
                 var selected = (d[xselector] >= x0) && (d[xselector] < x3) && (d[yselector] >= y0) && (d[yselector] < y3);
+                console.log(d[xselector], d[yselector], x0, y0, x3, y3, selected);
                 if (selected) {
                     if (pointInPath(d[xselector] / imageWidth, d[yselector] / imageWidth, regionPath, tmpPoint)) {
                         countsInsideRegion += 1;
@@ -567,7 +568,7 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
     });
 
     if (countsInsideRegion) {
-        regionUtils._regions[regionid].barcodeHistogram.push({ "barcode": quadtree.treeName, "gene_name": quadtree.treeGeneName, "count": countsInsideRegion });
+        regionUtils._regions[regionid].barcodeHistogram.push({ "key": quadtree.treeID, "name": quadtree.treeName, "count": countsInsideRegion });
     }
     return pointsInside;
 }
@@ -863,7 +864,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         });
         
         regionanalyzebutton.addEventListener('click', function () {
-            if (!dataUtils.data["gene"][op + "_barcodeGarden"]) {
+            if (Object.keys(dataUtils.data).length == 0) {
                 alert("Load markers first");
                 return;
             }
@@ -955,19 +956,31 @@ regionUtils.analyzeRegion = function (regionid) {
     regionUtils._regions[regionid].barcodeHistogram=[];
 
     console.log("analyzing "+regionid);
-    var allkeys=Object.keys(dataUtils.data["gene"][op + "_barcodeGarden"]);
-    for (var codeIndex in allkeys) {
-        var code = allkeys[codeIndex];
-        var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils.data["gene"][op + "_barcodeGarden"][code],
-        regionUtils._regions[regionid]._gxmin,regionUtils._regions[regionid]._gymin,
-        regionUtils._regions[regionid]._gxmax,regionUtils._regions[regionid]._gymax,
-            regionid, {"globalCoords":true});
-        if(pointsInside.length>0){
-            pointsInside.forEach(function(p){
-                var pin=clone(p);
-                pin.regionid=regionid;
-                regionUtils._regions[regionid].associatedPoints.push(pin)
-            });
+    allDatasets = Object.keys(dataUtils.data);
+    for (var dataset of allDatasets) {
+        var allkeys=Object.keys(dataUtils.data[dataset]["_groupgarden"]);
+        console.log(dataset, allkeys);
+        for (var codeIndex in allkeys) {
+            var code = allkeys[codeIndex];
+            console.log(code, dataUtils.data[dataset], dataUtils.data[dataset]["_groupgarden"][code]);
+            var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils.data[dataset]["_groupgarden"][code],
+                regionUtils._regions[regionid]._gxmin,regionUtils._regions[regionid]._gymin,
+                regionUtils._regions[regionid]._gxmax,regionUtils._regions[regionid]._gymax,
+                regionid, {
+                    "globalCoords":true,
+                    "xselector":dataUtils.data[dataset]["_X"],
+                    "yselector":dataUtils.data[dataset]["_Y"],
+                    "dataset":  dataUtils.data[dataset]["_csv_path"]
+                });
+            console.log(dataset, code, pointsInside.length);
+            if(pointsInside.length>0){
+                pointsInside.forEach(function(p){
+                    var pin=clone(p);
+                    pin.regionid=regionid;
+                    pin.dataset=dataUtils.data[dataset]["_csv_path"];
+                    regionUtils._regions[regionid].associatedPoints.push(pin)
+                });
+            }
         }
     }
     regionUtils._regions[regionid].barcodeHistogram.sort(compare);
@@ -991,8 +1004,8 @@ regionUtils.analyzeRegion = function (regionid) {
         }));
         thead = HTMLElementUtils.createElement({kind: "thead"});
         thead.innerHTML = `<tr>
+        <th scope="col">Key</th>
         <th scope="col">Name</th>
-        <th scope="col">Barcode</th>
         <th scope="col">Count</th>
         </tr>`;
         tbody = HTMLElementUtils.createElement({kind: "tbody"});
@@ -1001,8 +1014,8 @@ regionUtils.analyzeRegion = function (regionid) {
 
         for (var i in histogram) {
             var innerHTML = "";
-            innerHTML += "<td>" + histogram[i].gene_name + "</td>";
-            innerHTML += "<td>" + histogram[i].barcode + "</td>";
+            innerHTML += "<td>" + histogram[i].key + "</td>";
+            innerHTML += "<td>" + histogram[i].name + "</td>";
             innerHTML += "<td>" + histogram[i].count + "</td>";
             tbody.appendChild(HTMLElementUtils.createElement({
                 kind: "tr",
@@ -1051,18 +1064,13 @@ regionUtils.pointsInRegionsToCSV=function(){
         });
     }
     var csvRows=[];
-    var possibleheaders=Object.keys(alldata[0]);
-    var headers=[];
-
-    var datum=alldata[0];
-    possibleheaders.forEach(function(ph){
-        if(datum[ph]){
-            //this is not undefined or null so add header
-
-            headers.push(ph);
-        }
-    });
-
+    var headers=alldata.reduce(function(arr, o) {
+        return Object.keys(o).reduce(function(a, k) {
+          if (a.indexOf(k) == -1) a.push(k);
+          return a;
+        }, arr)
+      }, []);
+    
     csvRows.push(headers.join(','));
     
 
