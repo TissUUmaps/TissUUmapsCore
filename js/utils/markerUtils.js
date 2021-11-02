@@ -144,16 +144,20 @@ markerUtils.addPiechartLegend = function () {
 
 /** Adding piechart table on pickup */
 markerUtils.makePiechartTable = function(markerData, markerIndex, piechartPropertyName) {
-    var op = tmapp["object_prefix"];
-    var sectors = [];
-    numSectors = markerData[markerIndex][piechartPropertyName].split(";").length;
-    for(var i = 0; i < numSectors; i++) {
-        sectors.push("Sector " + (i+1));
+
+    let sectors = [];
+    const numSectors = markerData[markerIndex][piechartPropertyName].split(";").length;
+    if (piechartPropertyName.split(";").length == numSectors) {
+        sectors = piechartPropertyName.split(";");  // Use sector labels from CSV header
+    } else {
+        for (let i = 0; i < numSectors; i++) {
+            sectors.push("Sector " + (i+1));  // Assign default sector labels
+        }
     }
 
-    outText = "";
-    sectorValues = markerData[markerIndex][piechartPropertyName].split(";");
-    sortedSectors = [];
+    let outText = "";
+    let sectorValues = markerData[markerIndex][piechartPropertyName].split(";");
+    let sortedSectors = [];
     sectors.forEach(function (sector, index) {
         sortedSectors.push([parseFloat(sectorValues[index]), sector, index])
     });
