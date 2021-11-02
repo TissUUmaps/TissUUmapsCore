@@ -95,12 +95,10 @@ markerUtils.showAllRows = function () {
 }
 
 /** Adding piechart legend in the upper left corner */
-markerUtils.addPiechartLegend = function () {
-    var op = tmapp["object_prefix"];
-    if (!markerUtils._uniquePiechartSelector || markerUtils._uniquePiechartSelector == "null")
-        return;
+markerUtils.updatePiechartLegend = function() {
+
     if (document.getElementById("piechartLegend") == undefined) {
-        var elt = document.createElement('div');
+        let elt = document.createElement("div");
         elt.className = "piechartLegend px-1 mx-1 viewer-layer"
         elt.id = "piechartLegend"
         tmapp['ISS_viewer'].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
@@ -108,33 +106,44 @@ markerUtils.addPiechartLegend = function () {
     elt = document.getElementById("piechartLegend");
     elt.style.display="block";
     elt.innerHTML = "";
-    var table = HTMLElementUtils.createElement({ type: "table"});
+
+    let markerData = undefined, sectorsPropertyName = undefined;
+    for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
+        if (glUtils._usePiechartFromMarker[uid]) {
+            markerData = dataUtils.data[uid]["_processeddata"];
+            sectorsPropertyName = dataUtils.data[uid]["_pie_col"];
+        }
+    }
+    if (markerData == undefined || sectorsPropertyName == undefined) return;
+
+    let table = HTMLElementUtils.createElement({ kind: "table" });
     table.style.borderSpacing = "3px";
     table.style.borderCollapse = "separate";
     table.style.fontSize = "10px";
-    var title = HTMLElementUtils.createElement({ type: "div", innerHTML: "<b>Piechart legend</b>"});
+    let title = HTMLElementUtils.createElement({ kind: "div", innerHTML: "<b>Piechart legend</b>"});
     elt.appendChild(title);
     elt.appendChild(table);
-    var sectors = [];
-    if (markerUtils._uniquePiechartSelector.split(";").length > 1) {
-        sectors = markerUtils._uniquePiechartSelector.split(";");
-    }
-    else {
-        numSectors = dataUtils.data["gene"][op + "_data"][0].values[0][markerUtils._uniquePiechartSelector].split(";").length;
-        for(var i = 0; i < numSectors; i++) {
-            sectors.push("Sector " + (i+1));
+
+    let sectors = [];
+    const numSectors = markerData[0][sectorsPropertyName].split(";").length;
+    if (sectorsPropertyName.split(";").length == numSectors) {
+        sectors = sectorsPropertyName.split(";");  // Use sector labels from CSV header
+    } else {
+        for (let i = 0; i < numSectors; i++) {
+            sectors.push("Sector " + (i+1));  // Assign default sector labels
         }
     }
+
     sectors.forEach(function (sector, index) {
-        var row = HTMLElementUtils.createElement({ type: "tr"});
+        let row = HTMLElementUtils.createElement({ kind: "tr"});
         row.style.paddingBottom = "4px";
-        var colortd = HTMLElementUtils.createElement({ type: "td", innerHTML: "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"});
+        let colortd = HTMLElementUtils.createElement({ kind: "td", innerHTML: "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"});
         colortd.style.backgroundColor = glUtils._piechartPalette[index % glUtils._piechartPalette.length];
         colortd.style.maxWidth = "70px";
         colortd.style.borderWidth= "1px";
         colortd.style.borderColor= "black";
         colortd.style.borderStyle= "solid";
-        var labeltd = HTMLElementUtils.createElement({ type: "td", innerHTML: "&nbsp;" + sector});
+        let labeltd = HTMLElementUtils.createElement({ kind: "td", innerHTML: "&nbsp;" + sector});
         row.appendChild(colortd);
         row.appendChild(labeltd);
         table.appendChild(row);
@@ -143,12 +152,12 @@ markerUtils.addPiechartLegend = function () {
 }
 
 /** Adding piechart table on pickup */
-markerUtils.makePiechartTable = function(markerData, markerIndex, piechartPropertyName) {
+markerUtils.makePiechartTable = function(markerData, markerIndex, sectorsPropertyName) {
 
     let sectors = [];
-    const numSectors = markerData[markerIndex][piechartPropertyName].split(";").length;
-    if (piechartPropertyName.split(";").length == numSectors) {
-        sectors = piechartPropertyName.split(";");  // Use sector labels from CSV header
+    const numSectors = markerData[markerIndex][sectorsPropertyName].split(";").length;
+    if (sectorsPropertyName.split(";").length == numSectors) {
+        sectors = sectorsPropertyName.split(";");  // Use sector labels from CSV header
     } else {
         for (let i = 0; i < numSectors; i++) {
             sectors.push("Sector " + (i+1));  // Assign default sector labels
@@ -156,7 +165,7 @@ markerUtils.makePiechartTable = function(markerData, markerIndex, piechartProper
     }
 
     let outText = "";
-    let sectorValues = markerData[markerIndex][piechartPropertyName].split(";");
+    let sectorValues = markerData[markerIndex][sectorsPropertyName].split(";");
     let sortedSectors = [];
     sectors.forEach(function (sector, index) {
         sortedSectors.push([parseFloat(sectorValues[index]), sector, index])

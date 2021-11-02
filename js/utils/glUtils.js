@@ -456,6 +456,7 @@ glUtils.loadMarkers = function(uid) {
     }
     glUtils._updateColorbarCanvas();
     glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
+    markerUtils.updatePiechartLegend();
 }
 
 
@@ -487,6 +488,9 @@ glUtils.deleteMarkers = function(uid) {
 
     // Make sure colorbar is also deleted from the 2D canvas
     glUtils._updateColorbarCanvas();
+
+    // Make sure piechart legend is deleted if it was used for this UID
+    markerUtils.updatePiechartLegend();
 }
 
 
