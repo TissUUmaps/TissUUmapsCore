@@ -10186,6 +10186,10 @@ html {
 .marker_table td {
   vertical-align: middle;}
 
+.transition_background td {
+  transition: background-color 1s;
+  transition-timing-function: ease-in;}
+
 #ISS_collapse_btn {
   border-radius: 5px 0 0 5px;
   width: inherit;

@@ -61,6 +61,11 @@ html {
     vertical-align: middle;
 }
 
+.transition_background td {
+    transition: background-color 2s;
+    transition-timing-function: ease-in;
+}
+
 #ISS_collapse_btn {
     border-radius: 5px 0 0 5px;
     width: inherit;

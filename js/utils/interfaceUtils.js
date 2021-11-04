@@ -1545,6 +1545,8 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         headopts.push("Color");
         sortable["Color"] = "sorttable_nosort";
     }
+    headopts.push("");
+    sortable[""] = "sorttable_nosort";
     headopts.forEach((opt)=>{
         var th=HTMLElementUtils.createElement({"kind":"th","extraAttributes":{"scope":"col","class":sortable[opt]}});
         th.innerText=opt
@@ -1565,6 +1567,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         var td17=HTMLElementUtils.createElement({"kind":"td"});
         var td2=null;
         var td3=null;
+        var td4=HTMLElementUtils.createElement({"kind":"td"});
 
         tr.appendChild(td0);
         tr.appendChild(td1);
@@ -1601,7 +1604,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             var td3=HTMLElementUtils.createElement({"kind":"td"});
             tr.appendChild(td3);
         }
-
+        tr.appendChild(td4);
         thead2.appendChild(tr);
     }
 
@@ -1610,8 +1613,15 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     for(i in data_obj["_groupgarden"]){
 
         var tree = data_obj["_groupgarden"][i]
+        
+        //remove space just in case
+        var escapedID=tree["treeID"].replace(" ","_");
+        var escapedName="";
+        if(usename)
+            escapedName=tree["treeName"];
+
         //row
-        var tr=HTMLElementUtils.createElement({"kind":"tr"});
+        var tr=HTMLElementUtils.createElement({"kind":"tr",extraAttributes:{"data-uid":uid,"data-escapedID":escapedID,"data-key":tree["treeID"]}});
         //first spot for a check
         var td0=HTMLElementUtils.createElement({"kind":"td"});
         var td1=HTMLElementUtils.createElement({"kind":"td"});
@@ -1619,20 +1629,19 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         var td17=HTMLElementUtils.createElement({"kind":"td"});
         var td2=null;
         var td3=null;
+        var td4=HTMLElementUtils.createElement({"kind":"td"});
 
         tr.appendChild(td0);
         tr.appendChild(td1);
 
-        //remove space just in case
-        var escapedID=tree["treeID"].replace(" ","_");
-        var escapedName="";
-        if(usename)
-            escapedName=tree["treeName"];
-
         var check0=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_check","extraAttributes":{"class":"form-check-input "+uid+"-marker-input","type":"checkbox" }});
         check0.checked = true; 
         td0.appendChild(check0);
-
+        
+        var check1=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_hidden","extraAttributes":{"class":"form-check-input marker-hidden d-none","type":"checkbox" }});
+        check1.checked = false; 
+        td0.appendChild(check1);
+        
         var label1=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
         label1.innerText=tree["treeID"];
         td1.appendChild(label1);
@@ -1700,6 +1709,45 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                 interfaceUtils.updateColorDict(uid);
             });
         }
+
+        
+        button1 = HTMLElementUtils.createElement({"kind":"div", extraAttributes:{"data-uid":uid,"data-escapedID":escapedID, "class":"btn btn-light btn-sm mx-1"}});
+        button1.innerHTML = "<i class='bi bi-eye'></i>";
+        td4.appendChild(button1);
+        tr.appendChild(td4);
+        
+        button1.addEventListener("mousedown",function(event) {
+            var uid = this.getAttribute("data-uid");
+            var escapedID = this.getAttribute("data-escapedID");
+            tr = this.parentElement.parentElement
+            tr.classList.add("table-primary");
+            hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
+            for(var i = 0; i < hidden_inputs.length; i++){
+                hidden_inputs[i].checked = true;
+            }
+            hoverElement = interfaceUtils.getElementById(uid+"_"+escapedID+"_hidden");
+            if (interfaceUtils.getElementById(uid+"_"+escapedID+"_check").checked) {
+                console.log("onmouseover",uid,escapedID);
+                
+                hoverElement.checked = false;
+            }
+            glUtils.updateColorLUTTextures();
+            glUtils.draw();
+        })
+        eventnames = ['mouseup', 'mouseleave'];
+        eventnames.forEach(function(eventname){
+            button1.addEventListener(eventname,function(event) {
+                tr = this.parentElement.parentElement
+                tr.classList.remove("table-primary");
+                hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
+                for(var i = 0; i < hidden_inputs.length; i++){
+                    hidden_inputs[i].checked = false;
+                }
+                glUtils.updateColorLUTTextures();
+                glUtils.draw();
+            })
+        })
+
         tbody.appendChild(tr);
        
     }
@@ -1755,6 +1803,7 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
 
         if (hasGroupUI) {
             inputs["visible"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_check").checked;
+            inputs["hidden"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_hidden").checked;
             if (interfaceUtils.getElementById(uid + "_" + escapedID + "_shape"))
                 inputs["shape"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape").value;
             if (interfaceUtils.getElementById(uid + "_" + escapedID + "_color"))

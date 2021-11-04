@@ -554,13 +554,14 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
         const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
         const shape = "shape" in inputs ? inputs["shape"] : "circle";
         const visible = "visible" in inputs ? inputs["visible"] : true;
+        const hidden = "hidden" in inputs ? inputs["hidden"] : true;
         // OBS! Need to clamp this value, since indexOf() can return -1
         const shapeIndex = Math.max(0, markerUtils._symbolStrings.indexOf(shape));
 
         colors[4 * index + 0] = Number("0x" + hexColor.substring(1,3)); 
         colors[4 * index + 1] = Number("0x" + hexColor.substring(3,5));
         colors[4 * index + 2] = Number("0x" + hexColor.substring(5,7));
-        colors[4 * index + 3] = Number(visible) * (Number(shapeIndex) + 1);
+        colors[4 * index + 3] = Number(visible) * (1 - Number(hidden)) * (Number(shapeIndex) + 1);
     }
 
     const bytedata = new Uint8Array(colors);
@@ -960,6 +961,12 @@ glUtils.pick = function(event) {
                 checkResize: false,
                 rotationMode: OpenSeadragon.OverlayRotationMode.NO_ROTATION
             });
+            interfaceUtils._mGenUIFuncs.ActivateTab(uid);
+            var tr = document.querySelectorAll('[data-uid="'+uid+'"][data-key="'+groupName+'"]')[0];
+            tr.scrollIntoView()
+            tr.classList.remove("transition_background")
+            tr.classList.add("table-primary")
+            setTimeout(function(){tr.classList.add("transition_background");tr.classList.remove("table-primary");},400);
         }
     }
 }
