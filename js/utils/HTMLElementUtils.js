@@ -290,10 +290,17 @@ HTMLElementUtils.createForm = function (params) {
 /** Create a color in YCbCr space to divide between the possible 4 letters */
 HTMLElementUtils.determinsticHTMLColor = function (key) {
     //A Red, T Green, C Bluemagenta, G yellow
-    var maincolor = key.charAt(0).toLowerCase();
     var red = 0; var green = 0; var blue = 0;
     var U = 0; var V = 0; var y = 128;
-       
+
+    if (!isNaN(parseInt(key))) {
+        console.log("b",key);
+        key = parseInt(key,10).toString(4).split("").reverse().join("");
+        console.log("a",key);
+    }
+    
+    var maincolor = key.charAt(0).toLowerCase();
+
     ggroup = ['g', 'i', 's', 'd', 'w', 'z','1','5','9'];
     agroup = ['a', 'e', 'o', 'l', 'p', 'b', 'k', 'j','2','6'];
     cgroup = ['c', 'm', 'f', 'v','3','7','q'];

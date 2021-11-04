@@ -567,7 +567,7 @@ interfaceUtils.generateDataTabUI = function(options){
         menurow=interfaceUtils._mGenUIFuncs.rowForMarkerUI();
 
         togglerow=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"row"}});
-        divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light mx-3"}});
+        divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light btn-sm mx-3"}});
         divpane_settings_toggle.innerHTML = "<i class='bi bi-sliders'></i>";
         divpane_settings_toggle.addEventListener("click",function(event) {
             divpane_settings = interfaceUtils.getElementById(generated+"_marker-tab-settings")
@@ -578,7 +578,24 @@ interfaceUtils.generateDataTabUI = function(options){
         divpane_settings.appendChild(accordion.divaccordion);
         divpane_settings.appendChild(buttonrow);
         togglerow.append(divpane_settings_toggle)
+            
         divpane.append(togglerow)
+
+        //row progressbar
+        row0=HTMLElementUtils.createRow({id:generated+"_csv_progress_parent"});
+        row0.classList.add("d-none");
+        row0.innerHTML="Loading markers..."
+
+        col01=HTMLElementUtils.createColumn({"width":12});
+            div011=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"progress"}});
+                div0111=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_csv_progress", "extraAttributes":{"class":"progress-bar progress-bar-striped","role":"progressbar" ,"aria-valuenow":"10", "aria-valuemin":"0" ,"aria-valuemax":"100"}});
+        
+        row0.appendChild(col01)
+            col01.appendChild(div011)
+                div011.appendChild(div0111);
+
+        divpane.appendChild(row0);
+
         divpane.append(divpane_settings)
         divpane.appendChild(menurow);
 
@@ -822,7 +839,7 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"nav-link marker-tab-button", "data-bs-toggle":"tab","data-bs-target":"#"+generated+"_marker-pane","type":"button","role":"tab","aria-controls":generated+"_marker","aria-selected":"false"}})
 
     span1=HTMLElementUtils.createElement({"kind":"span", "id":generated+"_marker-tab-name"})
-    span1.innerHTML="New dataset";
+    span1.innerHTML="New markers";
 
     button1.appendChild(span1);
     closeButton=HTMLElementUtils.createElement({"kind":"a", "id":generated+"_marker-tab-close"})
@@ -846,21 +863,6 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     //now the content of that tab pane which is a form like group to select the options for rendering
     //1.1
     divpane=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-pane", "extraAttributes":{  "class":"tab-pane",  "role":"tabpanel", "aria-labelledby":generated+"_marker-tab"}});
-
-    //row 0
-    row0=HTMLElementUtils.createRow({id:generated+"_csv_progress_parent"});
-    row0.classList.add("d-none");
-    row0.innerHTML="Loading markers..."
-
-    col01=HTMLElementUtils.createColumn({"width":12});
-        div011=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"progress"}});
-            div0111=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_csv_progress", "extraAttributes":{"class":"progress-bar progress-bar-striped","role":"progressbar" ,"aria-valuenow":"10", "aria-valuemin":"0" ,"aria-valuemax":"100"}});
-    
-    row0.appendChild(col01)
-        col01.appendChild(div011)
-            div011.appendChild(div0111);
-
-    divpane.appendChild(row0);
 
     //return this pane
     return divpane;
@@ -1159,8 +1161,9 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     row2=interfaceUtils._mGenUIFuncs.generateAdvancedPiechartAccordion3();
     row3=interfaceUtils._mGenUIFuncs.generateAdvancedShapeAccordion3();
     row4=interfaceUtils._mGenUIFuncs.generateAdvancedOpacityAccordion3();
+    row5=interfaceUtils._mGenUIFuncs.generateAdvancedMakeButtonAccordion3();
     
-    return [row1,row2,row3,row4];
+    return [row1,row2,row3,row4, row5];
  }
 
  /**
@@ -1177,13 +1180,13 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
             labellab.innerHTML="<strong>Marker size</strong>";
 
         col00=HTMLElementUtils.createColumn({"width":6});
+            label0002=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_scale-factor"}});
+            label0002.innerHTML="Size factor:&nbsp;";
+            inputsizefactor=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_scale-factor","extraAttributes":{ "class":"form-text-input", "type":"number", "value":1, "min":0, "step":0.05}});
             divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
                 inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-scales","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
                 label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-scales-label", "extraAttributes":{ "for":generated+"_use-scales" }});
                 label0001.innerText="Use different size per marker"
-            label0002=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_scale-factor"}});
-            label0002.innerHTML="Size factor:&nbsp;";
-            inputsizefactor=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_scale-factor","extraAttributes":{ "class":"form-text-input", "type":"number", "value":1, "min":0, "step":0.05}});
             
                 
         col01=HTMLElementUtils.createColumn({"width":6});
@@ -1206,11 +1209,11 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
         collab.appendChild(labellab)
 
     row0.appendChild(col00)
+        col00.appendChild(label0002);
+        col00.appendChild(inputsizefactor);
         col00.appendChild(divformcheck000)
             divformcheck000.appendChild(inputcheck0000);
             divformcheck000.appendChild(label0001);
-        col00.appendChild(label0002);
-        col00.appendChild(inputsizefactor);
 
     row0.appendChild(col01);
         col01.appendChild(label010);
@@ -1407,6 +1410,24 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     row0.appendChild(col00)
         col00.appendChild(label0002);
         col00.appendChild(inputsizefactor);
+
+    return row0;
+}
+
+ /**
+ *  Creates the forms to scale by
+ * @returns {array} a single rows
+ */
+  interfaceUtils._mGenUIFuncs.generateAdvancedMakeButtonAccordion3= function(){
+    generated=interfaceUtils._mGenUIFuncs.ctx.aUUID;
+
+    //row 0
+    row0=HTMLElementUtils.createRow({id:generated+"_opacity_0"});
+        col00=HTMLElementUtils.createColumn({"width":6});
+            button000=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Generate button from tab","class":"btn btn-light my-1","eventListeners":{"click":(event)=> projectUtils.makeButtonFromTab(event.target.id.split("_")[0]) }});
+            
+    row0.appendChild(col00)
+        col00.appendChild(button000);
 
     return row0;
 }
@@ -1645,6 +1666,55 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         var label1=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
         label1.innerText=tree["treeID"];
         td1.appendChild(label1);
+        
+        
+        /*tr.onmouseleave = function(event) {
+            this.setAttribute("data-hover","false");
+            
+            hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
+            for(var i = 0; i < hidden_inputs.length; i++){
+                hidden_inputs[i].checked = false;
+            }
+            glUtils.updateColorLUTTextures();
+            glUtils.draw();
+        };
+        tr.onmousemove = function(event) {
+            var tr = this;
+            var uid = this.getAttribute("data-uid");
+            var escapedID = this.getAttribute("data-escapedID");
+            var random_string = (Math.random() + 1).toString(36).substring(7);
+            if (tr.getAttribute("data-highlighted") == "true") {
+                tr.setAttribute("data-highlighted","false");
+                tr.classList.remove("table-primary");
+                hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
+                for(var i = 0; i < hidden_inputs.length; i++){
+                    hidden_inputs[i].checked = false;
+                }
+                glUtils.updateColorLUTTextures();
+                glUtils.draw();
+            }
+            console.log(random_string);
+            this.setAttribute("data-hover",random_string);
+            setTimeout(function () {
+                console.log(tr.getAttribute("data-hover"), random_string);
+                if (tr.getAttribute("data-hover") == random_string) {
+                    tr.setAttribute("data-highlighted","true");
+                    tr.classList.add("table-primary");
+                    hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
+                    for(var i = 0; i < hidden_inputs.length; i++){
+                        hidden_inputs[i].checked = true;
+                    }
+                    hoverElement = interfaceUtils.getElementById(uid+"_"+escapedID+"_hidden");
+                    if (interfaceUtils.getElementById(uid+"_"+escapedID+"_check").checked) {
+                        console.log("onmouseover",uid,escapedID);
+                        
+                        hoverElement.checked = false;
+                    }
+                    glUtils.updateColorLUTTextures();
+                    glUtils.draw();
+                }
+            },500);
+        };*/
 
         if(usename){
             var td15=HTMLElementUtils.createElement({"kind":"td"});
@@ -1672,7 +1742,15 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                 count=count % favouriteShapes.length;
             }else if(_selectedOptions["shape_gr_dict"]){
                 try {
-                    shapeinput2.value=JSON.parse(_selectedDropDown["shape_gr_dict"].value)[tree["treeID"]];
+                    val = JSON.parse(_selectedDropDown["shape_gr_dict"].value)[tree["treeID"]];
+                    if (val !== undefined) {
+                        shapeinput2.value=val;
+                    }
+                    else {
+                        shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
+                        count+=1;
+                        count=count % favouriteShapes.length;
+                    }
                 }
                 catch (err){
                     shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
@@ -1696,6 +1774,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             }else if(_selectedOptions["cb_gr_dict"]){
                 try {
                     thecolor=JSON.parse(_selectedDropDown["cb_gr_dict"].value)[tree["treeID"]];
+                    if (thecolor === undefined) {
+                        thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
+                    }
                 }
                 catch (err){
                     thecolor=overlayUtils.randomColor("hex");
@@ -1772,6 +1853,7 @@ interfaceUtils.updateColorDict = function(uid) {
     colorDictInput.value = JSON.stringify(jsonDict);
     var colorDictRadio = interfaceUtils.getElementById(uid+"_cb-bygroup-dict");
     colorDictRadio.checked = true;
+    colorDictInput.disabled = false;
 };
 
 interfaceUtils.updateShapeDict = function(uid) {
@@ -1789,6 +1871,7 @@ interfaceUtils.updateShapeDict = function(uid) {
     colorDictRadio1.click();
     var colorDictRadio2 = interfaceUtils.getElementById(uid+"_shape-bygroup-dict");
     colorDictRadio2.checked = true;
+    shapeDictInput.disabled = false;
 };
 
 interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
@@ -1839,7 +1922,8 @@ interfaceUtils.createDownloadDropdown = function(downloadRow, innerText, callbac
     
     var commentDiv = document.createElement("div");
     commentDiv.setAttribute("class", "col-6");
-    commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px; margin-bottom: 0px;"> ${comment} </p>`
+    if (comment)
+        commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px; margin-bottom: 0px;"> ${comment} </p>`
     row.appendChild(commentDiv);
 
     downloadRow.appendChild(row);
@@ -1868,12 +1952,12 @@ interfaceUtils.createDownloadDropdownMarkers = function(options, settings) {
         optionsCopy["path"] = dataURL;
         interfaceUtils.generateDataTabUI(optionsCopy);
     }
-    //if (autoLoad) {
-    //    dropdownOptions = [];
-    //}
-    //else {
+    if (options.autoLoad) {
+        dropdownOptions = [];
+    }
+    else {
         dropdownOptions = [{"value":"","text":"Select from list"}];
-    //}
+    }
     options["path"].forEach (function (dataURL) {
         dropdownOptions.push({
             "value": dataURL,
@@ -1882,9 +1966,9 @@ interfaceUtils.createDownloadDropdownMarkers = function(options, settings) {
     });
     interfaceUtils.createDownloadDropdown(downloadRow, options.title, callback, options.comment, dropdownOptions);
     //var label = document.getElementById("label_ISS_csv");
-    /*if (autoLoad) {
-        callback(null, {'selected':options["path"]});
-    }*/
+    if (options.autoLoad) {
+        callback(null, {'selected':options["path"][0]});
+    }
     //else { label.innerHTML = "Or import gene expression from CSV file:"; }
 }
 
@@ -1904,7 +1988,8 @@ interfaceUtils.createDownloadButton = function(downloadRow, innerText, callback,
     
     var commentDiv = document.createElement("div");
     commentDiv.setAttribute("class", "col-6");
-    commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px; margin-bottom: 0px;"> ${comment} </p>`
+    if (comment)
+        commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px; margin-bottom: 0px;"> ${comment} </p>`
     row.appendChild(commentDiv);
 
     downloadRow.appendChild(row);
@@ -1925,6 +2010,10 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
         interfaceUtils.generateDataTabUI(options);
     }
     var buttonRow = interfaceUtils.createDownloadButton(downloadRow, options.title, callback, options.comment);
+    if (options.autoLoad) {
+        callback(null);
+        buttonRow.style.display="none";
+    }
 }
 
 interfaceUtils.createDownloadButtonRegions = function(innerText, dataURL, comment, autoLoad, settings) {

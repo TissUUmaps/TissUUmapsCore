@@ -29,6 +29,29 @@
 
                 <div class="collapse navbar-collapse" id="navbar-menu">
                     <ul class="navbar-nav">
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            File
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                <li>
+                                    <a class="dropdown-item" href="#" id="load_project_menu">
+                                        <span>Import TMAP project</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" id="save_project_menu">
+                                        <span>Export TMAP project</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" id="capture_viewport">
+                                        <span>Capture viewport</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="nav-item dropdown d-none">
                             <a class="nav-link dropdown-toggle" href="#" id="dropdown-projects" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Projects
@@ -254,28 +277,21 @@
     document.getElementById("project_title").innerText = "Project title";
     // ----------
     $(document).ready(function () {
-        tmapp.fixed_file = "data/breastcancer/fluo.dzi";
-        tmapp.slideFilename = "Fluo";
-        tmapp.layers =[{name:"HE",tileSource:"data/breastcancer/HE.dzi"}];
-        //tmapp.mpp = 0.33;
-        /*HTMLElementUtils.createDLButtonMarkers(
-            "Download data",
-            "barcodes.csv",
-            "Data is 100mb it will take some time to download and appear. Select the headers and click on Load markers"
-        );
-        HTMLElementUtils.createDLButtonMarkersCP(
-            "Download data",
-            "CPdata.csv",
-            ""
-        );
-        HTMLElementUtils.createDLButtonRegions(
-            "Download data",
-            "./regions.json",
-            "Or go to the import tab to import your own json file"
-        );*/
-
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const tmapFile = urlParams.get('tmap')
+        if (tmapFile != null) {
+            projectUtils.loadProjectFileFromServer(tmapFile);
+        }
+        else {
+            tmapp.layers =[
+                {name:"Fluo",tileSource:"data/breastcancer/fluo.dzi"},
+                {name:"HE",tileSource:"data/breastcancer/HE.dzi"}
+            ];
+        }
         tmapp.registerActions();
         tmapp.init();
+
     });
 
 

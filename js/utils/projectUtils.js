@@ -43,8 +43,8 @@
 /** 
  * Get all the buttons from the interface and assign all the functions associated to them */
  projectUtils.registerActions = function () {
-    interfaceUtils.listen('save_project_menu', 'click', function() { projectUtils.saveProject() }, false);
-    interfaceUtils.listen('project_settings_menu', 'click', function() { projectUtils.editSettings() }, false);
+    interfaceUtils.listen('save_project_menu', 'click', function() { projectUtils.saveProjectWindow() }, false);
+    interfaceUtils.listen('load_project_menu', 'click', function() { projectUtils.loadProjectFile() }, false);
 }
 
 /**
@@ -65,13 +65,15 @@
         commonPath = urlProject.substring(0, urlProject.lastIndexOf('/')+2);
     }
     tmapp.layers.forEach(function(layer) {
-        var filename = layer.tileSource.substring(commonPath.length, layer.tileSource.length);
+        //var filename = layer.tileSource.substring(commonPath.length, layer.tileSource.length);
         relativeLayers.push(
-            {name: layer.name, tileSource: filename}
+            {name: layer.name, tileSource: layer.tileSource}
         )
-        relativePaths.push(layer.tileSource)
+        //relativePaths.push(layer.tileSource)
     });
-    if (urlProject == undefined) {
+    filename = prompt("Save project under the name:","NewProject");
+    
+    /*if (urlProject == undefined) {
         filename = prompt("Save project under the name:","NewProject");
         subfolder = window.location.pathname.substring(0, window.location.pathname.indexOf('/'));
         subfolder = subfolder + commonPath
@@ -90,7 +92,7 @@
             urlProject = urlProject + ".tmap"
         }
         filename = urlProject.substring( urlProject.lastIndexOf('/'),urlProject.length);
-    }
+    }*/
 
     state = projectUtils._activeState;
     state.regions = regionUtils._regions;
@@ -105,28 +107,85 @@
         state.layerOpacities[i] = $("#opacity-layer-"+i).val();
         state.layerVisibilities[i] = $("#visible-layer-"+i).is(":checked");
     });
-    
-    $.ajax({
-        type: "POST",
-        url: urlProject,
-        // The key needs to match your method's input parameter (case-sensitive).
-        data: JSON.stringify(state),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(data) {
-            $('#loadingModal').modal('hide');
-        },
-        failure: function(errMsg) {
-            $('#loadingModal').modal('hide');
-            alert(errMsg);
-        }
-    });
+
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
+    var dlAnchorElem=document.createElement("a");
+    dlAnchorElem.setAttribute("hidden","");
+    dlAnchorElem.setAttribute("href",     dataStr     );
+    dlAnchorElem.setAttribute("download", filename + ".tmap");
+    document.body.appendChild(dlAnchorElem);
+    dlAnchorElem.click();
+    document.body.removeChild(dlAnchorElem);
     return true;
+}
+
+
+projectUtils.makeButtonFromTab = function (dataset) {
+    buttonsDict = {};
+
+    csvFile = document.getElementById(dataset + "_csv").value.replace(/^.*[\\\/]/, '');
+    csvFile = prompt("Relative path to the csv file:",csvFile);
+    if (!csvFile)
+        return;
+    title = prompt("Button inner text:","Download data");
+    comment = prompt("Button comment:","");
+    markerFile = {
+        "path": csvFile,
+        "comment":comment,
+        "title":title,
+        "hideSettings":true,
+        "autoLoad":false,
+        "uid":dataset
+    };
+    tabName = document.getElementById(dataset + "_tab-name").value;
+    markerFile.name = tabName;
+    headers = interfaceUtils._mGenUIFuncs.getTabDropDowns(dataset);
+    markerFile.expectedHeader = Object.assign({}, ...Object.keys(headers).map((k) => ({[k]: headers[k].value})));
+    radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(dataset);
+    markerFile.expectedRadios = Object.assign({}, ...Object.keys(radios).map((k) => ({[k]: radios[k].checked})));
+    if (!projectUtils._activeState.markerFiles) {
+        projectUtils._activeState.markerFiles = [];
+    }
+    projectUtils._activeState.markerFiles.push(markerFile);
+    interfaceUtils.createDownloadButtonMarkers(markerFile);
+}
+
+projectUtils.loadProjectFile = function() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+        // getting a hold of the file reference
+        var file = e.target.files[0]; 
+
+        // setting up the reader
+        var reader = new FileReader();
+        reader.readAsText(file,'UTF-8');
+
+        // here we tell the reader what to do when it's done reading...
+        reader.onload = readerEvent => {
+            var content = readerEvent.target.result; // this is the content!
+            console.log( content );
+            projectUtils.loadProject(JSON.parse(content));
+        }
+    }
+    input.click();
+
+}
+
+projectUtils.loadProjectFileFromServer = function(path) {
+    $.getJSON(path, function(json) {
+        projectUtils.loadProject(json);
+    })
+    .fail(function(jqXHR, textStatus, errorThrown) { alert("error: " + textStatus); })
 }
 
 /**
  * This method is used to load the TissUUmaps state (gene expression, cell morphology, regions) */
- projectUtils.editSettings = function() {
+ projectUtils.saveProjectWindow = function() {
+    return projectUtils.saveProject();
+    
+    //TODO
+
     settingsModal = document.getElementById("settingsModal");
     if (! settingsModal) {
         var div = document.createElement('div');
@@ -135,13 +194,16 @@
                 <div class="modal-content">
                     
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#settingsModal').hide();">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title" id="modalLabelSmall">Edit project settings</h4>
+                        <h5 class="modal-title" id="modalLabelSmall">Save TMAP project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#settingsModal').hide();"></button>
                     </div>
                     
                     <div class="modal-body" id="settingsModalContent">
+                    </div>
+
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-primary" onclick="projectUtils.saveProject();">Save project</button>
                     </div>
                 
                 </div>
@@ -150,6 +212,7 @@
         console.log(div)
         document.body.appendChild(div);
     }
+    
     settingsModal = document.getElementById("settingsModal");
     settingsModalContent = document.getElementById("settingsModalContent");
     settingsModalContent.innerHTML = "";
@@ -166,12 +229,13 @@
             eventListeners: { click: function () { 
                 // TODO: Remove JQuery dependency here?
                 window[setting.module][setting.function] = this.checked;
+                if (!projectUtils._activeState.settings)
+                    projectUtils._activeState.settings = [];
                 projectUtils._activeState.settings.forEach(function(settingSaved, index, object) {
                     if (settingSaved.function == setting.function && settingSaved.function == setting.function) {
                         object.splice(index, 1);
                     }
                 });
-                console.dir(projectUtils._activeState.settings);
                 projectUtils._activeState.settings.push(
                     {
                         "module":setting.module,
@@ -183,7 +247,7 @@
              } }
         });
         row.appendChild(checkbox);
-        desc = HTMLElementUtils.createElement({ type: "span", innerHTML:  "<label style='cursor:pointer' for='settings-" + index + "'>&nbsp;&nbsp;"+setting.desc+"</label>"});
+        desc = HTMLElementUtils.createElement({ kind: "span", innerHTML:  "<label style='cursor:pointer' for='settings-" + index + "'>&nbsp;&nbsp;"+setting.desc+"</label>"});
         row.appendChild(desc);
         settingsModalContent.appendChild(row);
     })
@@ -226,7 +290,7 @@
         });
     }
     if (state.regions) {
-        regionUtils.regionUtils.JSONValToRegions(state.regions);
+        regionUtils.JSONValToRegions(state.regions);
     }
     if (state.regionFile) {
         regionUtils.JSONToRegions(state.regionFile);
@@ -240,6 +304,7 @@
         state.markerFiles.forEach(function(markerFile) {
             if (markerFile.expectedCSV) {
                 projectUtils.convertOldMarkerFile(markerFile);
+                state.hideTabs = true;
             }
             if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
                 interfaceUtils.createDownloadDropdownMarkers(markerFile);
@@ -272,7 +337,7 @@
     state.layers.forEach(function(layer) {
         pathname = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
         tmapp.layers.push(
-            {name: layer.name, tileSource: subfolder + "/" + layer.tileSource}
+            {name: layer.name, tileSource: layer.tileSource}
         )
     });
     if (state.filters) {
@@ -357,6 +422,7 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
         markerFile.expectedHeader.pie_col = markerFile.expectedCSV.piechart
     } else {markerFile.expectedRadios.pie_check = false;}
     if (markerFile.expectedCSV.color) {
+        markerFile.expectedRadios.cb_gr = false;
         markerFile.expectedRadios.cb_col = true;
         markerFile.expectedHeader.cb_col = markerFile.expectedCSV.color
     } else {markerFile.expectedRadios.cb_col = false;}
@@ -368,11 +434,14 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
         markerFile.uid = "uniquetab";
     markerFile.name = markerFile.title.replace("Download","");
     if (markerFile.settings) {
+        markerFile.expectedRadios.cb_gr = true;
+        markerFile.expectedRadios.cb_gr_dict = false;
+        markerFile.expectedRadios.cb_gr_rand = true;
         for (setting of markerFile.settings) {
             if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
                 markerFile.expectedHeader.scale_factor = setting.value;
             if (setting.module == "markerUtils" && setting.function == "_selectedShape"){
-                dictSymbol = {6:3}
+                dictSymbol = {6:6}
                 if (dictSymbol[setting.value]) setting.value = dictSymbol[setting.value];
                 markerFile.expectedHeader.shape_fixed = markerUtils._symbolStrings[setting.value];
             }
@@ -384,6 +453,15 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
             }
             if (setting.module == "markerUtils" && setting.function == "_colorsperkey") {
                 markerFile.expectedRadios.cb_gr = true;
+                markerFile.expectedRadios.cb_gr_rand = false;
+                markerFile.expectedRadios.cb_gr_dict = true;
+                markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
+            }
+            if (setting.module == "glUtils" && setting.function == "_markerOpacity")
+                markerFile.expectedHeader.opacity = setting.value;
+            if (setting.module == "HTMLElementUtils" && setting.function == "_colorsperbarcode") {
+                markerFile.expectedRadios.cb_gr = true;
+                markerFile.expectedRadios.cb_gr_rand = false;
                 markerFile.expectedRadios.cb_gr_dict = true;
                 markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
             }

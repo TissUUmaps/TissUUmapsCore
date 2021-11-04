@@ -385,6 +385,9 @@ overlayUtils.saveSVG=function(){
     document.body.removeChild(downloadLink); 
 }
 
+/**
+ * Save the current canvas as a PNG image
+ */
 overlayUtils.savePNG=function() {
     // Create an empty canvas element
     $("#loadingModal").show();
