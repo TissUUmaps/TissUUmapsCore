@@ -151,7 +151,26 @@ dataUtils.updateViewOptions = function(data_id){
         data_obj["_X"]=inputs["X"].value;
         data_obj["_Y"]=inputs["Y"].value;
     }
-
+    console.log(tmapp["ISS_viewer"].world._items.length == 0, tmapp["ISS_viewer"].world._items);
+    if (tmapp["ISS_viewer"].world._items.length == 0) {
+        width = Math.max.apply(Math, dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_X"]]; }))
+        height = Math.max.apply(Math, dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_Y"]]; }))
+        // We load an empty image at the size of the data.
+        console.log(width , height);
+        tmapp["ISS_viewer"].addTiledImage ({
+            tileSource: {
+                getTileUrl: function(z, x, y){return null},
+                height: parseInt(height*1.06),
+                width:  parseInt(width*1.06),
+                tileSize: 256,
+            },
+            opacity: 0,
+            x: -0.02,
+            y: -0.02
+        })
+        setTimeout (function() {dataUtils.updateViewOptions(data_id)},50);
+        return;
+    }
     //this will be trickier since trees need to be made and also a menu
     
     if(inputs["gb_col"].value && inputs["gb_col"].value != "null"){
