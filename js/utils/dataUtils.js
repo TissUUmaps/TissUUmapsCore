@@ -126,6 +126,12 @@ dataUtils.processRawData = function(data_id,data) {
 dataUtils.updateViewOptions = function(data_id){
 
     var data_obj = dataUtils.data[data_id];
+    
+    if(data_obj === undefined){
+        message="Load data first";
+        alert(message); console.log(message);
+        return;
+    }
 
     var _selectedOptions = interfaceUtils._mGenUIFuncs.areRadiosAndChecksChecked(data_id);
     data_obj["_selectedOptions"]=_selectedOptions
@@ -137,13 +143,7 @@ dataUtils.updateViewOptions = function(data_id){
     //console.log(radios);
     //console.log(inputs);
 
-    if(dataUtils.data[data_id]["_processeddata"].length<=0){
-        message="Load data first";
-        alert(message); console.log(message);
-        return;
-    }
-
-    if(!(inputs["X"].value && inputs["Y"].value)){
+    if(inputs["X"].value == 'null' || inputs["Y"].value == 'null'){
         message="Select X and Y first";
         alert(message); console.log(message);
         return;
