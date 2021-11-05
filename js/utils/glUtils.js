@@ -963,7 +963,7 @@ glUtils.pick = function(event) {
             });
             interfaceUtils._mGenUIFuncs.ActivateTab(uid);
             var tr = document.querySelectorAll('[data-uid="'+uid+'"][data-key="'+groupName+'"]')[0];
-            tr.scrollIntoView()
+            tr.scrollIntoView({block: "center",inline: "nearest"});
             tr.classList.remove("transition_background")
             tr.classList.add("table-primary")
             setTimeout(function(){tr.classList.add("transition_background");tr.classList.remove("table-primary");},400);
