@@ -5,19 +5,16 @@
   background-color: white; }
 
 .viewer-layer {
-  background-color: rgba(255,255,255,0.70);
+  background-color: rgba(255, 255, 255, 0.7);
   opacity: 100%;
   border-radius: .3rem;
-  color: black;}
+  color: black; }
 
 .displayregion {
   border: 1px solid #911821 !important; }
 
 .ISS_menu {
   background-color: white; }
-
-.tab-pane:not(#markers-regions-gui):not(#image-gui) {
-  margin: 5px 0 0 5px; }
 
 .overlay-slider {
   width: 100px; }
@@ -26,6 +23,17 @@
   right: 0px;
   width: 12px;
   line-height: 30vh; }
+
+.renderOptionContainer {
+  display: flex;
+  flex-direction: column; }
+
+.renderOption {
+  display: flex;
+  flex-direction: row; }
+
+.tm-accordion-collapse {
+  margin: 10px; }
 
 /*!
  * Bootstrap v5.1.1 (https://getbootstrap.com/)
@@ -10181,14 +10189,14 @@ html {
 
 .marker_table {
   user-select: none;
-  font-size: 13px;}
+  font-size: 13px; }
 
 .marker_table td {
-  vertical-align: middle;}
+  vertical-align: middle; }
 
 .transition_background td {
-  transition: background-color 1s;
-  transition-timing-function: ease-in;}
+  transition: background-color 2s;
+  transition-timing-function: ease-in; }
 
 #ISS_collapse_btn {
   border-radius: 5px 0 0 5px;
@@ -10196,21 +10204,22 @@ html {
   line-height: inherit;
   padding: 0px;
   font-size: 12px;
-  z-index: 100;}
+  z-index: 100; }
 
 .regions_table {
   user-select: none;
-  font-size: 13px;}
+  font-size: 13px; }
 
 .regions_table td {
-  vertical-align: middle;}
+  vertical-align: middle; }
 
 .cursor-pointer {
-  cursor: pointer;}
+  cursor: pointer; }
 
 .accordion-button {
-  padding: 0.5rem 1.25rem;}
+  padding: 0.5rem 1.25rem; }
 
-#main-tabs-menu{
-  background-color: white;}
+#main-tabs-menu {
+  background-color: white; }
+
 /*# sourceMappingURL=style.css.map */

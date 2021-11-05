@@ -36,11 +36,6 @@ $navbar-padding-y: 0;
     background-color: white;
 }
 
-// Tabs content
-.tab-pane:not(#markers-regions-gui):not(#image-gui) {
-    margin: 5px 0 0 5px;
-}
-
 // Sliders in the side menu (image layer in particular)
 .overlay-slider {
     width: 100px;
