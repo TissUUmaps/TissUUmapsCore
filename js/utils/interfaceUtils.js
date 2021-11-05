@@ -1782,10 +1782,14 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                     thecolor=overlayUtils.randomColor("hex");
                 }
             }
-
+            thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
             var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
             tr.appendChild(td3);
             td3.appendChild(colorinput3);
+            // fix for Safari
+            colorinput3.value = "#ffffff";
+            colorinput3.value = thecolor;
+
             colorinput3.addEventListener("change",(event)=>{
                 interfaceUtils.updateColorDict(uid);
             });
