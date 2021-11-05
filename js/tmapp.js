@@ -36,7 +36,8 @@ tmapp.registerActions = function () {
     interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { dataUtils.processRawData("morphology") },false);
     interfaceUtils.listen("capture_viewport","click",function(){overlayUtils.savePNG()},false)
     interfaceUtils.listen("plus-1-button","click",function(){interfaceUtils.generateDataTabUI()},false)
-    
+    document.addEventListener("mousedown",function(){tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");});
+
     // dataUtils.processEventForCSV("morphology",cpop + '_csv');
     //dataUtils.processEventForCSV("gene",op + '_csv');
     
