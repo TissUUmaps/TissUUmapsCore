@@ -120,15 +120,96 @@
 }
 
 
-projectUtils.makeButtonFromTab = function (dataset) {
+/**
+ * This method is used to load the TissUUmaps state (gene expression, cell morphology, regions) */
+ projectUtils.makeButtonFromTab = function(dataset) {
+    csvFile = document.getElementById(dataset + "_csv").value.replace(/^.*[\\\/]/, '');
+    if (!csvFile) {
+        csvFile = dataUtils.data[dataset]["_csv_path"];
+    }
+    button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"btn btn-secondary mx-2", "data-bs-dismiss":"modal"}})
+    button1.innerText = "Cancel";
+    button2=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"btn btn-primary mx-2"}})
+    button2.innerText = "Generate button";
+    buttons=divpane=HTMLElementUtils.createElement({"kind":"div"});
+    buttons.appendChild(button1);
+    buttons.appendChild(button2);
+
+    button1.addEventListener("click",function(event) {
+        document.getElementById("modalWindow").classList.add("d-none");
+    })
+    button2.addEventListener("click",function(event) {
+        function UrlExists(url)
+        {
+            var http = new XMLHttpRequest();
+            http.open('HEAD', url, false);
+            http.send();
+            return http.status!=404;
+        }
+        path = document.getElementById("generateButtonPath").value
+        if (path.includes("[")) {path = JSON.parse(path)}
+        if( Object.prototype.toString.call( path ) === '[object Array]' ) {
+            _exists = path.every(UrlExists);
+        }
+        else {
+            _exists = UrlExists(path);
+        }
+        if (!_exists) {
+            _confirm = confirm("Warning, path doesn't seem accessible on the server.\n\nAre you sure you want to continue?");
+            if (!_confirm) return;
+        }
+        title = document.getElementById("generateButtonTitle").value
+        comment = document.getElementById("generateButtonComment").value
+        projectUtils.makeButtonFromTabAux(dataset, path, title, comment);
+        document.getElementById("modalWindow").classList.add("d-none");
+    })
+    
+    content=HTMLElementUtils.createElement({"kind":"div"});
+        row0=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":"text-warning"}});
+        row0.innerText = "Warning, the csv file must be accessible on the server side."
+        row1=HTMLElementUtils.createRow({});
+            col11=HTMLElementUtils.createColumn({"width":12});
+                label111=HTMLElementUtils.createElement({"kind":"label", "extraAttributes":{ "for":"generateButtonPath" }});
+                label111.innerText="Relative path to the csv file (on the server side)"
+                file112=HTMLElementUtils.createElement({"kind":"input", "id":"generateButtonPath", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "value":csvFile}});
+
+        row2=HTMLElementUtils.createRow({});
+            col21=HTMLElementUtils.createColumn({"width":12});
+                label211=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":"generateButtonTitle" }});
+                label211.innerText="Button inner text";
+                select212=HTMLElementUtils.createElement({"kind":"input", "id":"generateButtonTitle", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "value":"Download data"} });
+
+        row3=HTMLElementUtils.createRow({});
+        col31=HTMLElementUtils.createColumn({"width":12});
+            label311=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":"generateButtonComment" }});
+            label311.innerText="Comment (will be displayed on the right of the button)";
+            select312=HTMLElementUtils.createElement({"kind":"input", "id":"generateButtonComment", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "value":""} });
+    
+    content.appendChild(row0);
+    content.appendChild(row1);
+        row1.appendChild(col11);
+            col11.appendChild(label111);
+            col11.appendChild(file112);
+    content.appendChild(row2);
+        row2.appendChild(col21);
+            col21.appendChild(label211);
+            col21.appendChild(select212);
+    content.appendChild(row3);
+        row3.appendChild(col31);
+            col31.appendChild(label311);
+            col31.appendChild(select312);
+
+    title = "Generate button from tab"
+    interfaceUtils.generateModal(title, content, buttons);
+ }
+
+
+projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment) {
     buttonsDict = {};
 
-    csvFile = document.getElementById(dataset + "_csv").value.replace(/^.*[\\\/]/, '');
-    csvFile = prompt("Relative path to the csv file:",csvFile);
     if (!csvFile)
         return;
-    title = prompt("Button inner text:","Download data");
-    comment = prompt("Button comment:","");
+
     markerFile = {
         "path": csvFile,
         "comment":comment,
@@ -147,7 +228,12 @@ projectUtils.makeButtonFromTab = function (dataset) {
         projectUtils._activeState.markerFiles = [];
     }
     projectUtils._activeState.markerFiles.push(markerFile);
-    interfaceUtils.createDownloadButtonMarkers(markerFile);
+    if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
+        interfaceUtils.createDownloadDropdownMarkers(markerFile);
+    }
+    else {
+        interfaceUtils.createDownloadButtonMarkers(markerFile);
+    }
 }
 
 projectUtils.loadProjectFile = function() {
@@ -283,6 +369,7 @@ projectUtils.loadProjectFileFromServer = function(path) {
         compositeMode: ""
     }
     */
+    document.getElementById("divMarkersDownloadButtons").innerHTML = "";
     if (state.tabs) {
         state.tabs.forEach(function(tab, i) {
             if (tab.title) {document.getElementById("title-tab-" + tab.name).innerHTML = tab.title}
@@ -436,7 +523,8 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
     if (markerFile.settings) {
         markerFile.expectedRadios.cb_gr = true;
         markerFile.expectedRadios.cb_gr_dict = false;
-        markerFile.expectedRadios.cb_gr_rand = true;
+        markerFile.expectedRadios.cb_gr_rand = false;
+        markerFile.expectedRadios.cb_gr_key = true;
         for (setting of markerFile.settings) {
             if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
                 markerFile.expectedHeader.scale_factor = setting.value;
@@ -454,6 +542,7 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
             if (setting.module == "markerUtils" && setting.function == "_colorsperkey") {
                 markerFile.expectedRadios.cb_gr = true;
                 markerFile.expectedRadios.cb_gr_rand = false;
+                markerFile.expectedRadios.cb_gr_key = false;
                 markerFile.expectedRadios.cb_gr_dict = true;
                 markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
             }
@@ -462,6 +551,7 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
             if (setting.module == "HTMLElementUtils" && setting.function == "_colorsperbarcode") {
                 markerFile.expectedRadios.cb_gr = true;
                 markerFile.expectedRadios.cb_gr_rand = false;
+                markerFile.expectedRadios.cb_gr_key = false;
                 markerFile.expectedRadios.cb_gr_dict = true;
                 markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
             }

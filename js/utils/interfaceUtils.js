@@ -1900,6 +1900,40 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
     return inputs;
 }
 
+interfaceUtils.generateModal = function(title, content, buttons) {
+    modalWindow = document.getElementById("modalWindow");
+    if (! modalWindow) {
+        var div = document.createElement('div');
+        div.innerHTML = `<div class="modal in d-none" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="modalLabelSmall" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalWindowTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#modalWindow').hide();"></button>
+                    </div>
+                    <div class="modal-body" id="modalWindowContent">
+                    </div>
+                    <div id="modalWindowButtons" class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        console.log(div)
+        document.body.appendChild(div);
+    }
+    
+    document.getElementById("modalWindowTitle").innerHTML = title;
+    modalWindowContent = document.getElementById("modalWindowContent")
+    modalWindowContent.innerHTML = "";
+    modalWindowContent.appendChild(content);
+    modalWindowButtons = document.getElementById("modalWindowButtons")
+    modalWindowButtons.innerHTML = "";
+    modalWindowButtons.appendChild(buttons);
+
+    modalWindow = document.getElementById("modalWindow");
+    modalWindow.style.display="block";
+    document.getElementById("modalWindow").classList.remove("d-none");
+}
 
 interfaceUtils.createDownloadDropdown = function(downloadRow, innerText, callback, comment, dropdownOptions) {
     var row = HTMLElementUtils.createRow(null);
