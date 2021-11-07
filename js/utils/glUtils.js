@@ -775,7 +775,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     const program = glUtils._programs["markers"];
     gl.useProgram(program);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
