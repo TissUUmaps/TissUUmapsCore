@@ -40,64 +40,31 @@
      ]
 }
 
-/** 
- * Get all the buttons from the interface and assign all the functions associated to them */
- projectUtils.registerActions = function () {
-    interfaceUtils.listen('save_project_menu', 'click', function() { projectUtils.saveProjectWindow() }, false);
-    interfaceUtils.listen('load_project_menu', 'click', function() { projectUtils.loadProjectFile() }, false);
-}
-
 /**
  * This method is used to save the TissUUmaps state (gene expression, cell morphology, regions) */
  projectUtils.saveProject = function(urlProject) {
     $('#loadingModal').modal('show');
-    var op = tmapp["object_prefix"];
-    var cpop = "CP";
-    var relativeLayers = [];
-    var relativePaths = [];
-    if (urlProject == undefined) {
-        tmapp.layers.forEach(function(layer) {
-            relativePaths.push(layer.tileSource)
-        });
-        commonPath = projectUtils.commonPath(tmapp.layers);
-    }
-    else {
-        commonPath = urlProject.substring(0, urlProject.lastIndexOf('/')+2);
-    }
-    tmapp.layers.forEach(function(layer) {
-        //var filename = layer.tileSource.substring(commonPath.length, layer.tileSource.length);
-        relativeLayers.push(
-            {name: layer.name, tileSource: layer.tileSource}
-        )
-        //relativePaths.push(layer.tileSource)
-    });
-    filename = prompt("Save project under the name:","NewProject");
-    
-    /*if (urlProject == undefined) {
-        filename = prompt("Save project under the name:","NewProject");
-        subfolder = window.location.pathname.substring(0, window.location.pathname.indexOf('/'));
-        subfolder = subfolder + commonPath
-        //subfolder = subfolder.replace(commonPath,"");
-        urlProject = subfolder + "/" + filename
-        console.log("urlProject.split('.').pop()", urlProject.split('.').pop());
-        if (urlProject.split('.').pop() != "tmap") {
-            urlProject = urlProject + ".tmap"
-        }
-        if (urlProject[0] == "/" && urlProject[1] == "/") urlProject = urlProject.substring(1, urlProject.length);
-        console.log(subfolder, filename, urlProject)
-    }
-    else {
-        urlProject = "/" + urlProject
-        if (! urlProject.split('.').pop() == "tmap") {
-            urlProject = urlProject + ".tmap"
-        }
-        filename = urlProject.substring( urlProject.lastIndexOf('/'),urlProject.length);
-    }*/
 
+    interfaceUtils.prompt("Save project under the name:","NewProject")
+    .then((filename) => {
+        state = projectUtils.getActiveProject();
+        state.filename = filename;
+
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
+        var dlAnchorElem=document.createElement("a");
+        dlAnchorElem.setAttribute("hidden","");
+        dlAnchorElem.setAttribute("href",     dataStr     );
+        dlAnchorElem.setAttribute("download", filename + ".tmap");
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        document.body.removeChild(dlAnchorElem);
+    })
+}
+
+projectUtils.getActiveProject = function () {
     state = projectUtils._activeState;
     state.regions = regionUtils._regions;
-    state.layers = relativeLayers;
-    state.filename = filename;
+    state.layers = tmapp.layers;
     state.filters = filterUtils._filtersUsed;
     state.layerFilters = filterUtils._filterItems;
     state.compositeMode = filterUtils._compositeMode;
@@ -107,16 +74,7 @@
         state.layerOpacities[i] = $("#opacity-layer-"+i).val();
         state.layerVisibilities[i] = $("#visible-layer-"+i).is(":checked");
     });
-
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
-    var dlAnchorElem=document.createElement("a");
-    dlAnchorElem.setAttribute("hidden","");
-    dlAnchorElem.setAttribute("href",     dataStr     );
-    dlAnchorElem.setAttribute("download", filename + ".tmap");
-    document.body.appendChild(dlAnchorElem);
-    dlAnchorElem.click();
-    document.body.removeChild(dlAnchorElem);
-    return true;
+    return state;
 }
 
 
@@ -125,8 +83,15 @@
  projectUtils.makeButtonFromTab = function(dataset) {
     csvFile = document.getElementById(dataset + "_csv").value.replace(/^.*[\\\/]/, '');
     if (!csvFile) {
-        csvFile = dataUtils.data[dataset]["_csv_path"];
+        if (dataUtils.data[dataset]) {
+            csvFile = dataUtils.data[dataset]["_csv_path"];
+        }
+        else {
+            interfaceUtils.alert("Select a csv file first!");
+            return;
+        }
     }
+    var modalUID = "default";
     button1=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"btn btn-secondary mx-2", "data-bs-dismiss":"modal"}})
     button1.innerText = "Cancel";
     button2=HTMLElementUtils.createButton({"id":generated+"_marker-tab-button","extraAttributes":{ "class":"btn btn-primary mx-2"}})
@@ -136,7 +101,7 @@
     buttons.appendChild(button2);
 
     button1.addEventListener("click",function(event) {
-        document.getElementById("modalWindow").classList.add("d-none");
+        $(`#${modalUID}_modal`).modal('hide');
     })
     button2.addEventListener("click",function(event) {
         function UrlExists(url)
@@ -154,18 +119,25 @@
         else {
             _exists = UrlExists(path);
         }
+        var title = document.getElementById("generateButtonTitle").value
+        var comment = document.getElementById("generateButtonComment").value
+        console.log(_exists);
         if (!_exists) {
-            _confirm = confirm("Warning, path doesn't seem accessible on the server.\n\nAre you sure you want to continue?");
-            if (!_confirm) return;
+            interfaceUtils.confirm("Warning, path doesn't seem accessible on the server.\n\nAre you sure you want to continue?")
+            .then(function(_confirm) {
+                if (_confirm) {
+                    projectUtils.makeButtonFromTabAux(dataset, path, title, comment);
+                    $(`#${modalUID}_modal`).modal('hide');
+                }
+            })
+            return;
         }
-        title = document.getElementById("generateButtonTitle").value
-        comment = document.getElementById("generateButtonComment").value
         projectUtils.makeButtonFromTabAux(dataset, path, title, comment);
-        document.getElementById("modalWindow").classList.add("d-none");
+        $(`#${modalUID}_modal`).modal('hide');
     })
     
     content=HTMLElementUtils.createElement({"kind":"div"});
-        row0=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":"text-warning"}});
+        row0=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":"text-danger"}});
         row0.innerText = "Warning, the csv file must be accessible on the server side."
         row1=HTMLElementUtils.createRow({});
             col11=HTMLElementUtils.createColumn({"width":12});
@@ -262,7 +234,7 @@ projectUtils.loadProjectFileFromServer = function(path) {
     $.getJSON(path, function(json) {
         projectUtils.loadProject(json);
     })
-    .fail(function(jqXHR, textStatus, errorThrown) { alert("error: " + textStatus); })
+    .fail(function(jqXHR, textStatus, errorThrown) { interfaceUtils.alert("error: " + textStatus); })
 }
 
 /**
@@ -281,7 +253,7 @@ projectUtils.loadProjectFileFromServer = function(path) {
                     
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalLabelSmall">Save TMAP project</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#settingsModal').hide();"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#settingsModal').modal('hide');;"></button>
                     </div>
                     
                     <div class="modal-body" id="settingsModalContent">
@@ -370,12 +342,12 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     */
     document.getElementById("divMarkersDownloadButtons").innerHTML = "";
-    if (state.tabs) {
+    /*if (state.tabs) {
         state.tabs.forEach(function(tab, i) {
             if (tab.title) {document.getElementById("title-tab-" + tab.name).innerHTML = tab.title}
             if (tab.visible === false) {document.getElementById("title-tab-" + tab.name).style.display="none"}
         });
-    }
+    }*/
     if (state.regions) {
         regionUtils.JSONValToRegions(state.regions);
     }
@@ -449,7 +421,10 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     if (state.settings) {
         state.settings.forEach(function(setting, i) {
-            window[setting.module][setting.function] = setting.value;
+            try{
+                window[setting.module][setting.function] = setting.value;
+            }
+            catch (err) {}
         });
     }
     if (state.hideTabs) {

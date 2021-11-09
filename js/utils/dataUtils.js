@@ -129,7 +129,7 @@ dataUtils.updateViewOptions = function(data_id){
     
     if(data_obj === undefined){
         message="Load data first";
-        alert(message); console.log(message);
+        interfaceUtils.alert(message); console.log(message);
         return;
     }
 
@@ -145,7 +145,7 @@ dataUtils.updateViewOptions = function(data_id){
 
     if(inputs["X"].value == 'null' || inputs["Y"].value == 'null'){
         message="Select X and Y first";
-        alert(message); console.log(message);
+        interfaceUtils.alert(message); console.log(message);
         return;
     }else{
         data_obj["_X"]=inputs["X"].value;
@@ -203,24 +203,24 @@ dataUtils.updateViewOptions = function(data_id){
             data_obj["_cb_col"]=inputs["cb_col"].value;
         }
         else  {
-            alert("No color column selected. Impossible to update view.");return;
+            interfaceUtils.alert("No color column selected. Impossible to update view.");return;
         }
     }
     // Use piecharts column
     data_obj["_pie_col"]=(radios["pie_check"].checked ? inputs["pie_col"].value : null);
     if (data_obj["_pie_col"]=="null") {
-        alert("No piechart column selected. Impossible to update view.");return;
+        interfaceUtils.alert("No piechart column selected. Impossible to update view.");return;
     }
     // Use scale colummn
     data_obj["_scale_col"]=(radios["scale_check"].checked ? inputs["scale_col"].value : null);
     if (data_obj["_scale_col"]=="null") {
-        alert("No size column selected. Impossible to update view.");return;
+        interfaceUtils.alert("No size column selected. Impossible to update view.");return;
     }
     data_obj["_scale_factor"]=inputs["scale_factor"].value;
     // Use shape column
     data_obj["_shape_col"]=(radios["shape_col"].checked ? inputs["shape_col"].value : null);
     if (data_obj["_shape_col"]=="null") {
-        alert("No shape column selected. Impossible to update view.");return;
+        interfaceUtils.alert("No shape column selected. Impossible to update view.");return;
     }
     // Marker opacity
     data_obj["_opacity"]=inputs["opacity"].value;
@@ -374,7 +374,7 @@ dataUtils.XHRCSV = function(data_id, options) {
         }else{
             console.log("dataUtils.XHRCSV responded with "+xhr.status);
             progressParent.classList.add("d-none");
-            alert ("Impossible to load data")
+            interfaceUtils.alert ("Impossible to load data")
         }     
     };
     
@@ -424,7 +424,7 @@ dataUtils.makeQuadTrees = function(data_id) {
     /*if(inputs["gb_col"].value==data_obj["_gb_col"]){
         if(Object.keys(data_obj["_groupgarden"]).length > 0){
             message="Group garden exists, dont waste time recreating it";
-            //alert(message); 
+            //interfaceUtils.alert(message); 
             console.log(message);
             
             return; //because graden exists

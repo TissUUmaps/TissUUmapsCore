@@ -10184,7 +10184,7 @@ html {
   left: 10px;
   top: 10px;
   overflow-y: auto;
-  max-height: 33vh;
+  max-height: 55vh;
   z-index: 13; }
 
 .marker_table {
@@ -10213,6 +10213,10 @@ html {
 .regions_table td {
   vertical-align: middle; }
 
+#image-overlay-table {
+  user-select: none;
+  font-size: 13px; }
+
 .cursor-pointer {
   cursor: pointer; }
 
@@ -10221,5 +10225,8 @@ html {
 
 #main-tabs-menu {
   background-color: white; }
+
+#messagebox_modal {
+  z-index: 10000; }
 
 /*# sourceMappingURL=style.css.map */

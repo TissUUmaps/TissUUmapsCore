@@ -843,13 +843,16 @@ regionUtils.addRegionClassUI = function (regionClass) {
             }
         });
         regionsdeletebutton.addEventListener('click', function () {
-            if (confirm('Are you sure you want to delete the whole '+regionClass+' group?')) {
-                groupRegions = Object.values(regionUtils._regions).filter(
-                    x => x.regionClass==regionClass
-                ).forEach(function (region) {
-                    regionUtils.deleteRegion(region.id);
-                });
-            }
+            interfaceUtils.confirm('Are you sure you want to delete the whole '+regionClass+' group?')
+            .then(function(_confirm){
+                if (_confirm) {
+                    groupRegions = Object.values(regionUtils._regions).filter(
+                        x => x.regionClass==regionClass
+                    ).forEach(function (region) {
+                        regionUtils.deleteRegion(region.id);
+                    });
+                }
+            });
         });
         tdPanel.appendChild(regionsdeletebutton);
         trPanel.appendChild(tdPanel);
@@ -865,7 +868,7 @@ regionUtils.addRegionClassUI = function (regionClass) {
         
         regionanalyzebutton.addEventListener('click', function () {
             if (Object.keys(dataUtils.data).length == 0) {
-                alert("Load markers first");
+                interfaceUtils.alert("Load markers first");
                 return;
             }
             Object.values(regionUtils._regions).filter(
@@ -1117,7 +1120,7 @@ regionUtils.regionsToJSON= function(){
         a.click();
           // Great success! The Blob API is supported.
     } else {
-      alert('The File APIs are not fully supported in this browser.');
+        interfaceUtils.alert('The File APIs are not fully supported in this browser.');
     }        
 }
 
@@ -1142,7 +1145,7 @@ regionUtils.JSONToRegions= function(filepath){
         };
         reader.readAsText(file);
     } else {
-        alert('The File APIs are not fully supported in this browser.');
+        interfaceUtils.alert('The File APIs are not fully supported in this browser.');
     }
 }
 

@@ -36,7 +36,7 @@ interfaceUtils.analyzeRegionUI = function (callingbutton) {
     var op = tmapp["object_prefix"];
 
 	if (!dataUtils.data["gene"][op + "_barcodeGarden"]) {
-		alert("Load markers first");
+		interfaceUtils.alert("Load markers first");
 		return;
     }
 
@@ -846,8 +846,10 @@ interfaceUtils._mGenUIFuncs.generateTab=function(){
     closeButton.innerHTML="&nbsp;&nbsp;<i class='bi bi-x'></i>";
     button1.appendChild(closeButton);
     closeButton.addEventListener("click",function(event) {
-        if (confirm("Are you sure you want to delete this tab?"))
-            interfaceUtils._mGenUIFuncs.deleteTab(generated);
+        interfaceUtils.confirm("Are you sure you want to delete this tab?")
+        .then(function(_confirm){
+            if (_confirm) interfaceUtils._mGenUIFuncs.deleteTab(generated)
+        });
     })
 
 
@@ -1900,39 +1902,136 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
     return inputs;
 }
 
-interfaceUtils.generateModal = function(title, content, buttons) {
-    modalWindow = document.getElementById("modalWindow");
+interfaceUtils.alert = function(text, title) {
+    if (!title) title = "Alert";
+    var modalUID = "messagebox"
+    button1=HTMLElementUtils.createButton({"extraAttributes":{ "class":"btn btn-primary mx-2", "data-bs-dismiss":"modal"}})
+    button1.innerText = "Ok";
+    buttons=divpane=HTMLElementUtils.createElement({"kind":"div"});
+    buttons.appendChild(button1);
+    button1.addEventListener("click",function(event) {
+        $(`#${modalUID}_modal`).modal('hide');
+    })
+    content=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":""}});
+    content.innerHTML = text;
+    interfaceUtils.generateModal(title, content, buttons, modalUID);
+}
+
+interfaceUtils.confirm = function (text, title) {
+    return new Promise((resolve, reject) => {
+        if (!title) title = "Confirm";
+        var modalUID = "messagebox"
+        button1=HTMLElementUtils.createButton({"extraAttributes":{ "class":"btn btn-primary mx-2"}})
+        button1.innerText = "Yes";
+        button2=HTMLElementUtils.createButton({"extraAttributes":{ "class":"btn btn-secondary mx-2", "data-bs-dismiss":"modal"}})
+        button2.innerText = "No";
+        buttons=divpane=HTMLElementUtils.createElement({"kind":"div"});
+        buttons.appendChild(button1);
+        buttons.appendChild(button2);
+        button1.addEventListener("click",function(event) {
+            console.log($(`#${modalUID}_modal`));
+            $(`#${modalUID}_modal`).modal('hide');;
+            resolve(true);
+        })
+        button2.addEventListener("click",function(event) {
+            $(`#${modalUID}_modal`).modal('hide');;
+            resolve(false);
+        })
+        content=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":""}});
+        content.innerHTML = text;
+        interfaceUtils.generateModal(title, content, buttons, modalUID);
+    })
+}
+
+interfaceUtils.prompt = function (text, value, title) {
+    return new Promise((resolve, reject) => {
+        if (!title) title = "Prompt";
+        var modalUID = "messagebox"
+        button1=HTMLElementUtils.createButton({"extraAttributes":{ "class":"btn btn-primary mx-2"}})
+        button1.innerText = "Ok";
+        button2=HTMLElementUtils.createButton({"extraAttributes":{ "class":"btn btn-secondary mx-2", "data-bs-dismiss":"modal"}})
+        button2.innerText = "Cancel";
+        buttons=divpane=HTMLElementUtils.createElement({"kind":"div"});
+        buttons.appendChild(button1);
+        buttons.appendChild(button2);
+        button1.addEventListener("click",function(event) {
+            $(`#${modalUID}_modal`).modal('hide');;
+            resolve(document.getElementById("confirmModalValue").value);
+        })
+        button2.addEventListener("click",function(event) {
+            $(`#${modalUID}_modal`).modal('hide');;
+            reject();
+        })
+        content=HTMLElementUtils.createElement({"kind":"div"});
+            
+        row0=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":""}});
+        row0.innerText = text
+        row1=HTMLElementUtils.createRow({});
+            col11=HTMLElementUtils.createColumn({"width":12});
+                input112=HTMLElementUtils.createElement({"kind":"input", "id":"confirmModalValue", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "value":value}});
+
+        content.appendChild(row0);
+        content.appendChild(row1);
+            row1.appendChild(col11);
+                col11.appendChild(input112);
+        interfaceUtils.generateModal(title, content, buttons, modalUID);
+        input112.focus();
+        input112.select();
+    })
+}
+
+interfaceUtils.generateModal = function(title, content, buttons, uid) {
+    if (!uid) uid = "default";
+    modalWindow = document.getElementById(uid + "_modal");
     if (! modalWindow) {
-        var div = document.createElement('div');
-        div.innerHTML = `<div class="modal in d-none" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="modalLabelSmall" aria-hidden="true">
+        var div = HTMLElementUtils.createElement({"kind":"div", "id":uid+"_modal", "extraAttributes":{ "class":"modal in fade", "tabindex":"-1", "role":"dialog", "aria-hidden":"true", "tabindex":"-1"}});
+        div.innerHTML = `
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalWindowTitle"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#modalWindow').hide();"></button>
+                    <div class="modal-header cursor-pointer">
+                        <h5 class="modal-title" id="${uid}_modalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('#${uid}_modal').modal('hide');;"></button>
                     </div>
-                    <div class="modal-body" id="modalWindowContent">
+                    <div class="modal-body" id="${uid}_modalContent">
                     </div>
-                    <div id="modalWindowButtons" class="modal-footer">
+                    <div id="${uid}_modalButtons" class="modal-footer">
                     </div>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
         console.log(div)
         document.body.appendChild(div);
     }
     
-    document.getElementById("modalWindowTitle").innerHTML = title;
-    modalWindowContent = document.getElementById("modalWindowContent")
+    document.getElementById(`${uid}_modalTitle`).innerHTML = title;
+    modalWindowContent = document.getElementById(`${uid}_modalContent`)
     modalWindowContent.innerHTML = "";
     modalWindowContent.appendChild(content);
-    modalWindowButtons = document.getElementById("modalWindowButtons")
+    modalWindowButtons = document.getElementById(`${uid}_modalButtons`)
     modalWindowButtons.innerHTML = "";
     modalWindowButtons.appendChild(buttons);
 
-    modalWindow = document.getElementById("modalWindow");
-    modalWindow.style.display="block";
-    document.getElementById("modalWindow").classList.remove("d-none");
+    modalWindow = document.getElementById(`${uid}_modal`);
+    $(modalWindow).modal('show');
+    modalWindow.getElementsByClassName("modal-dialog")[0].style.left = "0";
+    modalWindow.getElementsByClassName("modal-dialog")[0].style.top = "0";
+    $(".modal-header").on("mousedown", function(mousedownEvt) {
+        var $draggable = $(this);
+        var x = mousedownEvt.pageX - $draggable.offset().left,
+            y = mousedownEvt.pageY - $draggable.offset().top;
+        $("body").on("mousemove.draggable", function(mousemoveEvt) {
+            $draggable.closest(".modal-dialog").offset({
+                "left": mousemoveEvt.pageX - x,
+                "top": mousemoveEvt.pageY - y
+            });
+        });
+        $("body").one("mouseup", function() {
+            $("body").off("mousemove.draggable");
+        });
+        $draggable.closest(".modal").one("bs.modal.hide", function() {
+            $("body").off("mousemove.draggable");
+        });
+    });
+    return 
 }
 
 interfaceUtils.createDownloadDropdown = function(downloadRow, innerText, callback, comment, dropdownOptions) {
