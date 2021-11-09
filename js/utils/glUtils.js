@@ -950,7 +950,8 @@ glUtils.pick = function(event) {
             if (glUtils._usePiechartFromMarker[uid]) {
                 div.innerHTML = markerUtils.makePiechartTable(markerData, markerIndex, piechartPropertyName);
             } else {
-                div.innerHTML = [tabName, groupName, markerIndex];
+                div.innerHTML = groupName;
+                console.log("Marker clicked:",tabName, groupName, "index:", markerIndex);
             }
             div.classList.add("viewer-layer", "m-0", "p-1");
 
