@@ -100,6 +100,9 @@
                         <li>
                             <button data-bs-target="#image-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link" id="title-tab-image">Image layers</button>
                         </li>
+                        <li>
+                            <button data-bs-target="#plugins-gui" data-bs-toggle="tab" aria-expanded="false" class="nav-link d-none" id="title-tab-plugins">Plugins</button>
+                        </li>
                     </ul>
 
                     <div id="TM-tabs" class="tab-content">
@@ -243,6 +246,16 @@
                                 </div>
                             </div> <!-- end of a main panel -->
                         </div> <!-- end of image-gui-->
+                        <!-- TAB 1.4 Plugin data ----------------------------------------------------------------------------- -->
+                        <div class="tab-pane" id="plugins-gui">
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <h6 class="my-2">List of plugins:</h6>
+                                    <div id="pluginsAccordions">
+                                    </div>
+                                </div>
+                            </div> <!-- end of a main panel -->
+                        </div> <!-- end of Plugin-gui-->
                     </div> <!-- end of TM-tabs-->
                 </div> <!-- end of Level 0 tabs -->
             </div> <!-- end of lateral panel -->
@@ -270,6 +283,7 @@
 <script src="js/utils/filterUtils.js"></script>
 <script src="js/utils/geometryUtils.js"></script>
 <script src="js/utils/glUtils.js"></script>
+<script src="js/utils/pluginUtils.js"></script>
 <script src="js/utils/projectUtils.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
@@ -284,10 +298,10 @@
             projectUtils.loadProjectFileFromServer(tmapFile);
         }
         else {
-            tmapp.layers =[
+            /*tmapp.layers =[
                 {name:"Fluo",tileSource:"data/breastcancer/fluo.dzi"},
                 {name:"HE",tileSource:"data/breastcancer/HE.dzi"}
-            ];
+            ];*/
         }
         tmapp.registerActions();
         tmapp.init();

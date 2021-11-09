@@ -2169,3 +2169,103 @@ interfaceUtils.createDownloadButtonRegions = function(innerText, dataURL, commen
         buttonRow.style.display="none";
     }
 }
+
+interfaceUtils.addMenuItem = function(itemTree, callback) {
+    itemID = "menubar";
+    rootElement = document.querySelector("#navbar-menu .navbar-nav");
+    console.log(itemTree.length, rootElement);
+    for (var i = 0; i<itemTree.length; i++) {
+        console.log(rootElement);
+        itemID += "_" + HTMLElementUtils.stringToId(itemTree[i]);
+        console.log(itemID, document.getElementById(itemID));
+        if (!document.getElementById(itemID)) {
+            liItem = HTMLElementUtils.createElement({"kind":"li", "extraAttributes":{"class":"nav-item dropdown"}})
+            rootElement.appendChild(liItem);
+            
+            if (i == 0) {
+                aElement = HTMLElementUtils.createElement({"kind":"a", "id":itemID, "extraAttributes":{"class":"nav-link dropdown-toggle active","href":"#", "data-bs-toggle":"dropdown", "aria-haspopup":"true", "aria-expanded":"false"}})
+                liItem.appendChild(aElement);
+                ulItem = HTMLElementUtils.createElement({"kind":"ul", "id":itemID, "extraAttributes":{"class":"dropdown-menu dropdown-submenu"}})
+                liItem.appendChild(ulItem);
+                rootElement = ulItem;
+                spanMore = "";
+            }
+            else if (i != itemTree.length -1) {
+                aElement = HTMLElementUtils.createElement({"kind":"a", "id":itemID, "extraAttributes":{"class":"dropdown-item","href":"#", "data-bs-toggle":"dropdown", "aria-haspopup":"true", "aria-expanded":"false"}})
+                liItem.appendChild(aElement);
+                ulItem = HTMLElementUtils.createElement({"kind":"ul", "id":itemID, "extraAttributes":{"class":"dropdown-menu dropdown-submenu"}})
+                liItem.appendChild(ulItem);
+                rootElement = ulItem;
+                spanMore = " &raquo;";
+            }
+            else {
+                aElement = HTMLElementUtils.createElement({"kind":"a", "extraAttributes":{"class":"dropdown-item", "href":"#"}})
+                liItem.appendChild(aElement);
+                aElement.addEventListener("click",function (event) {
+                    callback();
+                });
+                spanMore = "";
+            }
+            var spanElement = document.createElement("span");
+            aElement.appendChild(spanElement);
+            spanElement.innerHTML = itemTree[i] + spanMore;
+        }
+        else {
+            rootElement = document.getElementById(itemID);
+        }
+    }
+}
+
+interfaceUtils.addPluginAccordion = function (pluginID, pluginName) {
+    var pluginID = HTMLElementUtils.stringToId(pluginID);
+    var pluginsAccordions = document.getElementById("pluginsAccordions");
+    var accordion_item = document.getElementById("PluginAccordionItem-" + pluginID);
+    if (!accordion_item) {
+        var accordion_item = HTMLElementUtils.createElement({
+            kind: "div",
+            extraAttributes: {
+                class: "accordion-item plugin-accordion",
+                id: "PluginAccordionItem-" + pluginID
+            }
+        });
+        pluginsAccordions.appendChild(accordion_item);
+        var accordion_header = HTMLElementUtils.createElement({
+            kind: "h2",
+            extraAttributes: {
+                class: "accordion-header",
+                id: "pluginHeading-" + pluginID
+            }
+        });
+        accordion_item.appendChild(accordion_header);
+        var accordion_header_button = HTMLElementUtils.createElement({
+            kind: "button",
+            innerHTML: pluginName,
+            extraAttributes: {
+                "type": "button",
+                "class": "accordion-button collapsed",
+                "id": "pluginHeading-" + pluginID,
+                "data-bs-toggle": "collapse",
+                "data-bs-target": "#" + "plugin-" + pluginID,
+                "aria-expanded": "true",
+                "aria-controls": "collapseOne"
+            }
+        });
+        accordion_header.appendChild(accordion_header_button);
+        
+        var accordion_content = HTMLElementUtils.createElement({
+            kind: "div",
+            extraAttributes: {
+                class: "accordion-collapse collapse px-2",
+                id: "plugin-" + pluginID,
+                "aria-labelledby":"headingOne",
+                "data-bs-parent":"#pluginsAccordions"
+            }
+        });
+        accordion_item.appendChild(accordion_content);
+        accordion_content.innerHTML = "[Plugin loading...]"
+    }
+    $('#title-tab-plugins').tab('show');
+    $('#' + "plugin-" + pluginID).collapse('show', {parent: pluginsAccordions});
+    document.getElementById("title-tab-plugins").classList.remove("d-none");
+    return document.getElementById("plugin-" + pluginID);
+}

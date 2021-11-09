@@ -22,20 +22,18 @@ tmapp = {
 tmapp.registerActions = function () {
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
     var op = tmapp["object_prefix"];
-    var cpop="CP";
 
     interfaceUtils.listen(op + '_collapse_btn','click', function () { interfaceUtils.toggleRightPanel() },false);
-    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processRawData("gene"); },false);
-    interfaceUtils.listen(op + '_search','input', function () { markerUtils.hideRowsThatDontContain(); },false);
-    interfaceUtils.listen(op + '_drawall_btn','click', function () { markerUtils.drawAllToggle(); },false);
+    /*interfaceUtils.listen(op + '_search','input', function () { markerUtils.hideRowsThatDontContain(); },false);*/
     interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
     interfaceUtils.listen(op + '_export_regions','click', function () { regionUtils.exportRegionsToJSON() },false);
     interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
     interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
     interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { dataUtils.processRawData("morphology") },false);
     interfaceUtils.listen("capture_viewport","click",function(){overlayUtils.savePNG()},false)
     interfaceUtils.listen("plus-1-button","click",function(){interfaceUtils.generateDataTabUI()},false)
+    interfaceUtils.listen('save_project_menu', 'click', function() { projectUtils.saveProjectWindow() }, false);
+    interfaceUtils.listen('load_project_menu', 'click', function() { projectUtils.loadProjectFile() }, false);
     document.addEventListener("mousedown",function(){tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");});
 
     // dataUtils.processEventForCSV("morphology",cpop + '_csv');
@@ -49,8 +47,6 @@ tmapp.registerActions = function () {
             as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
         }
     }
-    //interfaceUtils.activateMainChildTabs("markers-gui");
-
 }
 /**
  * This method is called when the document is loaded. The tmapp object is built as an "app" and init is its main function.
@@ -144,7 +140,6 @@ tmapp.init = function () {
     } else {
         console.log("Using CPU-based marker drawing (SVG canvas)")
     }
-    projectUtils.registerActions();
 } //finish init
 
 /**
