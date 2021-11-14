@@ -43,8 +43,6 @@
 /**
  * This method is used to save the TissUUmaps state (gene expression, cell morphology, regions) */
  projectUtils.saveProject = function(urlProject) {
-    $('#loadingModal').modal('show');
-
     interfaceUtils.prompt("Save project under the name:","NewProject")
     .then((filename) => {
         state = projectUtils.getActiveProject();
