@@ -10229,4 +10229,7 @@ html {
 #messagebox_modal {
   z-index: 10000; }
 
+.progress-bar {
+  transition: width 0s ease !important; }
+
 /*# sourceMappingURL=style.css.map */
