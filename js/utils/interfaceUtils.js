@@ -528,6 +528,9 @@ interfaceUtils.hideTabsExcept = function (a) {
         main.style.maxWidth = "";
         btn.innerHTML = '<i class="bi bi-caret-left-fill"></i>';
     }
+    //small fix for super small viewport on mobile
+    var vname = op + "_viewer";
+    setTimeout(function(){tmapp[vname].viewport.applyConstraints(true);},100);
 }
 
 
@@ -881,7 +884,7 @@ interfaceUtils._mGenUIFuncs.generateAccordion=function(){
     /** 
      * MAIN ACCORDION
     */
-    //inside the pane put an accordio with 3 accordion-items to put the options
+    //inside the pane put an accordion with 3 accordion-items to put the options
     divaccordion=HTMLElementUtils.createElement({"kind":"div","id":generated+"_accordion-flush","extraAttributes":{"class":"accordion accordion-flush"}})
 
     //now 3 accordion items
@@ -1481,6 +1484,7 @@ interfaceUtils._mGenUIFuncs.fillDropDownsIfExpectedCSV=function(uid,expectedHead
         for(d in expectedHeader){
             if(dropdowns[d]){
                 needle=expectedHeader[d];
+                if (typeof needle === 'object') needle = JSON.stringify(needle);
                 opts=dropdowns[d].options;
                 if (!opts) {
                     dropdowns[d].value=needle
@@ -1965,7 +1969,7 @@ interfaceUtils.prompt = function (text, value, title) {
         content=HTMLElementUtils.createElement({"kind":"div"});
             
         row0=HTMLElementUtils.createElement({"kind":"p", "extraAttributes":{"class":""}});
-        row0.innerText = text
+        row0.innerHTML = text
         row1=HTMLElementUtils.createRow({});
             col11=HTMLElementUtils.createColumn({"width":12});
                 input112=HTMLElementUtils.createElement({"kind":"input", "id":"confirmModalValue", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "value":value}});
@@ -2098,13 +2102,13 @@ interfaceUtils.createDownloadDropdownMarkers = function(options, settings) {
     options["path"].forEach (function (dataURL) {
         dropdownOptions.push({
             "value": dataURL,
-            "text": dataURL.split('/').reverse()[0].replaceAll('_', ' ').replaceAll('.csv', '')
+            "text": dataURL.split('/').reverse()[0].replace(/_/g, '').replace('.csv', '')
         })
     });
     interfaceUtils.createDownloadDropdown(downloadRow, options.title, callback, options.comment, dropdownOptions);
     //var label = document.getElementById("label_ISS_csv");
     if (options.autoLoad) {
-        callback(null, {'selected':options["path"][0]});
+        setTimeout(function(){callback(null, {'selected':options["path"][0]})},500);
     }
     //else { label.innerHTML = "Or import gene expression from CSV file:"; }
 }
@@ -2148,7 +2152,7 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
     }
     var buttonRow = interfaceUtils.createDownloadButton(downloadRow, options.title, callback, options.comment);
     if (options.autoLoad) {
-        callback(null);
+        setTimeout(function(){callback(null)},500);
         buttonRow.style.display="none";
     }
 }
@@ -2165,12 +2169,12 @@ interfaceUtils.createDownloadButtonRegions = function(innerText, dataURL, commen
     }
     var buttonRow = interfaceUtils.createDownloadButton(downloadRow, innerText, callback, comment);
     if (autoLoad) {
-        callback(null);
+        setTimeout(function(){callback(null)},500);
         buttonRow.style.display="none";
     }
 }
 
-interfaceUtils.addMenuItem = function(itemTree, callback) {
+interfaceUtils.addMenuItem = function(itemTree, callback, before) {
     itemID = "menubar";
     rootElement = document.querySelector("#navbar-menu .navbar-nav");
     console.log(itemTree.length, rootElement);
@@ -2180,10 +2184,15 @@ interfaceUtils.addMenuItem = function(itemTree, callback) {
         console.log(itemID, document.getElementById(itemID));
         if (!document.getElementById(itemID)) {
             liItem = HTMLElementUtils.createElement({"kind":"li", "extraAttributes":{"class":"nav-item dropdown"}})
-            rootElement.appendChild(liItem);
+            if (i == 0)
+                rootElement.insertBefore(liItem, document.getElementById("nav-item-title"));
+            else if (before)
+                rootElement.prepend(liItem);
+            else
+                rootElement.append(liItem);
             
             if (i == 0) {
-                aElement = HTMLElementUtils.createElement({"kind":"a", "id":itemID, "extraAttributes":{"class":"nav-link dropdown-toggle active","href":"#", "data-bs-toggle":"dropdown", "aria-haspopup":"true", "aria-expanded":"false"}})
+                aElement = HTMLElementUtils.createElement({"kind":"a", "id":"a_"+itemID, "extraAttributes":{"class":"nav-link dropdown-toggle active","href":"#", "data-bs-toggle":"dropdown", "aria-haspopup":"true", "aria-expanded":"false"}})
                 liItem.appendChild(aElement);
                 ulItem = HTMLElementUtils.createElement({"kind":"ul", "id":itemID, "extraAttributes":{"class":"dropdown-menu dropdown-submenu"}})
                 liItem.appendChild(ulItem);
