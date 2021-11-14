@@ -48,7 +48,7 @@ overlayUtils.addAllLayersSettings = function() {
 
 /**
  * This method is used to add a layer */
-overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
+overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex, checked) {
     var settingsPanel = document.getElementById("image-overlay-panel");
     var layerTable = document.getElementById("image-overlay-tbody");
     if (!layerTable) {
@@ -73,7 +73,7 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
 
     var visible = document.createElement("input");
     visible.type = "checkbox";
-    if (layerIndex < 0)
+    if (layerIndex < 0 || checked)
         visible.checked = true; 
     visible.id = "visible-layer-" + (layerIndex + 1);
     visible.classList.add("visible-layers");
@@ -96,7 +96,9 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex) {
     td_opacity.appendChild(opacity);
     td_opacity.classList.add("text-center");
     tileSource = tileSource.replace(/\\/g, '\\\\');
-    tr.innerHTML = "<td>" + layerName + "</td>";
+    var td_name = HTMLElementUtils.createElement({kind:"td",extraAttributes:{"data-source":tileSource, "class":"layerSettingButton"}});
+    td_name.innerHTML = layerName;
+    tr.appendChild(td_name);
     tr.appendChild(td_visible);
     tr.appendChild(td_opacity);
 
@@ -239,11 +241,11 @@ overlayUtils.addLayerFromSelect = function() {
 
 /**
  * This method is used to add a layer */
-overlayUtils.addLayer = function(layerName, tileSource, i) {
+overlayUtils.addLayer = function(layerName, tileSource, i, visible) {
     var op = tmapp["object_prefix"];
     var vname = op + "_viewer";
     var opacity = 1.0;
-    if (i >= 0) {
+    if (i >= 0 && !visible) {
         opacity = 0.0;
     }
     tmapp[vname].addTiledImage({
