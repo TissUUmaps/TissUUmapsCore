@@ -533,6 +533,37 @@ regionUtils.regionUI = function (regionid) {
  *  @param {Number} y3 Y coordinate of diagonal point in a bounding box
  *  @param {Object} options Tell the function 
  *  Search for points inside a particular region */
+ regionUtils.searchTreeForPointsInBbox = function (quadtree, x0, y0, x3, y3, options) {    
+    if (options.globalCoords) {
+        var xselector = options.xselector;
+        var yselector = options.yselector;
+    }else{
+        throw {name : "NotImplementedError", message : "ViewerPointInPath not yet implemented."}; 
+    }
+    var pointsInside=[];  
+    quadtree.visit(function (node, x1, y1, x2, y2) {
+        if (!node.length) {
+            do {
+                var d = node.data;
+                d.scanned = true;
+                var selected = (d[xselector] >= x0) && (d[xselector] < x3) && (d[yselector] >= y0) && (d[yselector] < y3);
+                if (selected) {
+                    pointsInside.push(d);
+                }
+            } while (node = node.next);
+        }
+        return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
+    });
+    return pointsInside;
+ }
+/** 
+ *  @param {Object} quadtree d3.quadtree where the points are stored
+ *  @param {Number} x0 X coordinate of one point in a bounding box
+ *  @param {Number} y0 Y coordinate of one point in a bounding box
+ *  @param {Number} x3 X coordinate of diagonal point in a bounding box
+ *  @param {Number} y3 Y coordinate of diagonal point in a bounding box
+ *  @param {Object} options Tell the function 
+ *  Search for points inside a particular region */
 regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, regionid, options) {    
     if (options.globalCoords) {
         var pointInPath = regionUtils.globalPointInPath;
@@ -540,7 +571,6 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
         var yselector = options.yselector;
     }else{
         throw {name : "NotImplementedError", message : "ViewerPointInPath not yet implemented."}; 
-
     }
     var imageWidth = OSDViewerUtils.getImageWidth();
     var countsInsideRegion = 0;
@@ -549,24 +579,13 @@ regionUtils.searchTreeForPointsInRegion = function (quadtree, x0, y0, x3, y3, re
     var svgovname = tmapp["object_prefix"] + "_svgov";
     var svg = tmapp[svgovname]._svg;
     tmpPoint = svg.createSVGPoint();
-    quadtree.visit(function (node, x1, y1, x2, y2) {
-        if (!node.length) {
-            do {
-                var d = node.data;
-                d.scanned = true;
-                var selected = (d[xselector] >= x0) && (d[xselector] < x3) && (d[yselector] >= y0) && (d[yselector] < y3);
-                console.log(d[xselector], d[yselector], x0, y0, x3, y3, selected);
-                if (selected) {
-                    if (pointInPath(d[xselector] / imageWidth, d[yselector] / imageWidth, regionPath, tmpPoint)) {
-                        countsInsideRegion += 1;
-                        pointsInside.push(d);
-                    }
-                }
-            } while (node = node.next);
+    pointInBbox = regionUtils.searchTreeForPointsInBbox(quadtree, x0, y0, x3, y3, options);
+    for (d of pointInBbox) {
+        if (pointInPath(d[xselector] / imageWidth, d[yselector] / imageWidth, regionPath, tmpPoint)) {
+            countsInsideRegion += 1;
+            pointsInside.push(d);
         }
-        return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
-    });
-
+    }
     if (countsInsideRegion) {
         regionUtils._regions[regionid].barcodeHistogram.push({ "key": quadtree.treeID, "name": quadtree.treeName, "count": countsInsideRegion });
     }
