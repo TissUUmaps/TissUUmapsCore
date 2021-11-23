@@ -1429,7 +1429,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     //row 0
     row0=HTMLElementUtils.createRow({id:generated+"_opacity_0"});
         col00=HTMLElementUtils.createColumn({"width":6});
-            button000=HTMLElementUtils.createButton({"id":generated+"_update-view-button","innerText":"Generate button from tab","class":"btn btn-light my-1","eventListeners":{"click":(event)=> projectUtils.makeButtonFromTab(event.target.id.split("_")[0]) }});
+            button000=HTMLElementUtils.createButton({"id":generated+"_Generate-button-from-tab","innerText":"Generate button from tab","class":"btn btn-light my-1","eventListeners":{"click":(event)=> projectUtils.makeButtonFromTab(event.target.id.split("_")[0]) }});
             
     row0.appendChild(col00)
         col00.appendChild(button000);
