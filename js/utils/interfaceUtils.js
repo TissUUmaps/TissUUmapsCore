@@ -2099,7 +2099,7 @@ interfaceUtils.createDownloadDropdownMarkers = function(options, settings) {
     interfaceUtils._mGenUIFuncs.generateUUID();
     if (!options.uid)
         options.uid=interfaceUtils._mGenUIFuncs.ctx.aUUID;
-    callback = function(e, params){
+    var callback = function(e, params){
         /*if (settings) {
             settings.forEach(function(setting, i) {
                 window[setting.module][setting.function] = setting.value;
@@ -2160,7 +2160,7 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
     interfaceUtils._mGenUIFuncs.generateUUID();
     if (!options.uid)
         options.uid=interfaceUtils._mGenUIFuncs.ctx.aUUID;
-    callback = function(e){
+    var callback = function(e){
         /*if (settings) {
             settings.forEach(function(setting, i) {
                 window[setting.module][setting.function] = setting.value;
@@ -2177,7 +2177,7 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
 
 interfaceUtils.createDownloadButtonRegions = function(innerText, dataURL, comment, autoLoad, settings) {
     var downloadRow = document.getElementById("divRegionsDownloadButtons");
-    callback = function(e){
+    var callback = function(e){
         if (settings) {
             settings.forEach(function(setting, i) {
                 window[setting.module][setting.function] = setting.value;
