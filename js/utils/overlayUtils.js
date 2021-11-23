@@ -168,15 +168,16 @@ overlayUtils.addLayerSettings = function(layerName, tileSource, layerIndex, chec
             channel = slider.value;
             $(".visible-layers").prop("checked",true);$(".visible-layers").click();$("#visible-layer-"+(channel- -1)).click();
             channelName = tmapp.layers[channel- -1].name
-            channelId = channelName.replace(/\W/g, '');
+            channelId = channelName.replace(".dzi","");
             document.getElementById("channelValue").innerHTML = "Channel " + (channel - -2) + ": " + channelName;
             if (overlayUtils._linkMarkersToChannels) {
-                $("#ISS_table input[type=checkbox]").prop("checked",false);
-                if (document.getElementById(channelId+"-checkbox-ISS")) {
-                    $(document.getElementById(channelId +"-checkbox-ISS")).click();
+                $(".uniquetab-marker-input").prop("checked",false);
+                if (document.getElementById("uniquetab_"+channelId+"_check")) {
+                    $(document.getElementById("uniquetab_"+channelId+"_check")).click();
                 }
                 else {
-                    $("#AllMarkers-checkbox-ISS").click().click();
+                    $("#uniquetab_all_check").prop("checked",true);
+                    $("#uniquetab_all_check").click();
                 }
             }
         };
