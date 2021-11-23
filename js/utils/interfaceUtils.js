@@ -946,7 +946,7 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem1=function(){
 
     row2=HTMLElementUtils.createRow({"id":generated+"_row-2"});
         col21=HTMLElementUtils.createColumn({"width":6});
-            label211=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_x-label", "extraAttributes":{ "for":generated+"_x_value" }});
+            label211=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_x-label", "extraAttributes":{ "for":generated+"_x-value" }});
             label211.innerText="X coordinate"
             select212=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_x-value", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
 
