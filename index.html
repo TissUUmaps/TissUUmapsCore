@@ -31,16 +31,16 @@
                     <ul class="navbar-nav">
                         
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle active" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle active" id="a_menubar_File" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             File
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <li>
+                            <ul class="dropdown-menu" id="menubar_File" aria-labelledby="navbarDropdownMenuLink">
+                                <li id="menubar_File_Import">
                                     <a class="dropdown-item" href="#" id="load_project_menu">
                                         <span>Import TMAP project</span>
                                     </a>
                                 </li>
-                                <li>
+                                <li id="menubar_File_Export">
                                     <a class="dropdown-item" href="#" id="save_project_menu">
                                         <span>Export TMAP project</span>
                                     </a>
@@ -52,16 +52,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item dropdown d-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="dropdown-projects" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Projects
-                            </a>
-
-                            <ul class="dropdown-menu">
-
-                            </ul>
-                        </li>
-                        <li class="nav-item">
+                        <li class="nav-item" id="nav-item-title">
                             <a class="nav-link active" aria-current="page" id="project_title" href="#"> Default title</a>
                         </li>
                     </ul>
@@ -112,7 +103,7 @@
                                 <div class="panel-body">
                                     <div class="row" id="divMarkersDownloadButtons"></div>
                                     <!-- 1.1 Row nav tabs -->
-                                    <ul class="nav nav-tabs" id="level-1-tabs" role="tablist">
+                                    <ul class="nav nav-tabs mt-2" id="level-1-tabs" role="tablist">
                                         <li class="nav-item" id="plus-1" role="presentation">
                                             <button class="nav-link" id="plus-1-button" data-bs-toggle="tab" data-bs-target="#" 
                                             type="button" role="tab" aria-controls="plus" aria-selected="false"><strong>+</strong></button>
@@ -129,7 +120,7 @@
                                 <div class="panel-body">
                                     <div class="row">
                                         <!-- Tabs 1.3.0 region subtabs -->
-                                        <ul class="nav nav-tabs mt-1">
+                                        <ul class="nav nav-tabs mt-2">
                                             <li class="nav-item">
                                                 <button class="nav-link active" data-bs-target="#markers-regions-project-gui" data-bs-toggle="tab" aria-expanded="true">Regions</button>
                                             </li>
