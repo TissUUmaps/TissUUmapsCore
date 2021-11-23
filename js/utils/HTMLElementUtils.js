@@ -137,11 +137,11 @@ HTMLElementUtils.createElement = function (params) {
         return null;
     }
     var id = params.id || null;
-    var type = params.type || null;
+    var kind = params.kind || null;
     var innerText = params.innerText || null;
     var innerHTML = params.innerHTML || null;
 
-    var element = (type ? document.createElement(type) : null);
+    var element = (kind ? document.createElement(kind) : null);
     if (!element) return null;
     (id ? element.setAttribute("id", id) : null);
     (innerText ? element.appendChild(document.createTextNode(innerText)) : null);
@@ -181,13 +181,13 @@ HTMLElementUtils.createPanel = function (params) {
 /** Create a booststrap row */
 HTMLElementUtils.createRow = function (params) {
     if (!params) {
-        var row = HTMLElementUtils.createElement({ type: "div" });
-        row.setAttribute("class", "row");
+        var row = HTMLElementUtils.createElement({ kind: "div" });
+        row.setAttribute("class", "row py-1");
         return row;
     }
-    var row = HTMLElementUtils.createElement({ type: "div" });
+    var row = HTMLElementUtils.createElement({ kind: "div" });
     (params.id || null ? row.setAttribute("id", params.id) : null);
-    row.setAttribute("class", "row");
+    row.setAttribute("class", "row py-1");
     if (params.divisions) {
         params.divisions.forEach(function (division) {
             row.appendChild(HTMLElementUtils.createColumn(division));
@@ -202,16 +202,17 @@ HTMLElementUtils.createRow = function (params) {
 
 }
 
-/** Create a booststrap column */
+/** Create a booststrap column */ 
 HTMLElementUtils.createColumn = function (params) {
     if (!params) {
         var width = 2;
-        var column = HTMLElementUtils.createElement({ type: "div" });
+        var column = HTMLElementUtils.createElement({ kind: "div" });
         column.setAttribute("class", "col-xs-" + width + " col-sm-" + width + " col-md-" + width + " col-lg-" + width);
         return column;
     }
     var width = (params.width || null ? params.width : 2);
-    var column = HTMLElementUtils.createElement({ type: "div" });
+    var column = HTMLElementUtils.createElement({ kind: "div" });
+    (params.id || null ? column.setAttribute("id", params.id) : null);
     if (width == 0) {
         column.setAttribute("class", "col");
     } else {
@@ -287,20 +288,31 @@ HTMLElementUtils.createForm = function (params) {
 }
 
 /** Create a color in YCbCr space to divide between the possible 4 letters */
-HTMLElementUtils.barcodeHTMLColor = function (barcode) {
+HTMLElementUtils.determinsticHTMLColor = function (key) {
     //A Red, T Green, C Bluemagenta, G yellow
-    var maincolor = barcode.charAt(0).toLowerCase();
     var red = 0; var green = 0; var blue = 0;
     var U = 0; var V = 0; var y = 128;
-    ggroup = ["g", "d", "r", "v", "e", "o", "2", "h", "n"];
-    agroup = ["a", "w", "j", "k", "p", "l", "i", "3", "y", "x"];
-    cgroup = ["c", "0", "q", "6", "8", "1", "s", "9", "f"];
-    tugroup = ["u", "4", "z", "b", "7", "t", "m", "0", "5"];
 
-    if (agroup.includes(maincolor)) { U = 255; V = 255; } if (cgroup.includes(maincolor)) { U = 255; V = 0; }
-    if (ggroup.includes(maincolor)) { U = 0; V = 0; } if (tugroup.includes(maincolor)) { U = 0; V = 255; }
+    if (!isNaN(parseInt(key))) {
+        console.log("b",key);
+        key = parseInt(key,10).toString(4).split("").reverse().join("");
+        console.log("a",key);
+    }
+    
+    var maincolor = key.charAt(0).toLowerCase();
 
-    var second = barcode.charAt(1).toLowerCase();
+    ggroup = ['g', 'i', 's', 'd', 'w', 'z','1','5','9'];
+    agroup = ['a', 'e', 'o', 'l', 'p', 'b', 'k', 'j','2','6'];
+    cgroup = ['c', 'm', 'f', 'v','3','7','q'];
+    tugroup = ['t', 'r', 'n', 'u', 'h', 'y', 'x','4','8','0' ];
+
+    if (ggroup.includes(maincolor)) { U = 0; V = 0; } 
+    else if (tugroup.includes(maincolor)) { U = 0; V = 255; }
+    else if (cgroup.includes(maincolor)) { U = 255; V = 0; }
+    else if (agroup.includes(maincolor)) { U = 255; V = 255; } 
+    else{ U = 0; V = 255; }
+
+    var second = key.charAt(1).toLowerCase();
 
     if (agroup.includes(second)) { U += 80; V += 80; } if (cgroup.includes(second)) { U += 80; V += -80; }
     if (ggroup.includes(second)) { U += -80; V += -80; } if (tugroup.includes(second)) { U += -80; V += 80; }
@@ -308,7 +320,7 @@ HTMLElementUtils.barcodeHTMLColor = function (barcode) {
     if (U > 255) U = 255; if (V > 255) V = 255;
     if (U < 0) U = 0; if (V < 0) V = 0;
 
-    var third = barcode.charAt(2).toLowerCase();
+    var third = key.charAt(2).toLowerCase();
 
     if (agroup.includes(third)) { y += 35; } if (cgroup.includes(third)) { y += 35; }
     if (ggroup.includes(third)) { y -= 35; } if (tugroup.includes(third)) { y -= 35; }
@@ -348,54 +360,8 @@ HTMLElementUtils.getFirstChildByClass = function (e, c) {
     return thisChild;
 }
 
-HTMLElementUtils.createDLButton = function(downloadRow, innerText, callback, comment) {
-    var row = HTMLElementUtils.createRow(null);
-    var buttonDiv = document.createElement("div");
-    buttonDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
-    row.appendChild(buttonDiv);
-    var paramButton = {
-        eventListeners: {"click":callback},
-        "class": "btn btn-primary",
-        innerText: innerText
-    }
-    var DLButton = HTMLElementUtils.createButton(paramButton);
-    DLButton.style.width = "100%";
-    buttonDiv.appendChild(DLButton);
-    
-    var commentDiv = document.createElement("div");
-    commentDiv.setAttribute("class", "col-xs-6 col-sm-6 col-md-6 col-lg-6");
-    commentDiv.innerHTML = `<p style=" font-size:smaller; font-style: italic; color:#aaaaaa; padding-left:10px;"> ${comment} </p>`
-    row.appendChild(commentDiv);
-
-    downloadRow.appendChild(row);
-}
-
-HTMLElementUtils.createDLButtonMarkers = function(innerText, dataURL, comment, expectedCSV) {
-    var downloadRow = document.getElementById("ISS_rowDownloadMarkers");
-    callback = function(e){
-        if (expectedCSV !== undefined) dataUtils.setExpectedCSV(expectedCSV);
-        dataUtils.XHRCSV(dataURL);
-    }
-    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_ISS_csv");
-    label.innerHTML = "Or import gene expression from CSV file:";
-}
-
-HTMLElementUtils.createDLButtonMarkersCP = function(innerText, dataURL, comment, expectedCSV) {
-    var downloadRow = document.getElementById("ISS_rowDownloadMarkersCP");
-    callback = function(e){
-        if (expectedCSV !== undefined) CPDataUtils.setExpectedCSV(expectedCSV);
-        CPDataUtils.readCSV(dataURL)
-    }
-    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
-    var label = document.getElementById("label_CP_csv");
-    label.innerHTML = "Or import cell morphology from CSV file:";
-}
-
-HTMLElementUtils.createDLButtonRegions = function(innerText, dataURL, comment) {
-    var downloadRow = document.getElementById("ISS_rowDownloadRegions");
-    callback = function(e){
-        regionUtils.JSONToRegions(dataURL)
-    }
-    HTMLElementUtils.createDLButton(downloadRow, innerText, callback, comment);
+/** Create an id from any string */
+HTMLElementUtils.stringToId = function (inputString) {
+    if (!inputString) return "";
+    return inputString.replace(/\W/g, '')
 }

@@ -1,0 +1,73 @@
+// Default bootstrap colors override
+$primary:   #ad1d28;
+$secondary: #a5565c;
+//$danger:    #9f1daa;
+//$success:   #1daa9f;
+//$info:      #1daa9f;
+//$warning:   #1daa9f;
+//$light:     #1daa9f;
+$dark:      #911821;
+
+// *** Navbar ***
+.navbar-dark {
+    background-color: $primary;
+}
+$navbar-padding-y: 0;
+
+// *** Viewer
+.ISS_viewer {
+    background-color: white;
+}
+
+// All the overlays over the viewer inherit this class.
+.viewer-layer {
+    background-color: rgba(255,255,255,0.70);
+    opacity: 100%;
+    border-radius: .3rem;
+    color: black;
+}
+
+// *** Side menu ***
+.displayregion {
+    border: 1px solid $dark !important;
+}
+
+.ISS_menu {
+    background-color: white;
+}
+
+// Sliders in the side menu (image layer in particular)
+.overlay-slider {
+    width: 100px;
+}
+
+// *** Collapsing button ***
+#ISS_collapser {
+    right: 0px;
+    width: 12px;
+    // Height of the collapsing button
+    line-height: 30vh;
+}
+
+.renderOptionContainer{
+    display: flex;
+    flex-direction: column;
+}
+
+.renderOption{
+    display: flex;
+    flex-direction: row;
+}
+
+.tm-accordion-collapse{
+    margin:10px;
+}
+
+// IMPORTS
+@import "../vendor/bootstrap-5.1.1/scss/bootstrap";
+@import "../vendor/bootstrap-5.1.1/scss/functions";
+@import "../vendor/bootstrap-5.1.1/scss/variables";
+@import "../vendor/bootstrap-5.1.1/scss/reboot";
+@import "../vendor/bootstrap-5.1.1/scss/type";
+@import "../vendor/bootstrap-5.1.1/scss/grid";
+@import "viewer";
