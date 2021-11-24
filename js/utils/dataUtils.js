@@ -111,6 +111,8 @@ dataUtils.processRawData = function(data_id,data) {
 
     //data_obj["_processeddata"]=data;
     data_obj["_processeddata"].columns = data.columns;
+    //data_obj["_processeddata"]["xc"] = new Float64Array(data_obj["_processeddata"]["xc"]);
+    //data_obj["_processeddata"]["yc"] = new Float64Array(data_obj["_processeddata"]["yc"]);
     console.log(data.columns);
 
     //this function is in case we need to standardize the data column names somehow,
@@ -340,6 +342,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
     let data_obj = dataUtils.data[data_id];
 
     data_obj["_processeddata"] = {};
+    data_obj["_isnan"] = {};
     data_obj["_csv_header"] = null;
     data_obj["_csv_path"] = thecsv;
 
@@ -353,7 +356,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
         let arrays = data_obj["_processeddata"];
         for (key of columns) {
             if (i == 0) arrays[key] = [];
-            arrays[key][i] = isNaN(d[key]) ? +d[key] : d[key];
+            arrays[key][i] = isNaN(d[key]) ? d[key] : +d[key];
         }
         return i;
     };
