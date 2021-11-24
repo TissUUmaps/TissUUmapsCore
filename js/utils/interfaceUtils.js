@@ -1673,55 +1673,6 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         label1.innerText=tree["treeID"];
         td1.appendChild(label1);
         
-        
-        /*tr.onmouseleave = function(event) {
-            this.setAttribute("data-hover","false");
-            
-            hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
-            for(var i = 0; i < hidden_inputs.length; i++){
-                hidden_inputs[i].checked = false;
-            }
-            glUtils.updateColorLUTTextures();
-            glUtils.draw();
-        };
-        tr.onmousemove = function(event) {
-            var tr = this;
-            var uid = this.getAttribute("data-uid");
-            var escapedID = this.getAttribute("data-escapedID");
-            var random_string = (Math.random() + 1).toString(36).substring(7);
-            if (tr.getAttribute("data-highlighted") == "true") {
-                tr.setAttribute("data-highlighted","false");
-                tr.classList.remove("table-primary");
-                hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
-                for(var i = 0; i < hidden_inputs.length; i++){
-                    hidden_inputs[i].checked = false;
-                }
-                glUtils.updateColorLUTTextures();
-                glUtils.draw();
-            }
-            console.log(random_string);
-            this.setAttribute("data-hover",random_string);
-            setTimeout(function () {
-                console.log(tr.getAttribute("data-hover"), random_string);
-                if (tr.getAttribute("data-hover") == random_string) {
-                    tr.setAttribute("data-highlighted","true");
-                    tr.classList.add("table-primary");
-                    hidden_inputs = interfaceUtils.getElementsByClassName("marker-hidden");
-                    for(var i = 0; i < hidden_inputs.length; i++){
-                        hidden_inputs[i].checked = true;
-                    }
-                    hoverElement = interfaceUtils.getElementById(uid+"_"+escapedID+"_hidden");
-                    if (interfaceUtils.getElementById(uid+"_"+escapedID+"_check").checked) {
-                        console.log("onmouseover",uid,escapedID);
-                        
-                        hoverElement.checked = false;
-                    }
-                    glUtils.updateColorLUTTextures();
-                    glUtils.draw();
-                }
-            },500);
-        };*/
-
         if(usename){
             var td15=HTMLElementUtils.createElement({"kind":"td"});
             var label15=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
