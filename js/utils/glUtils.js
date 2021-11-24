@@ -360,10 +360,10 @@ glUtils.loadMarkers = function(uid) {
 
     // Get marker data and other info like image size
     const markerData = dataUtils.data[uid]["_processeddata"];
-    let numPoints = markerData.length;
     const keyName = dataUtils.data[uid]["_gb_col"];
     const xPosName = dataUtils.data[uid]["_X"];
     const yPosName = dataUtils.data[uid]["_Y"];
+    let numPoints = markerData[xPosName].length;
     const imageWidth = OSDViewerUtils.getImageWidth();
     const imageHeight = OSDViewerUtils.getImageHeight();
 
@@ -401,20 +401,20 @@ glUtils.loadMarkers = function(uid) {
     // Create vertex data for markers
     const positions = [], indices = [], scales = [], shapes = [];
     if (usePiechartFromMarker) {
-        const numSectors = markerData[0][sectorsPropertyName].split(";").length;
+        const numSectors = markerData[sectorsPropertyName][0].split(";").length;
         for (let i = 0; i < numPoints; ++i) {
-            const sectors = markerData[i][sectorsPropertyName].split(";");
+            const sectors = markerData[sectorsPropertyName][i].split(";");
             const piechartAngles = glUtils._createPiechartAngles(sectors);
             for (let j = 0; j < numSectors; ++j) {
                 const k = (i * numSectors + j);
                 hexColor = piechartPalette[j % piechartPalette.length];
-                positions[4 * k + 0] = markerData[i][xPosName] / imageWidth;
-                positions[4 * k + 1] = markerData[i][yPosName] / imageHeight;
-                positions[4 * k + 2] = barcodeToLUTIndex[markerData[i][keyName]];
+                positions[4 * k + 0] = markerData[xPosName][i] / imageWidth;
+                positions[4 * k + 1] = markerData[yPosName][i] / imageHeight;
+                positions[4 * k + 2] = barcodeToLUTIndex[markerData[keyName][i]];
                 positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
                 indices[k] = i;  // Store index needed for picking
 
-                if (useScaleFromMarker) scales[k] = markerData[i][scalePropertyName];
+                if (useScaleFromMarker) scales[k] = markerData[scalePropertyName][i];
                 else scales[k] = 1.0;  // Marker scale factor
 
                 shapes[k] = Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
@@ -424,24 +424,25 @@ glUtils.loadMarkers = function(uid) {
         numPoints *= numSectors;
     } else {
         for (let i = 0; i < numPoints; ++i) {
-            if (useColorFromMarker) hexColor = markerData[i][colorPropertyName];
-            if (useColorFromColormap) scalarValue = markerData[i][scalarPropertyName];
+            if (useColorFromMarker) hexColor = markerData[colorPropertyName][i];
+            if (useColorFromColormap) scalarValue = markerData[scalarPropertyName][i];
             if (useShapeFromMarker) {
-                shapeIndex = markerData[i][shapePropertyName];
+                shapeIndex = markerData[shapePropertyName][i];
                 // Check if shapeIndex is a symbol names that needs to be converted to an index
                 if (isNaN(shapeIndex)) shapeIndex = markerUtils._symbolStrings.indexOf(shapeIndex);
                 shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
             }
 
-            positions[4 * i + 0] = markerData[i][xPosName] / imageWidth;
-            positions[4 * i + 1] = markerData[i][yPosName] / imageHeight;
-            positions[4 * i + 2] = barcodeToLUTIndex[markerData[i][keyName]] +
-                                   Number(shapeIndex) * 4096.0;
+            positions[4 * i + 0] = markerData[xPosName][i] / imageWidth;
+            positions[4 * i + 1] = markerData[yPosName][i] / imageHeight;
+            //positions[4 * i + 2] = barcodeToLUTIndex[markerData[keyName][i]] +
+            //                       Number(shapeIndex) * 4096.0;
+            positions[4 * i + 2] = Number(shapeIndex) * 4096.0;
             positions[4 * i + 3] = useColorFromColormap ? Number(scalarValue)
                                                         : Number("0x" + hexColor.substring(1,7));
             indices[i] = i;  // Store index needed for picking
 
-            if (useScaleFromMarker) scales[i] = markerData[i][scalePropertyName];
+            if (useScaleFromMarker) scales[i] = markerData[scalePropertyName][i];
             else scales[i] = 1.0;  // Marker scale factor
             if (useColorFromColormap) {
                 scalarRange[0] = Math.min(scalarRange[0], scalarValue);
@@ -530,9 +531,9 @@ glUtils.deleteMarkers = function(uid) {
 glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {
     const barcodeToLUTIndex = {};
     const barcodeToKey = {};
-    const numPoints = markerData.length;
+    const numPoints = markerData[markerData.columns[0]].length;
     for (let i = 0, index = 0; i < numPoints; ++i) {
-        const barcode = markerData[i][keyName];
+        const barcode = undefined;  //markerData[keyName][i];
         if (!(barcode in barcodeToLUTIndex)) {
             barcodeToLUTIndex[barcode] = index++;
             barcodeToKey[barcode] = barcode;
@@ -981,7 +982,7 @@ glUtils.pick = function(event) {
             const tabName = interfaceUtils.getElementById(uid + "_marker-tab-name").textContent;
             const markerData = dataUtils.data[uid]["_processeddata"];
             const keyName = dataUtils.data[uid]["_gb_col"];
-            const groupName = markerData[markerIndex][keyName];
+            const groupName = undefined;//markerData[keyName][markerIndex];
             const piechartPropertyName = dataUtils.data[uid]["_pie_col"];
 
             const div = document.createElement("div");

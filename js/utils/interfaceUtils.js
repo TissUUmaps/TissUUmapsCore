@@ -1619,7 +1619,8 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         }
 
         var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_all_check","class":"cursor-pointer"}});
-        label17.innerText=data_obj["_processeddata"].length;    
+        //label17.innerText=data_obj["_processeddata"].length;    
+        label17.innerText=data_obj["_processeddata"][data_obj["_X"]].length;  // FIXME
         td17.appendChild(label17);        
         tr.appendChild(td17);
 

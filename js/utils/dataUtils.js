@@ -109,12 +109,14 @@ CPDataUtils={};
 dataUtils.processRawData = function(data_id,data) {
     let data_obj = dataUtils.data[data_id];
 
-    data_obj["_processeddata"]=data;
+    //data_obj["_processeddata"]=data;
+    data_obj["_processeddata"].columns = data.columns;
+    console.log(data.columns);
 
     //this function is in case we need to standardize the data column names somehow,
     //so that the processseddata has some desired structure, but for now maybe no
 
-    dataUtils.createMenuFromCSV(data_id,data[0]);
+    dataUtils.createMenuFromCSV(data_id,data.columns);
 
 }
 
@@ -155,30 +157,43 @@ dataUtils.updateViewOptions = function(data_id){
     if (tmapp["ISS_viewer"].world._items.length == 0) {
         function getMax(arr) {
             let len = arr.length; let max = -Infinity;
-            while (len--) { max = arr[len] > max ? arr[len] : max; }
+            while (len--) { max = +arr[len] > max ? +arr[len] : max; }
             return max;
         }
         function getMin(arr) {
-            let len = arr.length; let min = Infinity;
-            
-            while (len--) { min = arr[len] < min ? arr[len] : min; }
+            let len = arr.length; let min = Infinity; 
+            while (len--) { min = +arr[len] < min ? +arr[len] : min; }
             return min;
         }
-        minX = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
-        maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
-        minY = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
-        maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
+        //minX = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
+        //maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
+        //minY = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
+        //maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
+        minX = getMin(data_obj["_processeddata"][data_obj["_X"]]);
+        maxX = getMax(data_obj["_processeddata"][data_obj["_X"]]);
+        minY = getMin(data_obj["_processeddata"][data_obj["_Y"]]);
+        maxY = getMax(data_obj["_processeddata"][data_obj["_Y"]]);
         if (minX <0 || maxX < 500) {
-            for (o of dataUtils.data[data_id]["_processeddata"]) {
-                o[data_obj["_X"]] = 1200 * (o[data_obj["_X"]] - minX) / (maxX - minX);
+            //for (o of dataUtils.data[data_id]["_processeddata"]) {
+            //    o[data_obj["_X"]] = 1200 * (o[data_obj["_X"]] - minX) / (maxX - minX);
+            //}
+            //maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_X"]]; }))
+            let arr = data_obj["_processeddata"][data_obj["_X"]];
+            for (let i = 0; i < arr.length; ++i) {
+                arr[i] = 1200 * (arr[i] - minX) / (maxX - minX);
             }
-            maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_X"]]; }))
+            maxX = getMax(arr);
         }
         if (minY <0 || maxY < 500) {
-            for (o of dataUtils.data[data_id]["_processeddata"]) {
-                o[data_obj["_Y"]] = 1200 * (o[data_obj["_Y"]] - minY) / (maxY - minY);
+            //for (o of dataUtils.data[data_id]["_processeddata"]) {
+            //    o[data_obj["_Y"]] = 1200 * (o[data_obj["_Y"]] - minY) / (maxY - minY);
+            //}
+            //maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_Y"]]; }))
+            let arr = data_obj["_processeddata"][data_obj["_Y"]];
+            for (let i = 0; i < arr.length; ++i) {
+                arr[i] = 1200 * (arr[i] - minY) / (maxY - minY);
             }
-            maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_Y"]]; }))
+            maxY = getMax(arr);
         }
         // We load an empty image at the size of the data.
 
@@ -283,7 +298,8 @@ dataUtils.updateViewOptions = function(data_id){
 dataUtils.createMenuFromCSV = function(data_id,datumExample) {
     var data_obj = dataUtils.data[data_id];
 
-    var csvheaders = Object.keys(datumExample);
+    //var csvheaders = Object.keys(datumExample);
+    var csvheaders = datumExample;
     data_obj["_csv_header"] = csvheaders;
 
     //fill dropdowns
@@ -323,7 +339,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
 
     let data_obj = dataUtils.data[data_id];
 
-    data_obj["_rawdata"] = {};
+    data_obj["_processeddata"] = {};
     data_obj["_csv_header"] = null;
     data_obj["_csv_path"] = thecsv;
 
@@ -333,7 +349,16 @@ dataUtils.readCSV = function(data_id, thecsv) {
 
     var fakeProgress = 0;
 
-    var request = d3.csv(
+    let rowToArrays = function(d, i, columns) {
+        let arrays = data_obj["_processeddata"];
+        for (key of columns) {
+            if (i == 0) arrays[key] = [];
+            arrays[key][i] = isNaN(d[key]) ? +d[key] : d[key];
+        }
+        return i;
+    };
+
+    var request = d3.text(
         thecsv,
         function (d) { return d; } //here you can modify the datum 
     ).on("progress", function(pe){
@@ -354,7 +379,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
     }).on("load",function(xhr){
         progressBar.style.width="100%"
         progressParent.classList.add("d-none");
-        dataUtils.processRawData(data_id,xhr)
+        dataUtils.processRawData(data_id, d3.csvParse(xhr, rowToArrays));
     });
 }
 
@@ -469,7 +494,8 @@ dataUtils.makeQuadTrees = function(data_id) {
         data_obj["_groupgarden"] = {};
         for (var i = 0; i < allgroups.length; i++) {
             var treeKey = allgroups[i].values[0][groupByCol];
-            data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+            //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+            data_obj["_groupgarden"][treeKey] = {"size" : function() { return 1; }};
             data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
             
             if(groupByColsName){
@@ -483,7 +509,8 @@ dataUtils.makeQuadTrees = function(data_id) {
         console.log("No group, we take everything!");
         treeKey = "All";
         data_obj["_groupgarden"] = {};
-        data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(data_obj["_processeddata"]);
+        //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(data_obj["_processeddata"]);
+        data_obj["_groupgarden"][treeKey] = {"size" : function() { return 1; }};
         data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
         
         if(groupByColsName){
