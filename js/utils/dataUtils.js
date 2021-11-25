@@ -111,8 +111,12 @@ dataUtils.processRawData = function(data_id,data) {
 
     //data_obj["_processeddata"]=data;
     data_obj["_processeddata"].columns = data.columns;
-    //data_obj["_processeddata"]["xc"] = new Float64Array(data_obj["_processeddata"]["xc"]);
-    //data_obj["_processeddata"]["yc"] = new Float64Array(data_obj["_processeddata"]["yc"]);
+    for (key of data.columns) {
+        if (data_obj["_isnan"][key] == false) {
+            // Store column with only numeric data in typed array for lower memory usage
+            data_obj["_processeddata"][key] = new Float64Array(data_obj["_processeddata"][key]);
+        }
+    }
     console.log(data.columns);
 
     //this function is in case we need to standardize the data column names somehow,
@@ -353,12 +357,17 @@ dataUtils.readCSV = function(data_id, thecsv) {
     var fakeProgress = 0;
 
     let rowToArrays = function(d, i, columns) {
-        let arrays = data_obj["_processeddata"];
+        let arrays = data_obj["_processeddata"],
+            isnan = data_obj["_isnan"];
         for (key of columns) {
-            if (i == 0) arrays[key] = [];
-            arrays[key][i] = isNaN(d[key]) ? d[key] : +d[key];
+            if (i == 0 && !arrays.hasOwnProperty(key)) arrays[key] = [];
+            if (i == 0 && !isnan.hasOwnProperty(key)) isnan[key] = false;
+            // Check if value should be converted to a number before we push it
+            // onto the array, and also update the array's type flag
+            arrays[key].push(isNaN(d[key]) ? d[key] : +d[key]);
+            isnan[key] = isnan[key] || isNaN(d[key]);
         }
-        return i;
+        return null;
     };
 
     var request = d3.text(
