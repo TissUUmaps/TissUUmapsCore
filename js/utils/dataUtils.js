@@ -86,14 +86,15 @@ dataUtils.createDataset = function(uid,options){
 dataUtils.startCSVcascade= function(event){
     var data_id=event.target.id.split("_")[0];
     var file = event.target.files[0];
-    if (file) {
+    dataUtils.readCSV(data_id, file);
+    /*if (file) {
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             var dataUrl = evt.target.result;
             dataUtils.readCSV(data_id,dataUrl);
         };
         reader.readAsDataURL(file);
-    }
+    }*/
 }
 
 /**
@@ -106,23 +107,23 @@ CPDataUtils={};
 * @param {Array} data data coming from d3 after parsing the csv
 * created the _processeddata list to be used in rendering
 */
-dataUtils.processRawData = function(data_id,data) {
+dataUtils.processRawData = function(data_id, rawdata) {
     let data_obj = dataUtils.data[data_id];
 
-    //data_obj["_processeddata"]=data;
-    data_obj["_processeddata"].columns = data.columns;
-    for (key of data.columns) {
-        if (data_obj["_isnan"][key] == false) {
+    data_obj["_processeddata"].columns = rawdata.columns;
+    for (let i = 0; i < rawdata.columns.length; ++i) {
+        if (!rawdata.isnan[i]) {
             // Store column with only numeric data in typed array for lower memory usage
-            data_obj["_processeddata"][key] = new Float64Array(data_obj["_processeddata"][key]);
+            rawdata.data[i] = new Float64Array(rawdata.data[i]);
         }
+        data_obj["_processeddata"][rawdata.columns[i]] = rawdata.data[i];
     }
-    console.log(data.columns);
+    console.log(rawdata.columns);
 
     //this function is in case we need to standardize the data column names somehow,
     //so that the processseddata has some desired structure, but for now maybe no
 
-    dataUtils.createMenuFromCSV(data_id,data.columns);
+    dataUtils.createMenuFromCSV(data_id, rawdata.columns);
 
 }
 
@@ -356,7 +357,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
 
     var fakeProgress = 0;
 
-    let rowToArrays = function(d, i, columns) {
+    /*let rowToArrays = function(d, i, columns) {
         let arrays = data_obj["_processeddata"],
             isnan = data_obj["_isnan"];
         for (key of columns) {
@@ -392,6 +393,39 @@ dataUtils.readCSV = function(data_id, thecsv) {
         progressBar.style.width="100%"
         progressParent.classList.add("d-none");
         dataUtils.processRawData(data_id, d3.csvParse(xhr, rowToArrays));
+    });*/
+
+    
+    let rawdata = { columns: [], isnan: [], data: [] };
+    console.time("Load CSV");
+    Papa.parse(thecsv, {
+        delimiter: ",",
+        header: false,
+   	    worker: false,
+        chunk: function(result) {
+            if (rawdata.columns.length == 0) {
+                let header = result.data[0];
+                for (let i = 0; i < header.length; ++i) {
+                    rawdata.columns[i] = header[i];
+                    rawdata.isnan[i] = false;
+                    rawdata.data[i] = [];
+                }
+            } else {
+                for (row of result.data) {
+                    for (let i = 0; i < row.length; ++i) {
+                        const value = row[i];
+                        // Check if value should be converted to a number before we push it
+                        // onto the array, and also update the type flag of the array
+                        rawdata.isnan[i] = rawdata.isnan[i] || isNaN(value);
+                        rawdata.data[i].push(rawdata.isnan[i] ? value : +value);
+                    }
+                }
+            }
+        },
+        complete: function(result) {
+            console.timeEnd("Load CSV");
+            dataUtils.processRawData(data_id, rawdata);
+        }
     });
 }
 
