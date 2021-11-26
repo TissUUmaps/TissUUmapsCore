@@ -402,23 +402,21 @@ dataUtils.readCSV = function(data_id, thecsv) {
         delimiter: ",",
         header: false,
    	    worker: false,
-        chunk: function(result) {
+        step: function(row) {
             if (rawdata.columns.length == 0) {
-                let header = result.data[0];
+                let header = row.data;
                 for (let i = 0; i < header.length; ++i) {
                     rawdata.columns[i] = header[i];
                     rawdata.isnan[i] = false;
                     rawdata.data[i] = [];
                 }
             } else {
-                for (row of result.data) {
-                    for (let i = 0; i < row.length; ++i) {
-                        const value = row[i];
-                        // Check if value should be converted to a number before we push it
-                        // onto the array, and also update the type flag of the array
-                        rawdata.isnan[i] = rawdata.isnan[i] || isNaN(value);
-                        rawdata.data[i].push(rawdata.isnan[i] ? value : +value);
-                    }
+                for (let i = 0; i < row.data.length; ++i) {
+                    const value = row.data[i];
+                    // Check if value should be converted to a number before we push it
+                    // onto the array, and also update the type flag of the array
+                    rawdata.isnan[i] = rawdata.isnan[i] || isNaN(value);
+                    rawdata.data[i].push(rawdata.isnan[i] ? value : +value);
                 }
             }
         },
