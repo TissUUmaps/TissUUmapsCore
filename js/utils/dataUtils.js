@@ -111,12 +111,22 @@ dataUtils.processRawData = function(data_id, rawdata) {
     let data_obj = dataUtils.data[data_id];
 
     data_obj["_processeddata"].columns = rawdata.columns;
+
     for (let i = 0; i < rawdata.columns.length; ++i) {
-        if (!rawdata.isnan[i]) {
-            // Store column with only numeric data in typed array for lower memory usage
-            rawdata.data[i] = new Float64Array(rawdata.data[i]);
+        // Convert chunks of column into a single large array
+        if (rawdata.isnan[i]) {
+            data_obj["_processeddata"][rawdata.columns[i]] = rawdata.data[i].flat();
+        } else {
+            const num_rows = rawdata.data[i].reduce((x, y) => x + y.length, 0);
+            data_obj["_processeddata"][rawdata.columns[i]] = new Float64Array(num_rows);
+
+            let offset = 0;
+            for (chunk of rawdata.data[i]) {
+                data_obj["_processeddata"][rawdata.columns[i]].set(chunk, offset);
+                offset += chunk.length;
+            }
         }
-        data_obj["_processeddata"][rawdata.columns[i]] = rawdata.data[i];
+        delete rawdata.data[i];  // Clean up memory
     }
     console.log(rawdata.columns);
 
@@ -396,7 +406,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
     });*/
 
     
-    let rawdata = { columns: [], isnan: [], data: [] };
+    let rawdata = { columns: [], isnan: [], data: [], tmp: [] };
     console.time("Load CSV");
     Papa.parse(thecsv, {
         delimiter: ",",
@@ -410,17 +420,33 @@ dataUtils.readCSV = function(data_id, thecsv) {
                     rawdata.isnan[i] = false;
                     rawdata.data[i] = [];
                 }
+                rawdata.tmp = rawdata.columns.map(x => []);
             } else {
                 for (let i = 0; i < row.data.length; ++i) {
                     const value = row.data[i];
-                    // Check if value should be converted to a number before we push it
-                    // onto the array, and also update the type flag of the array
+                    // Update type flag of column and push value to temporary buffer
                     rawdata.isnan[i] = rawdata.isnan[i] || isNaN(value);
-                    rawdata.data[i].push(rawdata.isnan[i] ? value : +value);
+                    rawdata.tmp[i].push(rawdata.isnan[i] ? value : +value);
+                }
+                if (rawdata.tmp[0].length >= 10000) {
+                    // Push content of temporary buffers to output arrays
+                    for (let i = 0; i < rawdata.columns.length; ++i) {
+                        rawdata.data[i].push(rawdata.isnan[i] ? rawdata.tmp[i]
+                                                              : new Float64Array(rawdata.tmp[i]));
+                    }
+                    rawdata.tmp = rawdata.columns.map(x => []);
                 }
             }
         },
         complete: function(result) {
+            if (rawdata.tmp.length > 0 && rawdata.tmp[0].length > 0) {
+                // Push content of temporary buffers to output arrays
+                for (let i = 0; i < rawdata.columns.length; ++i) {
+                    rawdata.data[i].push(rawdata.isnan[i] ? rawdata.tmp[i]
+                                                          : new Float64Array(rawdata.tmp[i]));
+                }
+                rawdata.tmp = rawdata.columns.map(x => []);
+            }
             console.timeEnd("Load CSV");
             dataUtils.processRawData(data_id, rawdata);
         }
