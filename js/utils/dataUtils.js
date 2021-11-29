@@ -559,12 +559,14 @@ dataUtils.makeQuadTrees = function(data_id) {
     };
     console.log("groupByCol", groupByCol);
     if (groupByCol) {
-        var allgroups = d3.nest().key(function (d) { return d[groupByCol]; }).entries(data_obj["_processeddata"]);
+        //var allgroups = d3.nest().key(function (d) { return d[groupByCol]; }).entries(data_obj["_processeddata"]);
+        var allgroups = d3.nest().key(function (d) { return d; }).entries(data_obj["_processeddata"][groupByCol]);
 
         data_obj["_groupgarden"] = {};
         for (var i = 0; i < allgroups.length; i++) {
-            var treeKey = allgroups[i].values[0][groupByCol];
+            //var treeKey = allgroups[i].values[0][groupByCol];
             //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+            var treeKey = allgroups[i].key;
             data_obj["_groupgarden"][treeKey] = {"size" : function() { return 1; }};
             data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
             

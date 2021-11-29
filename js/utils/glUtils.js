@@ -428,11 +428,10 @@ glUtils.loadMarkers = function(uid) {
                 shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
             }
 
+            const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][i]] : 0;
             bytedata[POINT_OFFSET + 4 * i + 0] = markerData[xPosName][i] / imageWidth;
             bytedata[POINT_OFFSET + 4 * i + 1] = markerData[yPosName][i] / imageHeight;
-            //bytedata[POINT_OFFSET + 4 * i + 2] = barcodeToLUTIndex[markerData[keyName][i]] +
-            //                                     Number(shapeIndex) * 4096.0;
-            bytedata[POINT_OFFSET + 4 * i + 2] = Number(shapeIndex) * 4096.0;
+            bytedata[POINT_OFFSET + 4 * i + 2] = lutIndex + Number(shapeIndex) * 4096.0;
             bytedata[POINT_OFFSET + 4 * i + 3] = useColorFromColormap ? Number(scalarValue)
                                                                       : Number("0x" + hexColor.substring(1,7));
             bytedata[INDEX_OFFSET + i] = i;  // Store index needed for picking
@@ -525,8 +524,9 @@ glUtils._updateBarcodeToLUTIndexDict = function (uid, markerData, keyName) {
     const barcodeToLUTIndex = {};
     const barcodeToKey = {};
     const numPoints = markerData[markerData.columns[0]].length;
+    console.log("Key name: " + keyName);
     for (let i = 0, index = 0; i < numPoints; ++i) {
-        const barcode = undefined;  //markerData[keyName][i];
+        const barcode = (keyName != null) ? markerData[keyName][i] : undefined;
         if (!(barcode in barcodeToLUTIndex)) {
             barcodeToLUTIndex[barcode] = index++;
             barcodeToKey[barcode] = barcode;
@@ -975,7 +975,7 @@ glUtils.pick = function(event) {
             const tabName = interfaceUtils.getElementById(uid + "_marker-tab-name").textContent;
             const markerData = dataUtils.data[uid]["_processeddata"];
             const keyName = dataUtils.data[uid]["_gb_col"];
-            const groupName = undefined;//markerData[keyName][markerIndex];
+            const groupName = (keyName != null) ? markerData[keyName][markerIndex] : undefined;
             const piechartPropertyName = dataUtils.data[uid]["_pie_col"];
 
             const div = document.createElement("div");
