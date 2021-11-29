@@ -395,40 +395,49 @@ glUtils.loadMarkers = function(uid) {
 
     // Extract vertex data from markers
     if (usePiechartFromMarker) {
-        /*const numSectors = markerData[sectorsPropertyName][0].split(";").length;
+        const numSectors = markerData[sectorsPropertyName][0].split(";").length;
+        // For piecharts, we create one marker per piechart sector, so we need
+        // to also allocate additional space for the vertex data
+        bytedata = new Float32Array(numPoints * numSectors * 7);
+
         for (let i = 0; i < numPoints; ++i) {
             const sectors = markerData[sectorsPropertyName][i].split(";");
             const piechartAngles = glUtils._createPiechartAngles(sectors);
+            const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][i]] : 0;
+
             for (let j = 0; j < numSectors; ++j) {
                 const k = (i * numSectors + j);
                 hexColor = piechartPalette[j % piechartPalette.length];
-                positions[4 * k + 0] = markerData[xPosName][i] / imageWidth;
-                positions[4 * k + 1] = markerData[yPosName][i] / imageHeight;
-                //positions[4 * k + 2] = barcodeToLUTIndex[markerData[keyName][i]];
-                positions[4 * k + 2] = 0;
-                positions[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
-                indices[k] = i;  // Store index needed for picking
 
-                if (useScaleFromMarker) scales[k] = markerData[scalePropertyName][i];
-                else scales[k] = 1.0;  // Marker scale factor
-
-                shapes[k] = Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
-                            Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
+                bytedata[POINT_OFFSET * numSectors + 4 * k + 0] = markerData[xPosName][i] / imageWidth;
+                bytedata[POINT_OFFSET * numSectors + 4 * k + 1] = markerData[yPosName][i] / imageHeight;
+                bytedata[POINT_OFFSET * numSectors + 4 * k + 2] = lutIndex;
+                bytedata[POINT_OFFSET * numSectors + 4 * k + 3] = Number("0x" + hexColor.substring(1,7));
+                bytedata[INDEX_OFFSET * numSectors + k] = i;  // Store index needed for picking
+                bytedata[SCALE_OFFSET * numSectors + k] = useScaleFromMarker ? markerData[scalePropertyName][i] : 1.0;
+                bytedata[SHAPE_OFFSET * numSectors + k] =
+                    Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
+                    Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
             }
         }
-        numPoints *= numSectors;*/
+        numPoints *= numSectors;
     } else {
         for (let i = 0; i < numPoints; ++i) {
             if (useColorFromMarker) hexColor = markerData[colorPropertyName][i];
-            if (useColorFromColormap) scalarValue = markerData[scalarPropertyName][i];
+            if (useColorFromColormap) {
+                scalarValue = markerData[scalarPropertyName][i];
+                // Update scalar range that will be used for normalizing the values
+                scalarRange[0] = Math.min(scalarRange[0], scalarValue);
+                scalarRange[1] = Math.max(scalarRange[1], scalarValue);
+            }
             if (useShapeFromMarker) {
                 shapeIndex = markerData[shapePropertyName][i];
                 // Check if shapeIndex is a symbol names that needs to be converted to an index
                 if (isNaN(shapeIndex)) shapeIndex = markerUtils._symbolStrings.indexOf(shapeIndex);
                 shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
             }
-
             const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][i]] : 0;
+
             bytedata[POINT_OFFSET + 4 * i + 0] = markerData[xPosName][i] / imageWidth;
             bytedata[POINT_OFFSET + 4 * i + 1] = markerData[yPosName][i] / imageHeight;
             bytedata[POINT_OFFSET + 4 * i + 2] = lutIndex + Number(shapeIndex) * 4096.0;
@@ -436,11 +445,6 @@ glUtils.loadMarkers = function(uid) {
                                                                       : Number("0x" + hexColor.substring(1,7));
             bytedata[INDEX_OFFSET + i] = i;  // Store index needed for picking
             bytedata[SCALE_OFFSET + i] = useScaleFromMarker ? markerData[scalePropertyName][i] : 1.0;
-
-            if (useColorFromColormap) {
-                scalarRange[0] = Math.min(scalarRange[0], scalarValue);
-                scalarRange[1] = Math.max(scalarRange[1], scalarValue);
-            }
         }
     }
 
