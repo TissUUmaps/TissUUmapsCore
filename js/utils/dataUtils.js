@@ -367,44 +367,18 @@ dataUtils.readCSV = function(data_id, thecsv) {
 
     var fakeProgress = 0;
 
-    /*let rowToArrays = function(d, i, columns) {
-        let arrays = data_obj["_processeddata"],
-            isnan = data_obj["_isnan"];
-        for (key of columns) {
-            if (i == 0 && !arrays.hasOwnProperty(key)) arrays[key] = [];
-            if (i == 0 && !isnan.hasOwnProperty(key)) isnan[key] = false;
-            // Check if value should be converted to a number before we push it
-            // onto the array, and also update the array's type flag
-            arrays[key].push(isNaN(d[key]) ? d[key] : +d[key]);
-            isnan[key] = isnan[key] || isNaN(d[key]);
-        }
-        return null;
-    };
-
-    var request = d3.text(
-        thecsv,
-        function (d) { return d; } //here you can modify the datum 
-    ).on("progress", function(pe){
-        //update progress bar
-        if (pe.lengthComputable) {
-            var maxsize = pe.total;
-            var prog=pe.loaded;
-            var perc=prog/maxsize*100;
-            perc=perc.toString()+"%"
-            progressBar.style.width = perc;
-        }
-        else {
+    let updateProgressBar = function(op) {
+        if (op == "progress") {
             fakeProgress += 1;
-            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
-            perc=perc.toString()+"%"
+            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/100.)));
+            perc=perc.toString()+"%";
             progressBar.style.width = perc;
         }
-    }).on("load",function(xhr){
-        progressBar.style.width="100%"
-        progressParent.classList.add("d-none");
-        dataUtils.processRawData(data_id, d3.csvParse(xhr, rowToArrays));
-    });*/
-
+        if (op == "load") {
+            progressBar.style.width="100%";
+            progressParent.classList.add("d-none");
+        }
+    };
     
     let rawdata = { columns: [], isnan: [], data: [], tmp: [] };
     console.time("Load CSV");
@@ -435,6 +409,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
                                                               : new Float64Array(rawdata.tmp[i]));
                     }
                     rawdata.tmp = rawdata.columns.map(x => []);
+                    updateProgressBar("progress");
                 }
             }
         },
@@ -447,6 +422,7 @@ dataUtils.readCSV = function(data_id, thecsv) {
                 }
                 rawdata.tmp = rawdata.columns.map(x => []);
             }
+            updateProgressBar("load");
             console.timeEnd("Load CSV");
             dataUtils.processRawData(data_id, rawdata);
         }
