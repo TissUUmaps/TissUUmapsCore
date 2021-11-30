@@ -180,19 +180,11 @@ dataUtils.updateViewOptions = function(data_id){
             while (len--) { min = +arr[len] < min ? +arr[len] : min; }
             return min;
         }
-        //minX = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
-        //maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_X"]]); }));
-        //minY = getMin(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
-        //maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return parseFloat(o[data_obj["_Y"]]); }));
         minX = getMin(data_obj["_processeddata"][data_obj["_X"]]);
         maxX = getMax(data_obj["_processeddata"][data_obj["_X"]]);
         minY = getMin(data_obj["_processeddata"][data_obj["_Y"]]);
         maxY = getMax(data_obj["_processeddata"][data_obj["_Y"]]);
         if (minX <0 || maxX < 500) {
-            //for (o of dataUtils.data[data_id]["_processeddata"]) {
-            //    o[data_obj["_X"]] = 1200 * (o[data_obj["_X"]] - minX) / (maxX - minX);
-            //}
-            //maxX = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_X"]]; }))
             let arr = data_obj["_processeddata"][data_obj["_X"]];
             for (let i = 0; i < arr.length; ++i) {
                 arr[i] = 1200 * (arr[i] - minX) / (maxX - minX);
@@ -200,10 +192,6 @@ dataUtils.updateViewOptions = function(data_id){
             maxX = getMax(arr);
         }
         if (minY <0 || maxY < 500) {
-            //for (o of dataUtils.data[data_id]["_processeddata"]) {
-            //    o[data_obj["_Y"]] = 1200 * (o[data_obj["_Y"]] - minY) / (maxY - minY);
-            //}
-            //maxY = getMax(dataUtils.data[data_id]["_processeddata"].map(function(o) { return o[data_obj["_Y"]]; }))
             let arr = data_obj["_processeddata"][data_obj["_Y"]];
             for (let i = 0; i < arr.length; ++i) {
                 arr[i] = 1200 * (arr[i] - minY) / (maxY - minY);
