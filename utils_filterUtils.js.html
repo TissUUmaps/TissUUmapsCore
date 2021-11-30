@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>tmapp.js - Documentation</title>
+    <title>utils/filterUtils.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">tmapp.js</h1>
+    <h1 class="page-title">utils/filterUtils.js</h1>
     
 
     
@@ -40,244 +40,487 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @file tmapp.js Main base for TissUUmaps to work
- * @author Leslie Solorzano
- * @see {@link tmapp}
+ * @file filterUtils.js Interface to ask information to OSD
+ * @author Christophe Avenel
+ * @see {@link filterUtils}
  */
 
 /**
- * @namespace tmapp
- * @version tmapp 2.0
- * @classdesc The root namespace for tmapp.
+ * @namespace filterUtils
+ * @property {Bool}   filterUtils._filtersUsed - 
+ * @property {Object} filterUtils._filters - 
+ * @property {Object} filterUtils._filterItems - 
  */
-tmapp = {
-    _url_suffix: "",
-    _scrollDelay: 900,
-    fixed_file: "",
-    mpp:0,
-    slideFilename:"Main"
+ filterUtils = {
+    // Choose between ["Brightness", "Exposure", "Hue", "Contrast", "Vibrance", "Noise", 
+    //                 "Saturation","Gamma","Invert","Greyscale","Threshold","Erosion","Dilation"]
+    _filtersUsed: ["Saturation","Brightness","Contrast"],
+    _filters: {
+        "Color":{
+            params:{
+                type:"select",
+                options:[
+                    {text:"----", value:0},
+                    {text:"Red", value:"100,0,0"},
+                    {text:"Green", value:"0,100,0"},
+                    {text:"Blue", value:"0,0,100"},
+                    {text:"Yellow", value:"100,100,0"},
+                    {text:"Cyan", value:"0,100,100"},
+                    {text:"Magenta", value:"100,0,100"},
+                    {text:"Gray", value:"100,100,100"}
+                ]
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        var valueRGB = value.split(",")
+                        this.channels(
+                            {red: valueRGB[0]-100, green: valueRGB[1]-100, blue: valueRGB[2]-100}
+                        )
+                        this.render(callback);
+                    });
+                }
+            }
+        },
+        "Brightness":{
+            params:{
+                type:"range",
+                min:-50,
+                max:50,
+                step:0.1,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.brightness(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Exposure":{
+            params:{
+                type:"range",
+                min:-100,
+                max:100,
+                step:1,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.exposure(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Hue":{
+            params:{
+                type:"range",
+                min:0,
+                max:100,
+                step:1,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.hue(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Contrast":{
+            params:{
+                type:"range",
+                min:0,
+                max:4,
+                step:0.01,
+                value:1
+            },
+            filterFunction: function (value) {
+                if (value == 1) {  return function (context, callback) {callback();}}
+                return OpenSeadragon.Filters.CONTRAST(value);
+            }
+        },
+        "Vibrance":{
+            params:{
+                type:"range",
+                min:-250,
+                max:250,
+                step:10,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.vibrance(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Noise":{
+            params:{
+                type:"range",
+                min:0,
+                max:100,
+                step:10,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.noise(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Saturation":{
+            params:{
+                type:"range",
+                min:-100,
+                max:100,
+                step:10,
+                value:0
+            },
+            filterFunction: function (value) {
+                if (value == 0) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.saturation(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Gamma":{
+            params:{
+                type:"range",
+                min:-0,
+                max:2,
+                step:0.1,
+                value:1
+            },
+            filterFunction: function (value) {
+                if (value == 1) {  return function (context, callback) {callback();}}
+                return function(context, callback) {
+                    Caman(context.canvas, function() {
+                        this.gamma(value);
+                        this.render(callback);
+                    })
+                }
+            }
+        },
+        "Invert":{
+            params:{
+                type:"checkbox"
+            },
+            filterFunction: function () {
+                return OpenSeadragon.Filters.INVERT();
+            }
+        },
+        "Greyscale":{
+            params:{
+                type:"checkbox"
+            },
+            filterFunction: function () {
+                return OpenSeadragon.Filters.GREYSCALE();
+            }
+        },
+        "Threshold":{
+            params:{
+                type:"range",
+                min:0,
+                max:256,
+                step:1,
+                value:256
+            },
+            filterFunction: function (value) {
+                if (value == 256) {  return function (context, callback) {callback();}}
+                return OpenSeadragon.Filters.THRESHOLDING(value);
+            }
+        },
+        "Erosion":{
+            params:{
+                type:"range",
+                min:1,
+                max:11,
+                step:2,
+                value:1
+            },
+            filterFunction: function (value) {
+                if (value == 1) {  return function (context, callback) {callback();}}
+                return OpenSeadragon.Filters.MORPHOLOGICAL_OPERATION(value, Math.min);
+            }
+        },
+        "Dilation":{
+            params:{
+                type:"range",
+                min:1,
+                max:11,
+                step:2,
+                value:1
+            },
+            filterFunction: function (value) {
+                if (value == 1) {  return function (context, callback) {callback();}}
+                return OpenSeadragon.Filters.MORPHOLOGICAL_OPERATION(value, Math.max);
+            }
+        }
+    },
+    _filterItems:{},
+    _compositeMode:"source-over"
 }
 
 /** 
- * Get all the buttons from the interface and assign all the functions associated to them */
-tmapp.registerActions = function () {
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
-    var op = tmapp["object_prefix"];
-
-    interfaceUtils.listen(op + '_collapse_btn','click', function () { interfaceUtils.toggleRightPanel() },false);
-    /*interfaceUtils.listen(op + '_search','input', function () { markerUtils.hideRowsThatDontContain(); },false);*/
-    interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
-    interfaceUtils.listen(op + '_export_regions','click', function () { regionUtils.exportRegionsToJSON() },false);
-    interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
-    interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
-    interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen("capture_viewport","click",function(){overlayUtils.savePNG()},false)
-    interfaceUtils.listen("plus-1-button","click",function(){interfaceUtils.generateDataTabUI()},false)
-    interfaceUtils.listen('save_project_menu', 'click', function() { projectUtils.saveProjectWindow() }, false);
-    interfaceUtils.listen('load_project_menu', 'click', function() { projectUtils.loadProjectFile() }, false);
-    document.addEventListener("mousedown",function(){tmapp["ISS_viewer"].removeOverlay("ISS_marker_info");});
-
-    // dataUtils.processEventForCSV("morphology",cpop + '_csv');
-    //dataUtils.processEventForCSV("gene",op + '_csv');
-    
-    var navtabs=document.getElementsByClassName("nav-tabs")[0];
-    var uls=navtabs.getElementsByTagName("ul");
-    for(var i=0;i&lt;uls.length;i++){
-        var as=uls[i].getElementsByTagName("a");
-        for(var j=0;j&lt;as.length;j++){
-            as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
+ * 
+ * Init list of filters */
+ filterUtils.initFilters = function() {
+    var settingsPanel = document.getElementById("filterSettings");
+    if (!settingsPanel) return;
+    for (var filter in filterUtils._filters) {
+        selectParams = {
+            eventListeners:{
+                "change": function (e) {
+                    filterName = e.srcElement.getAttribute("filter");
+                    checked = e.srcElement.checked;
+                    if (checked)
+                        filterUtils._filtersUsed.push(filterName);
+                    else 
+                        filterUtils._filtersUsed = filterUtils._filtersUsed.filter(function(value, index, arr){ 
+                            return value != filterName;
+                        });
+                    overlayUtils.addAllLayersSettings();
+                    filterUtils.setRangesFromFilterItems();
+                    filterUtils.getFilterItems();
+                }
+            },
+            "class":"filterSelection",
+            "checked":filterUtils._filtersUsed.filter(e => e === filter).length > 0,
+            id:"filterCheck_" + filter,
+            extraAttributes: {
+                "filter": filter
+            }
         }
+        select = HTMLElementUtils.inputTypeCheckbox(selectParams);
+        select.classList.add("form-check-input");
+        settingsPanel.appendChild(select);
+        var label = document.createElement("label");
+        label.classList.add("form-check-label");
+        label.setAttribute("for", "filterCheck_" + filter);
+        label.innerHTML = "&amp;nbsp;" + filter;
+        var form = document.createElement("div");
+        form.classList.add("form-check");
+        form.appendChild(select);
+        form.appendChild(label);
+        settingsPanel.appendChild(form);
+    }
+    modeParams = {
+        eventListeners:{
+            "change": function (e) {
+                compositeMode = e.srcElement.value;
+                filterUtils._compositeMode = compositeMode;
+                filterUtils.setCompositeOperation();
+            }
+        },
+        id: "filterCompositeMode",
+        options:[
+            {text:"Channels", value:"source-over"},
+            {text:"Composite", value:"lighter"}
+        ]
+    }
+    var label = document.createElement("label");
+    label.innerHTML = "Merging mode:&amp;nbsp;";
+    settingsPanel.appendChild(label);
+    select = HTMLElementUtils.selectTypeDropDown(modeParams);
+    select.classList.add("form-select", "form-select-sm");
+    select.value = filterUtils._compositeMode;
+    filterUtils.setCompositeOperation();
+    settingsPanel.appendChild(select);
+    filterUtils.getFilterItems();
+}
+
+/**
+ * @param {Number} filterName
+ * Get params for a given filter */
+filterUtils.getFilterParams = function(filterName) {
+    filterParams = filterUtils._filters[filterName].params;
+    filterParams.eventListeners = {
+        "input": filterUtils.getFilterItems
+    };
+    filterParams["class"] = "filterInput";
+    filterParams.filter = filterName;
+    return filterParams;
+}
+
+/** 
+ * @param {Number} filterName Index of an OSD tile source
+ * Get function for a given filter */
+filterUtils.getFilterFunction = function(filterName) {
+    return filterUtils._filters[filterName].filterFunction;
+}
+
+/** 
+ * apply all filters to all layers
+ *  */
+ filterUtils.applyFilterItems = function(calledItems) {
+    var caman = Caman;
+	caman.Store.put = function() {};
+
+    var op = tmapp["object_prefix"];
+    if (!tmapp[op + "_viewer"].world || !tmapp[op + "_viewer"].world.getItemAt(Object.keys(filterUtils._filterItems).length-1)) {
+        setTimeout(function() {
+            if (calledItems == filterUtils._filterItems)
+                filterUtils.applyFilterItems(calledItems);
+        }, 100);
+        return;
+    }
+    filters = [];
+    for (const layer in filterUtils._filterItems) {
+        processors = [];
+        for(var filterIndex=0;filterIndex&lt;filterUtils._filterItems[layer].length;filterIndex++) {
+            processors.push(
+                filterUtils._filterItems[layer][filterIndex].filterFunction(filterUtils._filterItems[layer][filterIndex].value)
+            );
+        }
+        filters.push({
+            items: tmapp[op + "_viewer"].world.getItemAt(layer),
+            processors: processors
+        });
+    };
+    tmapp[op + "_viewer"].setFilterOptions({
+        filters: filters
+    });
+    for ( var i = 0; i &lt; tmapp[op + "_viewer"].world._items.length; i++ ) {
+        tmapp[op + "_viewer"].world._items[i].tilesMatrix={};
     }
 }
-/**
- * This method is called when the document is loaded. The tmapp object is built as an "app" and init is its main function.
- * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
- * To know which data one is referring to, there are Object Prefixes (op). For In situ sequencing projects it can be "ISS" for
- * Cell Profiler data it can be "CP".
- * If there are images to be displayed on top of the main image, they are stored in the layers object and, if there are layers
- * it will create the buttons to display them in the settings panel.
- * The SVG overlays for the viewer are also initialized here 
- * @summary After setting up the tmapp object, initialize it*/
-tmapp.init = function () {
-    //This prefix will be called by all other utilities in js/utils
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
+
+/** 
+ * Set html ranges and checkboxes from filter items
+ *  */
+ filterUtils.setRangesFromFilterItems = function() {
     var op = tmapp["object_prefix"];
-    var vname = op + "_viewer";
-    //init OSD viewer
-    tmapp[vname] = OpenSeadragon(tmapp.options_osd);
-    //pixelate because we need the exact values of pixels
-    tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
-    // Disable keyboard hack
-    tmapp[vname].innerTracker.keyHandler = null;
-    tmapp[vname].innerTracker.keyDownHandler = null;
-    tmapp[vname].innerTracker.keyPressHandler = null;
-
-    if(!tmapp.layers){
-        tmapp.layers = [];
-    }
-    overlayUtils.addAllLayers();
-    //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-    var svgovname = tmapp["object_prefix"] + "_svgov";
-    tmapp[svgovname] = tmapp[vname].svgOverlay();
-
-                          //main node
-    overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
-    
-    //overlay for marker data                                             //main node
-    overlayUtils._d3nodes[op + "_markers_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", op + "_markers_svgnode");
-    //overlay for region data                                              //main node
-    overlayUtils._d3nodes[op + "_regions_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", op + "_regions_svgnode");
-    //overlay for CP data   
-    var cpop="CP";                                   //main node;
-    overlayUtils._d3nodes[cpop+"_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", cpop+"_svgnode");
-
-    var click_handler = function (event) {
-        if (event.quick) {
-            if (overlayUtils._drawRegions) {
-                //call region creator and drawer
-                regionUtils.manager(event);
+    for (const layer in filterUtils._filterItems) {
+        for(var filterIndex=0;filterIndex&lt;filterUtils._filterItems[layer].length;filterIndex++) {
+            item = filterUtils._filterItems[layer][filterIndex];
+            filterRange = document.querySelector('[filter="'+item.name+'"][layer="'+layer+'"]');
+            if (filterRange) {
+                if (filterRange.type == "range" || filterRange.type == "select-one")
+                    filterRange.value = item.value;
+                else if (filterRange.type == "checkbox")
+                    filterRange.checked = item.value;
             }
-        } else { //if it is not quick then its panning
-            //scroll_handler();
         }
     };
-
-    //OSD handlers are not registered manually they have to be registered
-    //using MouseTracker OSD objects 
-    var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-        element: tmapp[vname].canvas,
-        clickHandler: click_handler
-    }).setTracking(true);
-
-    elt = document.getElementById("ISS_globalmarkersize");
-    if (elt) {
-        tmapp[vname].addControl(elt,{
-            anchor: OpenSeadragon.ControlAnchor.TOP_RIGHT
-        });
-        elt.classList.add("d-none");
-    }
-
-    if (tmapp.mpp != 0) {
-        tmapp[vname].scalebar({
-            pixelsPerMeter: tmapp.mpp ? (1e6 / tmapp.mpp) : 0,
-            xOffset: 200,
-            yOffset: 10,
-            barThickness: 3,
-            color: '#555555',
-            fontColor: '#333333',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            sizeAndTextRenderer: OpenSeadragon.ScalebarSizeAndTextRenderer.METRIC_LENGTH,
-            location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT
-        });
-    }
-    //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
-    filterUtils.initFilters();
-    if (window.hasOwnProperty("glUtils")) {
-        console.log("Using GPU-based marker drawing (WebGL canvas)")
-        glUtils.init();
-    } else {
-        console.log("Using CPU-based marker drawing (SVG canvas)")
-    }
-} //finish init
-
-/**
- * Options for the fixed and moving OSD 
- * all options are described here https://openseadragon.github.io/docs/OpenSeadragon.html#.Options */
-tmapp.options_osd = {
-    id: "ISS_viewer",
-    prefixUrl: "js/openseadragon/images/",
-    navigatorSizeRatio: 1,
-    wrapHorizontal: false,
-    showNavigator: true,
-    navigatorPosition: "BOTTOM_LEFT",
-    navigatorSizeRatio: 0.15,
-    animationTime: 0.0,
-    blendTime: 0,
-    minZoomImageRatio: 1,
-    maxZoomPixelRatio: 30,
-    zoomPerClick: 1.0,
-    constrainDuringPan: true,
-    visibilityRatio: 1,
-    showNavigationControl: false,
-    maxImageCacheCount:500,
-    imageSmoothingEnabled:false,
-    preserveImageSizeOnResize: true
 }
 
-function toggleFullscreen() {
-    let full_ui = document.getElementById("main-ui");
-    let bIsFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
-    if (!bIsFullscreen) {
-        if (full_ui.requestFullscreen) {
-            full_ui.requestFullscreen();
-        } else if (full_ui.webkitRequestFullscreen) {
-            full_ui.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-        } else if (full_ui.msRequestFullscreen) {
-            full_ui.msRequestFullscreen();
-        } else if (full_ui.webkitRequestFullscreen) {
-            full_ui.mozRequestFullscreen();
+/** 
+ * Get filter functions and values from html ranges and checkboxes
+ *  */
+filterUtils.getFilterItems = function() {
+    var op = tmapp["object_prefix"];
+    if (!tmapp[op + "_viewer"].world || !tmapp[op + "_viewer"].world.getItemAt(tmapp[op + "_viewer"].world.getItemCount()-1)) {
+        setTimeout(function() {
+            filterUtils.getFilterItems();
+        }, 100);
+        return;
+    }
+    console.log("getFilterItems");
+    filterInputsRanges = document.getElementsByClassName("filterInput");
+    items = {};
+    for (i = 0; i &lt; filterInputsRanges.length; i++) {
+        var filterLayer = filterInputsRanges[i].getAttribute("layer");
+        items[filterLayer] = []
+    }
+    for (i = 0; i &lt; filterInputsRanges.length; i++) {
+        var filterName = filterInputsRanges[i].getAttribute("filter");
+        var filterLayer = filterInputsRanges[i].getAttribute("layer");
+        var filterFunction = filterUtils.getFilterFunction(filterName);
+        
+        if (filterInputsRanges[i].type == "range" || filterInputsRanges[i].type == "select-one")
+            inputValue = filterInputsRanges[i].value;
+        else if (filterInputsRanges[i].type == "checkbox")
+            inputValue = filterInputsRanges[i].checked;
+        if (inputValue) {
+            items[filterLayer].push(
+                {
+                    filterFunction: filterFunction,
+                    value: inputValue,
+                    name: filterName
+                }
+            );
         }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen()
-        } else if (document.webkitCancelFullScreen) {
-            document.webkitCancelFullScreen();
-        } else if (document.webkitCancelFullScreen) {
-            document.msCancelFullScreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen()
-        }
+    }
+    filterUtils._filterItems = items;
+    filterUtils.applyFilterItems(items);
+}
+
+filterUtils.setCompositeOperation = function(restart) {
+
+
+    var op = tmapp["object_prefix"];
+    if (!tmapp[op + "_viewer"].world || !tmapp[op + "_viewer"].world.getItemAt(Object.keys(filterUtils._filterItems).length-1)) {
+        setTimeout(function() {
+            if (restart == undefined){
+                restart = 10;
+            }
+            if (restart > 0)
+                filterUtils.setCompositeOperation(restart-1);
+        }, 100);
+        return;
+    }
+    var filterCompositeMode = document.getElementById("filterCompositeMode");
+    filterCompositeMode.value = filterUtils._compositeMode;
+    tmapp[op + "_viewer"].compositeOperation = filterUtils._compositeMode;
+    for (i = 0; i &lt; tmapp[op + "_viewer"].world.getItemCount(); i++) {
+        tmapp[op + "_viewer"].world.getItemAt(i).setCompositeOperation(filterUtils._compositeMode);
     }
 }
 
-function toggleNavbar(turn_on = null) {
-    let main_navbar = document.getElementsByTagName("nav")[0];
-
-    if (turn_on === true) {
-        main_navbar.classList.remove("d-none");
-    } else if (turn_on === false) {
-        main_navbar.classList.add("d-none");
-    } else if (turn_on === null) {
-        if (main_navbar.classList.contains("d-none")) {
-            toggleNavbar(true);
-        } else {
-            toggleNavbar(false);
-        }
+/** Create an HTML filter */
+filterUtils.createHTMLFilter = function (params) {
+    if (!params) {
+        return null;
     }
+    var type = params.type || null;
+    if (type == "range") {
+        filterInput = HTMLElementUtils.inputTypeRange(params);
+    }
+    else if (type == "checkbox") {
+        filterInput = HTMLElementUtils.inputTypeCheckbox(params);
+    }
+    else if (type == "select") {
+        filterInput = HTMLElementUtils.selectTypeDropDown(params);
+    }
+    if (params.value != undefined) {
+        filterInput.setAttribute("value", params.value);
+    }
+    filterInput.setAttribute("layer", params.layer);
+    filterInput.setAttribute("filter", params.filter);
+    filterInput.setAttribute("id", "filterInput-" + params.filter + "-" + params.layer);
+    filterInput.setAttribute("list", "filterDatalist-" + params.filter + "-" + params.layer);
+
+    datalist = document.createElement("datalist");
+    datalist.setAttribute("id", "filterDatalist-" + params.filter + "-" + params.layer);
+    option = document.createElement("option");
+    option.text = params.value;
+    datalist.appendChild(option);
+
+    filterInput.appendChild(datalist);
+
+    return filterInput;
 }
-
-$( document ).ready(function() {
-    let ISS_viewer = document.getElementById("ISS_viewer");
-    let ISS_viewer_container = document.getElementById("ISS_viewer_container");
-
-    ISS_viewer.addEventListener('dblclick', function (e) {
-        // Open in fullscreen if double clicked
-        toggleFullscreen();
-    });
-
-    let full_ui = document.getElementById("main-ui");
-    full_ui.addEventListener('fullscreenchange', (event) => {
-        // document.fullscreenElement will point to the element that
-        // is in fullscreen mode if there is one. If not, the value
-        // of the property is null.
-        if (document.fullscreenElement) {
-            toggleNavbar(false);
-        } else {
-            toggleNavbar(true);
-        }
-    });
-
-    ISS_viewer_container.addEventListener("keypress", (event) => {
-        if (event.key === "0") {
-            interfaceUtils.toggleRightPanel();
-        } else if (event.key === "f") {
-            toggleFullscreen();
-        }
-    });
-});
 </code></pre>
         </article>
     </section>
