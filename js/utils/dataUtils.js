@@ -348,27 +348,31 @@ dataUtils.createMenuFromCSV = function(data_id,datumExample) {
 * Calls dataUtils.createDataset and loads and parses the csv using D3. 
 * then calls dataUtils.createMenuFromCSV to modify the interface in its own tab
 */
-dataUtils.readCSV = function(data_id, thecsv) {
-    
+dataUtils.readCSV = function(data_id, thecsv, options) { 
     dataUtils.createDataset(data_id,{"name":data_id});
 
     let data_obj = dataUtils.data[data_id];
-
     data_obj["_processeddata"] = {};
     data_obj["_isnan"] = {};
     data_obj["_csv_header"] = null;
     data_obj["_csv_path"] = thecsv;
+    if (options != undefined) {
+        data_obj["expectedHeader"] = options.expectedHeader;
+        data_obj["expectedRadios"] = options.expectedRadios;
+        // Hide download button?
+        let panel = interfaceUtils.getElementById(data_id+"_input_csv_col");
+        panel.classList.add("d-none");
+    }
 
-    var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
+    let progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
     progressParent.classList.remove("d-none");
-    var progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
-
-    var fakeProgress = 0;
+    let progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
+    let fakeProgress = 0;
 
     let updateProgressBar = function(op) {
         if (op == "progress") {
             fakeProgress += 1;
-            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/100.)));
+            let perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/100.)));
             perc=perc.toString()+"%";
             progressBar.style.width = perc;
         }
@@ -379,8 +383,10 @@ dataUtils.readCSV = function(data_id, thecsv) {
     };
     
     let rawdata = { columns: [], isnan: [], data: [], tmp: [] };
+
     console.time("Load CSV");
     Papa.parse(thecsv, {
+        download: (options != undefined),
         delimiter: ",",
         header: false,
    	    worker: false,
@@ -430,69 +436,10 @@ dataUtils.readCSV = function(data_id, thecsv) {
 /** 
 * @param {Object} thecsv csv file path
 * This is a function to deal with the request of a csv from a server as opposed to local.
-* It creates an XMLHttpRequest. In the future someone should implement it with Fetch to comply with the W3 API
-* Its not yet compatible with the new dataUtils.....
 */
 dataUtils.XHRCSV = function(data_id, options) {
     console.log(data_id, options, options.path, options["path"]);
-    dataUtils.createDataset(data_id,{"name":data_id});
-    
-    let data_obj = dataUtils.data[data_id];
-    data_obj["expectedHeader"] = options.expectedHeader
-    data_obj["expectedRadios"] = options.expectedRadios
-    data_obj["_csv_path"] = options["path"];
-    var op = tmapp["object_prefix"];
-
-    var panel = interfaceUtils.getElementById(data_id+"_input_csv_col");
-    panel.classList.add("d-none");
-
-    var xhr = new XMLHttpRequest();
-
-    var progressParent=interfaceUtils.getElementById(data_id+"_csv_progress_parent");
-    progressParent.classList.remove("d-none");
-    var progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
-    
-    var fakeProgress = 0;
-    
-    // Setup our listener to process compeleted requests
-    xhr.onreadystatechange = function () {        
-        // Only run if the request is complete
-        if (xhr.readyState !== 4) return;        
-        // Process our return data
-        if (xhr.status >= 200 && xhr.status < 300) {
-            // What do when the request is successful
-            progressBar.style.width = "100%";
-            progressParent.classList.add("d-none");
-            console.log(xhr);
-            dataUtils.processRawData(data_id,d3.csvParse(xhr.responseText));
-        }else{
-            console.log("dataUtils.XHRCSV responded with "+xhr.status);
-            progressParent.classList.add("d-none");
-            interfaceUtils.alert ("Impossible to load data")
-        }     
-    };
-    
-    xhr.onprogress = function (pe) {
-        if (pe.lengthComputable) {
-            var maxsize = pe.total;
-            var prog=pe.loaded;
-            var perc=prog/maxsize*100;
-            perc=perc.toString()+"%"
-            progressBar.style.width = perc;
-            //console.log(perc);
-        }
-        else {
-            fakeProgress += 1;
-            console.log(fakeProgress, Math.min(100, 100*(1-Math.exp(-fakeProgress/50.))))
-            var perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/50.)));
-            perc=perc.toString()+"%"
-            progressBar.style.width = perc;
-        }
-    }
-
-    xhr.open('GET', options["path"]);
-    xhr.send();
-    
+    dataUtils.readCSV(data_id, options["path"], options);
 }
 
 /**
