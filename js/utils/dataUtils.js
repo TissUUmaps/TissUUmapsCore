@@ -377,6 +377,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
             progressBar.style.width = perc;
         }
         if (op == "load") {
+            // Hide progress bar
             progressBar.style.width="100%";
             progressParent.classList.add("d-none");
         }
@@ -392,7 +393,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
    	    worker: false,
         step: function(row) {
             if (rawdata.columns.length == 0) {
-                let header = row.data;
+                const header = row.data;
                 for (let i = 0; i < header.length; ++i) {
                     rawdata.columns[i] = header[i];
                     rawdata.isnan[i] = false;
@@ -412,7 +413,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
                         rawdata.data[i].push(rawdata.isnan[i] ? rawdata.tmp[i]
                                                               : new Float64Array(rawdata.tmp[i]));
                     }
-                    rawdata.tmp = rawdata.columns.map(x => []);
+                    rawdata.tmp = rawdata.columns.map(x => []);  // Clear buffers
                     updateProgressBar("progress");
                 }
             }
@@ -424,7 +425,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
                     rawdata.data[i].push(rawdata.isnan[i] ? rawdata.tmp[i]
                                                           : new Float64Array(rawdata.tmp[i]));
                 }
-                rawdata.tmp = rawdata.columns.map(x => []);
+                rawdata.tmp = rawdata.columns.map(x => []);  // Clear buffers
             }
             updateProgressBar("load");
             console.timeEnd("Load CSV");
