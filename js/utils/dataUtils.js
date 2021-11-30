@@ -477,7 +477,8 @@ dataUtils.makeQuadTrees = function(data_id) {
             //var treeKey = allgroups[i].values[0][groupByCol];
             //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
             var treeKey = allgroups[i].key;
-            data_obj["_groupgarden"][treeKey] = {"size" : function() { return 1; }};
+            const groupSize = allgroups[i].values.length + 0;
+            data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
             data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
             
             if(groupByColsName){
@@ -492,7 +493,8 @@ dataUtils.makeQuadTrees = function(data_id) {
         treeKey = "All";
         data_obj["_groupgarden"] = {};
         //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(data_obj["_processeddata"]);
-        data_obj["_groupgarden"][treeKey] = {"size" : function() { return 1; }};
+        const groupSize = data_obj["_processeddata"][xselector].length + 0;
+        data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
         data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
         
         if(groupByColsName){
