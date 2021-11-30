@@ -447,6 +447,7 @@ dataUtils.makeQuadTrees = function(data_id) {
     var yselector=data_obj["_Y"]
     var groupByCol=data_obj["_gb_col"]
     var groupByColsName=data_obj["_gb_name"]
+    var markerData=data_obj["_processeddata"];
 
     //console.log(xselector,yselector,groupByCol,groupByColsName)
 
@@ -461,48 +462,53 @@ dataUtils.makeQuadTrees = function(data_id) {
         }
     }*/
 
+    const useQuadtrees = false;  // If false, only generate fake empty trees
+    const numMarkers = markerData[xselector].length + 0;
+    let indexData = new Uint32Array(numMarkers);
+    for (let i = 0; i < numMarkers; ++i) indexData[i] = i;
+
     var x = function (d) {
-        return d[xselector];
+        return markerData[xselector][d];
     };
     var y = function (d) {
-        return d[yselector];
+        return markerData[yselector][d];
     };
     console.log("groupByCol", groupByCol);
     if (groupByCol) {
-        //var allgroups = d3.nest().key(function (d) { return d[groupByCol]; }).entries(data_obj["_processeddata"]);
-        var allgroups = d3.nest().key(function (d) { return d; }).entries(data_obj["_processeddata"][groupByCol]);
+        var allgroups = d3.nest().key(function (d) { return markerData[groupByCol][d]; }).entries(indexData);
 
         data_obj["_groupgarden"] = {};
         for (var i = 0; i < allgroups.length; i++) {
-            //var treeKey = allgroups[i].values[0][groupByCol];
-            //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
-            var treeKey = allgroups[i].key;
-            const groupSize = allgroups[i].values.length + 0;
-            data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
+            const treeKey = allgroups[i].key;
+            if (useQuadtrees) {
+                allgroups[i].values = new Uint32Array(allgroups[i].values);
+                data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+            } else {
+                const groupSize = allgroups[i].values.length + 0;
+                data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
+            }
             data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
             
-            if(groupByColsName){
+            if(groupByColsName){  // TODO TODO TODO
                 var treeName = allgroups[i].values[0][groupByColsName] || "";
                 data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
             }
-            //create the subsampled for all those that need it
         }
     }
     else {
         console.log("No group, we take everything!");
         treeKey = "All";
         data_obj["_groupgarden"] = {};
-        //data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(data_obj["_processeddata"]);
-        const groupSize = data_obj["_processeddata"][xselector].length + 0;
-        data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
+        if (useQuadtrees) {
+            data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(indexData);
+        } else {
+            data_obj["_groupgarden"][treeKey] = {"size" : function() { return numMarkers; }};
+        }
         data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
         
-        if(groupByColsName){
+        if(groupByColsName){  // TODO TODO TODO
             var treeName = data_obj["_processeddata"][0][groupByColsName] || "";
             data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
         }
-    }
-    //print UIs that are only for groups
-    //markerUtils.printBarcodeUIs(data_obj._drawOptions);
-    
+    }    
 }
