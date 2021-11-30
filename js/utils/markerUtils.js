@@ -125,7 +125,7 @@ markerUtils.updatePiechartLegend = function() {
     elt.appendChild(table);
 
     let sectors = [];
-    const numSectors = markerData[0][sectorsPropertyName].split(";").length;
+    const numSectors = markerData[sectorsPropertyName][0].split(";").length;
     if (sectorsPropertyName.split(";").length == numSectors) {
         sectors = sectorsPropertyName.split(";");  // Use sector labels from CSV header
     } else {
