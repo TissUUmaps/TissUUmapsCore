@@ -111,14 +111,13 @@ dataUtils.processRawData = function(data_id, rawdata) {
     let data_obj = dataUtils.data[data_id];
 
     data_obj["_processeddata"].columns = rawdata.columns;
-
     for (let i = 0; i < rawdata.columns.length; ++i) {
         // Convert chunks of column into a single large array
         if (rawdata.isnan[i]) {
             data_obj["_processeddata"][rawdata.columns[i]] = rawdata.data[i].flat();
         } else {
-            const num_rows = rawdata.data[i].reduce((x, y) => x + y.length, 0);
-            data_obj["_processeddata"][rawdata.columns[i]] = new Float64Array(num_rows);
+            const numRows = rawdata.data[i].reduce((x, y) => x + y.length, 0);
+            data_obj["_processeddata"][rawdata.columns[i]] = new Float64Array(numRows);
 
             let offset = 0;
             for (chunk of rawdata.data[i]) {
@@ -128,7 +127,6 @@ dataUtils.processRawData = function(data_id, rawdata) {
         }
         delete rawdata.data[i];  // Clean up memory
     }
-    console.log(rawdata.columns);
 
     //this function is in case we need to standardize the data column names somehow,
     //so that the processseddata has some desired structure, but for now maybe no
