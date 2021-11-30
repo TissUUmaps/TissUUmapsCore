@@ -17,8 +17,8 @@ jobs:
         with:
           source_dir: ./js
           output_dir: ./docs
+          recurse: true
           template: minami
-          front_page: README.md
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
