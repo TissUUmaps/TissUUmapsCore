@@ -649,8 +649,8 @@ interfaceUtils._mGenUIFuncs.deleteTab=function(uid){
 
 /** 
 * @param {HTMLEvent} event event that triggered function
-* @param {Array string} array domid suffixes within group
-* @param {Array Number} option this option will be shown while all others are hidden
+* @param {Array.String} array domid suffixes within group
+* @param {Array.Number} option this option will be shown while all others are hidden
 * This function takes options within one specific tab and hide all except the one marked by option */
 interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
     uid=event.target.id.split("_")[0]
@@ -669,7 +669,7 @@ interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
 
 /** 
 * @param {HTMLEvent} event event that triggered function
-* @param {Array string} array domid suffixes within group
+* @param {Array.String} array domid suffixes within group
 * @param {Number} option this option will be selected while all others are unselected
 * This function takes options within one specific tab and deselects all except the one marked by option */
 interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,options){
@@ -689,7 +689,7 @@ interfaceUtils._mGenUIFuncs.selectDeselect=function(event,array,options){
 
 /** 
 * @param {HTMLEvent} event event that triggered function
-* @param {Array string} array domid suffixes within group
+* @param {Array.String} array domid suffixes within group
 * @param {Number} option this option will be enabled while all others are disabled
 * This function takes options within one specific tab and disables all except the one marked by option */
 interfaceUtils._mGenUIFuncs.enableDisable=function(event,array,options){
