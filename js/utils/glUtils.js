@@ -483,7 +483,7 @@ glUtils.loadMarkers = function(uid) {
     }
     glUtils._updateColorbarCanvas();
     glUtils._updateColorLUTTexture(gl, uid, glUtils._textures[uid + "_colorLUT"]);
-    //markerUtils.updatePiechartLegend();
+    markerUtils.updatePiechartLegend();
 }
 
 
