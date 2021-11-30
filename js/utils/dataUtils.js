@@ -568,26 +568,3 @@ dataUtils.makeQuadTrees = function(data_id) {
     //markerUtils.printBarcodeUIs(data_obj._drawOptions);
     
 }
-
-/** 
- * @deprecated
- * Take the HTML input and read the file when it is changed, take the data 
- * type and the html dom id
-*/
-dataUtils.processEventForCSV = function(data_id, dom_id) {
-    //the dom id has to be of an input type 
-    if(!dom_id.includes("#"))
-        dom_id="#"+dom_id
-        d3.select(dom_id)
-        .on("change", function () {
-            var file = d3.event.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onloadend = function (evt) {
-                    var dataUrl = evt.target.result;
-                    dataUtils.readCSV(data_id,dataUrl);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-}
