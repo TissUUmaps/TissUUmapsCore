@@ -44,6 +44,10 @@ dataUtils = {
     "interpolatePuBuGn", "interpolatePuOr", "interpolatePuRd", "interpolatePurples", "interpolateRdBu", "interpolateRdGy", "interpolateRdPu", "interpolateRdYlBu", 
     "interpolateRdYlGn", "interpolateReds", "interpolateSinebow", "interpolateSpectral", "interpolateTurbo", "interpolateYlGn", "interpolateYlGnBu", "interpolateYlOrBr", 
     "interpolateYlOrRd"],
+
+    _quadtreesEnabled: true,  // If false, only generate fake empty trees
+    _quadtreesMethod: 2,      // 0: D3 quadtrees; 1: depth-limited; 2: depth-limited (array version)
+    _quadtreesMaxDepth: 8,    // Only used for depth-limited trees
 }
 /**
  * BIG CHANGE
@@ -462,7 +466,6 @@ dataUtils.makeQuadTrees = function(data_id) {
         }
     }*/
 
-    const useQuadtrees = false;  // If false, only generate fake empty trees
     const numMarkers = markerData[xselector].length + 0;
     let indexData = new Uint32Array(numMarkers);
     for (let i = 0; i < numMarkers; ++i) indexData[i] = i;
@@ -474,23 +477,31 @@ dataUtils.makeQuadTrees = function(data_id) {
         return markerData[yselector][d];
     };
     console.log("groupByCol", groupByCol);
+    if (dataUtils._quadtreesEnabled) console.time("Generate quadtrees");
     if (groupByCol) {
         var allgroups = d3.nest().key(function (d) { return markerData[groupByCol][d]; }).entries(indexData);
 
         data_obj["_groupgarden"] = {};
         for (var i = 0; i < allgroups.length; i++) {
             const treeKey = allgroups[i].key;
-            if (useQuadtrees) {
+            if (dataUtils._quadtreesEnabled) {
                 allgroups[i].values = new Uint32Array(allgroups[i].values);
-                data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+                if (dataUtils._quadtreesMethod == 0) {
+                    data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(allgroups[i].values);
+                } else {
+                    const maxDepth = dataUtils._quadtreesMaxDepth;
+                    const useArrayLeaves = dataUtils._quadtreesMethod == 2;
+                    data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y);
+                    dataUtils._quadtreeAddAll(data_obj["_groupgarden"][treeKey], allgroups[i].values, maxDepth, useArrayLeaves);
+                }
             } else {
                 const groupSize = allgroups[i].values.length + 0;
                 data_obj["_groupgarden"][treeKey] = {"size" : function() { return groupSize; }};
             }
             data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
             
-            if(groupByColsName){  // TODO TODO TODO
-                var treeName = allgroups[i].values[0][groupByColsName] || "";
+            if (groupByColsName) {
+                const treeName = data_obj["_processeddata"][groupByColsName][allgroups[i].values[0]] || "";
                 data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
             }
         }
@@ -499,16 +510,119 @@ dataUtils.makeQuadTrees = function(data_id) {
         console.log("No group, we take everything!");
         treeKey = "All";
         data_obj["_groupgarden"] = {};
-        if (useQuadtrees) {
-            data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(indexData);
+        if (dataUtils._quadtreesEnabled) {
+            if (dataUtils._quadtreesMethod == 0) {
+                data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y).addAll(indexData);
+            } else {
+                const maxDepth = dataUtils._quadtreesMaxDepth;
+                const useArrayLeaves = dataUtils._quadtreesMethod == 2;
+                data_obj["_groupgarden"][treeKey] = d3.quadtree().x(x).y(y);
+                dataUtils._quadtreeAddAll(data_obj["_groupgarden"][treeKey], indexData, maxDepth, useArrayLeaves);
+            }
         } else {
             data_obj["_groupgarden"][treeKey] = {"size" : function() { return numMarkers; }};
         }
         data_obj["_groupgarden"][treeKey]["treeID"] = treeKey; // this is also the key in the groupgarden but just in case
         
-        if(groupByColsName){  // TODO TODO TODO
-            var treeName = data_obj["_processeddata"][0][groupByColsName] || "";
+        if (groupByColsName) {
+            const treeName = data_obj["_processeddata"][groupByColsName][0] || "";
             data_obj["_groupgarden"][treeKey]["treeName"] = treeName;
         }
-    }    
+    }
+    if (dataUtils._quadtreesEnabled) console.timeEnd("Generate quadtrees");
+}
+
+/**
+ * Helper function for dataUtils._quadTreeAddAll(), and should therefore not be
+ * called directly outside of that function.
+ */
+dataUtils._quadtreeAdd = function(tree, x, y, d, maxDepth, useArrayLeaves) {
+    if (isNaN(x) || isNaN(y)) return;  // Ignore invalid points
+
+    let parent,
+        node = tree._root,
+        leaf = {data: d},
+        x0 = tree._x0, y0 = tree._y0,
+        x1 = tree._x1, y1 = tree._y1,
+        xm, ym, xp, yp,
+        right, bottom, i;
+
+    // If the tree is empty, initialize the root
+    if (!node) {
+        node = tree._root = new Array(4);
+    }
+
+    // Find leaf node location at maxDepth level and allocate new nodes
+    // for the path in the tree
+    for (let depth = 0; depth < maxDepth; ++depth) {
+        if (right = x >= (xm = (x0 + x1) / 2)) x0 = xm; else x1 = xm;
+        if (bottom = y >= (ym = (y0 + y1) / 2)) y0 = ym; else y1 = ym;
+        i = bottom << 1 | right;
+
+        if (depth < (maxDepth - 1) && !node[i]) {
+            // Allocate new node
+            node[i] = new Array(4);
+        }
+        parent = node, node = node[i];
+    }
+
+    if (useArrayLeaves) {
+        // Insert point into leaf node's data array
+        parent[i] = !parent[i] ? {data: []} : parent[i];
+        parent[i].data.push(leaf.d);
+    } else {
+        // Insert point into linked list of leaf nodes
+        leaf.next = node;
+        parent[i] = leaf;
+    }
+}
+
+/**
+ * Generate a tree of a fixed depth for better memory efficiency when used with
+ * large point datasets. Use instead of d3.quadtree.addAll().
+ */
+dataUtils._quadtreeAddAll = function(tree, indices, maxDepth, useArrayLeaves) {
+    const n = indices.length;
+    let x0 = Infinity, y0 = x0, x1 = -x0, y1 = x1;
+
+    // Compute the points and their extent
+    for (let i = 0, d, x, y; i < n; ++i) {
+        if (isNaN(x = +tree._x.call(null, d = indices[i])) || isNaN(y = +tree._y.call(null, d))) continue;
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+    }
+
+    // If there were no (valid) points, abort
+    if (x0 > x1 || y0 > y1) return tree;
+
+    // Expand the tree to cover the new points
+    tree.cover(x0, y0).cover(x1, y1);
+
+    // Allocate nodes for depth limited tree and insert points at leaf level
+    for (let i = 0; i < n; ++i) {
+        const d = indices[i];
+        const x = +tree._x.call(null, d);
+        const y = +tree._y.call(null, d);
+        dataUtils._quadtreeAdd(tree, x, y, d, maxDepth, useArrayLeaves);
+    }
+    return tree;
+}
+
+/**
+ * Get the number of points in the tree. Use instead of d3.quadtree.size().
+ */
+dataUtils._quadtreeSize = function(tree) {
+    console.time("Get quadtree size");
+    let size = 0;
+    if (dataUtils._quadtreesEnabled && dataUtils._quadtreesMethod == 2) {
+        tree.visit(function(node) {
+            if (!node.length) do size += node.data.length; while (node = node.next)
+        });
+    } else {
+        size = tree.size();
+    }
+    console.timeEnd("Get quadtree size");
+    return size;
 }

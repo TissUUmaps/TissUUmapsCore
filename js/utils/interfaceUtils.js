@@ -1732,7 +1732,8 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         }
 
         var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
-        label17.innerText=tree.size();    
+        //label17.innerText=tree.size();    
+        label17.innerText=dataUtils._quadtreeSize(tree);
         td17.appendChild(label17);        
         tr.appendChild(td17);
 
