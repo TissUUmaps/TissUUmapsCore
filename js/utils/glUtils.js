@@ -386,6 +386,8 @@ glUtils.loadMarkers = function(uid) {
     
     const markerOpacity = dataUtils.data[uid]["_opacity"];
 
+    console.time("Create and upload vertex data");
+
     // Allocate space for vertex data that will be uploaded to vertex buffer
     let bytedata = new Float32Array(numPoints * 7);
     const POINT_OFFSET = numPoints * 0,
@@ -465,6 +467,8 @@ glUtils.loadMarkers = function(uid) {
     gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
     gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    console.timeEnd("Create and upload vertex data");
 
     // Update marker info and LUT + colormap textures
     glUtils._numPoints[uid] = numPoints;
@@ -575,7 +579,7 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
     const colors = new Array(4096 * 4);
     for (let [barcode, index] of Object.entries(glUtils._barcodeToLUTIndex[uid])) {
         const key = (barcode != "undefined" ? glUtils._barcodeToKey[uid][barcode] : "All");
-        console.log("key",key, barcode);
+        //console.log("key",key, barcode);
         const inputs = interfaceUtils._mGenUIFuncs.getGroupInputs(uid, key);
         const hexColor = "color" in inputs ? inputs["color"] : "#ffff00";
         const shape = "shape" in inputs ? inputs["shape"] : "circle";

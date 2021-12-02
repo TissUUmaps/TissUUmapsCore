@@ -614,7 +614,7 @@ dataUtils._quadtreeAddAll = function(tree, indices, maxDepth, useArrayLeaves) {
  * Get the number of points in the tree. Use instead of d3.quadtree.size().
  */
 dataUtils._quadtreeSize = function(tree) {
-    console.time("Get quadtree size");
+    //console.time("Get quadtree size");
     let size = 0;
     if (dataUtils._quadtreesEnabled && dataUtils._quadtreesMethod == 2) {
         tree.visit(function(node) {
@@ -623,6 +623,6 @@ dataUtils._quadtreeSize = function(tree) {
     } else {
         size = tree.size();
     }
-    console.timeEnd("Get quadtree size");
+    //console.timeEnd("Get quadtree size");
     return size;
 }
