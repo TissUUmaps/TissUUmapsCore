@@ -569,7 +569,7 @@ dataUtils._quadtreeAdd = function(tree, x, y, d, maxDepth, useArrayLeaves) {
     if (useArrayLeaves) {
         // Insert point into leaf node's data array
         parent[i] = !parent[i] ? {data: []} : parent[i];
-        parent[i].data.push(leaf.d);
+        parent[i].data.push(leaf.data);
     } else {
         // Insert point into linked list of leaf nodes
         leaf.next = node;
