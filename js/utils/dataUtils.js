@@ -11,13 +11,6 @@
  */
 dataUtils = {
     data:{
-        /*"gene":{
-            _type: "GENE_DATA"
-        },
-        "morphology":{
-            _type: "MORPHOLOGY_DATA",
-            _name:""
-        },*/
         /*
         "U23423R":{
             _type: "GENERIC_DATA",
@@ -45,20 +38,11 @@ dataUtils = {
     "interpolateRdYlGn", "interpolateReds", "interpolateSinebow", "interpolateSpectral", "interpolateTurbo", "interpolateYlGn", "interpolateYlGnBu", "interpolateYlOrBr", 
     "interpolateYlOrRd"],
 
-    _quadtreesEnabled: true,  // If false, only generate fake empty trees
-    _quadtreesMethod: 2,      // 0: D3 quadtrees; 1: depth-limited; 2: depth-limited (array version)
-    _quadtreesMaxDepth: 8,    // Only used for depth-limited trees
+    _quadtreesEnabled: true,    // If false, only generate fake empty trees
+    _quadtreesMethod: 2,        // 0: D3 quadtrees; 1: depth-limited; 2: depth-limited (array version)
+    _quadtreesMaxDepth: 8,      // Only used for depth-limited trees
+    _quadtreesLastInputs: {},  // Store some info to avoid recomputing a quadtree if not necessary
 }
-/**
- * BIG CHANGE
- * TODO: implemente createDataset so that Fredrik can draw
- * load data as usual, object format
- * trees only when user selects it, keep processeddata
- * how to close 
- * 
- * deterministic shapes
- * 
-*/
 
 /** 
 * @param {String} uid The id of the data group
@@ -453,18 +437,17 @@ dataUtils.makeQuadTrees = function(data_id) {
     var groupByColsName=data_obj["_gb_name"]
     var markerData=data_obj["_processeddata"];
 
-    //console.log(xselector,yselector,groupByCol,groupByColsName)
-
-    //little optimization to not redoo the tree if we have it
-    /*if(inputs["gb_col"].value==data_obj["_gb_col"]){
-        if(Object.keys(data_obj["_groupgarden"]).length > 0){
-            message="Group garden exists, dont waste time recreating it";
-            //interfaceUtils.alert(message); 
-            console.log(message);
-            
-            return; //because graden exists
-        }
-    }*/
+    // Check if we can skip recomputing the last generated quadtree
+    const lastInputs = dataUtils._quadtreesLastInputs;
+    const newInputs = {
+        "uid": data_id, "_X": xselector, "_Y": yselector,
+        "_gb_col": groupByCol, "_gb_name": groupByColsName,
+        "_quadtreesEnabled": dataUtils._quadtreesEnabled,
+        "_quadtreesMaxDepth": dataUtils._quadtreesMaxDepth,
+        "_quadtreesMethod": dataUtils._quadtreesMethod,
+    };
+    if (JSON.stringify(lastInputs) == JSON.stringify(newInputs)) return;  // Nothing more to do!
+    dataUtils._quadtreesLastInputs = newInputs;
 
     const numMarkers = markerData[xselector].length + 0;
     let indexData = new Uint32Array(numMarkers);
