@@ -314,10 +314,10 @@ glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
 }
 
 
-glUtils._createMarkerBuffer = function(gl, bytedata) {
+glUtils._createMarkerBuffer = function(gl, numBytes) {
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer); 
-    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, numBytes, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     return buffer;
@@ -378,6 +378,7 @@ glUtils.loadMarkers = function(uid) {
     const sectorsPropertyName = dataUtils.data[uid]["_pie_col"];
     const usePiechartFromMarker = dataUtils.data[uid]["_pie_col"] != null;
     const piechartPalette = glUtils._piechartPalette;
+    let numSectors = 1;
 
     const shapePropertyName = dataUtils.data[uid]["_shape_col"];
     const useShapeFromMarker = dataUtils.data[uid]["_shape_col"] != null;
@@ -386,92 +387,113 @@ glUtils.loadMarkers = function(uid) {
     
     const markerOpacity = dataUtils.data[uid]["_opacity"];
 
-    console.time("Create and upload vertex data");
-
-    // Allocate space for vertex data that will be uploaded to vertex buffer
-    let bytedata = new Float32Array(numPoints * 7);
+    // Additional info about the vertex format
+    const NUM_COMPONENTS_PER_MARKER = 7;
+    const NUM_BYTES_PER_MARKER = NUM_COMPONENTS_PER_MARKER * 4;
     const POINT_OFFSET = numPoints * 0,
           INDEX_OFFSET = numPoints * 4,
           SCALE_OFFSET = numPoints * 5,
           SHAPE_OFFSET = numPoints * 6;
 
-    // Extract vertex data from markers
-    if (usePiechartFromMarker) {
-        const numSectors = markerData[sectorsPropertyName][0].split(";").length;
-        // For piecharts, we create one marker per piechart sector, so we need
-        // to also allocate additional space for the vertex data
-        bytedata = new Float32Array(numPoints * numSectors * 7);
+    // Extract and upload vertex data for markers. For datasets with tens of of
+    // millions of points, the vertex data can be quite large, so we upload the
+    // data in chunks to the GPU buffer to avoid having to allocate a large
+    // temporary buffer in system memory.
+    console.time("Generate vertex data");
+    let chunkSize = 100000;
+    for (let offset = 0; offset < numPoints; offset += chunkSize) {
+        // Allocate space for vertex data that will be uploaded to vertex buffer
+        if (offset + chunkSize >= numPoints) chunkSize = numPoints - offset;
+        // console.log(offset, chunkSize, numPoints);
+        let bytedata_point = new Float32Array(chunkSize * 4);
+        let bytedata_index = new Float32Array(chunkSize * 1);
+        let bytedata_scale = new Float32Array(chunkSize * 1);
+        let bytedata_shape = new Float32Array(chunkSize * 1);
 
-        for (let i = 0; i < numPoints; ++i) {
-            const sectors = markerData[sectorsPropertyName][i].split(";");
-            const piechartAngles = glUtils._createPiechartAngles(sectors);
-            const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][i]] : 0;
+        if (usePiechartFromMarker) {
+            // For piecharts, we need to create one marker per piechart sector,
+            // so also have to allocate additional space for the vertex data
+            numSectors = markerData[sectorsPropertyName][0].split(";").length;
+            bytedata_point = new Float32Array(chunkSize * numSectors * 4);
+            bytedata_index = new Float32Array(chunkSize * numSectors * 1);
+            bytedata_scale = new Float32Array(chunkSize * numSectors * 1);
+            bytedata_shape = new Float32Array(chunkSize * numSectors * 1);
 
-            for (let j = 0; j < numSectors; ++j) {
-                const k = (i * numSectors + j);
-                hexColor = piechartPalette[j % piechartPalette.length];
+            for (let i = 0; i < chunkSize; ++i) {
+                const markerIndex = i + offset;
+                const sectors = markerData[sectorsPropertyName][markerIndex].split(";");
+                const piechartAngles = glUtils._createPiechartAngles(sectors);
+                const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][markerIndex]] : 0;
 
-                bytedata[POINT_OFFSET * numSectors + 4 * k + 0] = markerData[xPosName][i] / imageWidth;
-                bytedata[POINT_OFFSET * numSectors + 4 * k + 1] = markerData[yPosName][i] / imageHeight;
-                bytedata[POINT_OFFSET * numSectors + 4 * k + 2] = lutIndex;
-                bytedata[POINT_OFFSET * numSectors + 4 * k + 3] = Number("0x" + hexColor.substring(1,7));
-                bytedata[INDEX_OFFSET * numSectors + k] = i;  // Store index needed for picking
-                bytedata[SCALE_OFFSET * numSectors + k] = useScaleFromMarker ? markerData[scalePropertyName][i] : 1.0;
-                bytedata[SHAPE_OFFSET * numSectors + k] =
-                    Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
-                    Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
+                for (let j = 0; j < numSectors; ++j) {
+                    const k = (i * numSectors + j);
+                    hexColor = piechartPalette[j % piechartPalette.length];
+
+                    bytedata_point[4 * k + 0] = markerData[xPosName][markerIndex] / imageWidth;
+                    bytedata_point[4 * k + 1] = markerData[yPosName][markerIndex] / imageHeight;
+                    bytedata_point[4 * k + 2] = lutIndex;
+                    bytedata_point[4 * k + 3] = Number("0x" + hexColor.substring(1,7));
+                    bytedata_index[k] = markerIndex;  // Store index needed for picking
+                    bytedata_scale[k] = useScaleFromMarker ? markerData[scalePropertyName][markerIndex] : 1.0;
+                    bytedata_shape[k] =
+                        Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
+                        Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
+                }
+            }
+        } else {
+            for (let i = 0; i < chunkSize; ++i) {
+                const markerIndex = i + offset;
+                const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][markerIndex]] : 0;
+
+                if (useColorFromMarker) hexColor = markerData[colorPropertyName][i];
+                if (useColorFromColormap) {
+                    scalarValue = markerData[scalarPropertyName][markerIndex];
+                    // Update scalar range that will be used for normalizing the values
+                    scalarRange[0] = Math.min(scalarRange[0], scalarValue);
+                    scalarRange[1] = Math.max(scalarRange[1], scalarValue);
+                }
+                if (useShapeFromMarker) {
+                    shapeIndex = markerData[shapePropertyName][markerIndex];
+                    // Check if shapeIndex is a symbol names that needs to be converted to an index
+                    if (isNaN(shapeIndex)) shapeIndex = markerUtils._symbolStrings.indexOf(shapeIndex);
+                    shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
+                }
+
+                bytedata_point[4 * i + 0] = markerData[xPosName][markerIndex] / imageWidth;
+                bytedata_point[4 * i + 1] = markerData[yPosName][markerIndex] / imageHeight;
+                bytedata_point[4 * i + 2] = lutIndex + Number(shapeIndex) * 4096.0;
+                bytedata_point[4 * i + 3] = useColorFromColormap ? Number(scalarValue)
+                                                                 : Number("0x" + hexColor.substring(1,7));
+                bytedata_index[i] = markerIndex;  // Store index needed for picking
+                bytedata_scale[i] = useScaleFromMarker ? markerData[scalePropertyName][markerIndex] : 1.0;
             }
         }
-        numPoints *= numSectors;
-    } else {
-        for (let i = 0; i < numPoints; ++i) {
-            if (useColorFromMarker) hexColor = markerData[colorPropertyName][i];
-            if (useColorFromColormap) {
-                scalarValue = markerData[scalarPropertyName][i];
-                // Update scalar range that will be used for normalizing the values
-                scalarRange[0] = Math.min(scalarRange[0], scalarValue);
-                scalarRange[1] = Math.max(scalarRange[1], scalarValue);
-            }
-            if (useShapeFromMarker) {
-                shapeIndex = markerData[shapePropertyName][i];
-                // Check if shapeIndex is a symbol names that needs to be converted to an index
-                if (isNaN(shapeIndex)) shapeIndex = markerUtils._symbolStrings.indexOf(shapeIndex);
-                shapeIndex = Math.max(0.0, Math.floor(Number(shapeIndex))) % numShapes;
-            }
-            const lutIndex = (keyName != null) ? barcodeToLUTIndex[markerData[keyName][i]] : 0;
 
-            bytedata[POINT_OFFSET + 4 * i + 0] = markerData[xPosName][i] / imageWidth;
-            bytedata[POINT_OFFSET + 4 * i + 1] = markerData[yPosName][i] / imageHeight;
-            bytedata[POINT_OFFSET + 4 * i + 2] = lutIndex + Number(shapeIndex) * 4096.0;
-            bytedata[POINT_OFFSET + 4 * i + 3] = useColorFromColormap ? Number(scalarValue)
-                                                                      : Number("0x" + hexColor.substring(1,7));
-            bytedata[INDEX_OFFSET + i] = i;  // Store index needed for picking
-            bytedata[SCALE_OFFSET + i] = useScaleFromMarker ? markerData[scalePropertyName][i] : 1.0;
+        if (!(uid + "_markers" in glUtils._buffers)) {
+            document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.updateColorLUTTextures);
+            document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.draw);
         }
+
+        // Create WebGL objects (if this has not already been done)
+        if (!(uid + "_markers" in glUtils._buffers))
+            glUtils._buffers[uid + "_markers"] = glUtils._createMarkerBuffer(gl, numPoints * numSectors * NUM_BYTES_PER_MARKER);
+        if (!(uid + "_colorLUT" in glUtils._textures))
+            glUtils._textures[uid + "_colorLUT"] = glUtils._createColorLUTTexture(gl);
+        if (!(uid + "_colorscale" in glUtils._textures))
+            glUtils._textures[uid + "_colorscale"] = glUtils._createColorScaleTexture(gl);
+
+        // Upload chunks of vertex data to buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
+        gl.bufferSubData(gl.ARRAY_BUFFER, (POINT_OFFSET + offset * 4) * numSectors * 4, bytedata_point);
+        gl.bufferSubData(gl.ARRAY_BUFFER, (INDEX_OFFSET + offset * 1) * numSectors * 4, bytedata_index);
+        gl.bufferSubData(gl.ARRAY_BUFFER, (SCALE_OFFSET + offset * 1) * numSectors * 4, bytedata_scale);
+        gl.bufferSubData(gl.ARRAY_BUFFER, (SHAPE_OFFSET + offset * 1) * numSectors * 4, bytedata_shape);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
-
-    if (!(uid + "_markers" in glUtils._buffers)) {
-        document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.updateColorLUTTextures);
-        document.getElementById(uid + "_menu-UI").addEventListener("input", glUtils.draw);
-    }
-
-    // Create WebGL objects (if this has not already been done)
-    if (!(uid + "_markers" in glUtils._buffers))
-        glUtils._buffers[uid + "_markers"] = glUtils._createMarkerBuffer(gl, bytedata);
-    if (!(uid + "_colorLUT" in glUtils._textures))
-        glUtils._textures[uid + "_colorLUT"] = glUtils._createColorLUTTexture(gl);
-    if (!(uid + "_colorscale" in glUtils._textures))
-        glUtils._textures[uid + "_colorscale"] = glUtils._createColorScaleTexture(gl);
-
-    // Upload vertex data to buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
-    gl.bufferData(gl.ARRAY_BUFFER, bytedata, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    console.timeEnd("Create and upload vertex data");
+    console.timeEnd("Generate vertex data");
 
     // Update marker info and LUT + colormap textures
-    glUtils._numPoints[uid] = numPoints;
+    glUtils._numPoints[uid] = numPoints * numSectors;
     glUtils._markerOpacity[uid] = markerOpacity;
     glUtils._markerScalarRange[uid] = scalarRange;
     glUtils._markerScalarPropertyName[uid] = scalarPropertyName;
