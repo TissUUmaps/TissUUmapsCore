@@ -818,10 +818,6 @@ glUtils._loadTextureFromImageURL = function(gl, src) {
 }
 
 
-// @deprecated Not required anymore, but kept for backwards-compatibility
-glUtils.clearNavigatorArea = function() {}
-
-
 glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     // Set up render pipeline
     const program = glUtils._programs["markers"];
@@ -1054,10 +1050,6 @@ glUtils.resizeAndDraw = function() {
     glUtils.resize();
     glUtils.draw();
 }
-
-
-// @deprecated Not required anymore, but kept for backwards-compatibility
-glUtils.postRedraw = function() {}
 
 
 glUtils.updateMarkerScale = function() {
