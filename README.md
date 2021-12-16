@@ -1,7 +1,7 @@
 TissUUmaps - UU is for Uppsala University ;) 
 ==========
 
-![TissUUmaps banner](https://github.com/TissUUmaps/TissUUmaps/blob/master/misc/design/logo-github-2443-473.png)
+![TissUUmaps banner](https://github.com/TissUUmaps/TissUUmapsCore/blob/master/misc/design/logo-github-2443-473.png)
 
 TissUUmaps is a lightweight viewer that uses basic web tools to visualize gene expression data or any kind of point data on top of whole slide images.
 
@@ -15,7 +15,7 @@ Images are display with OpenSeadragon, point data is displayed by D3, and everyt
 
 Since we don't want to use external servers to serve our images, let's convert them to an open pyramidal format where we can see individual tiles and OpenSeadragon can easily load the correct tile for you. It is called Deep Zoom Image. OpenSeadragon can import other formats, for more information go here [Supported Tile Sources](https://openseadragon.github.io/)
 
-![TissUUmaps workflow](https://github.com/TissUUmaps/TissUUmaps/blob/master/misc/design/banner2.png)
+![TissUUmaps workflow](https://github.com/TissUUmaps/TissUUmapsCore/blob/master/misc/design/banner2.png)
 
 This image sumarizes the process of converting a whole slide image into a DZI. As long as [OpenSlide](https://openslide.org/) can open the format, then the program [VIPS](https://libvips.github.io/libvips/) will be able to convert it to a DZI.
 
@@ -30,7 +30,7 @@ How does DZI work? Interesting blog post [here](https://www.gasi.ch/blog/inside-
 ## Enter TissUUmaps
 
 Once you have your tiled DZ image in the computer where you will use TissUUmaps, you can clone **this repository**.
-In the HTML file [example.html](https://github.com/TissUUmaps/TissUUmaps/blob/master/example.html) you just need to tell TissUUmaps where your image is. To do this, check the last script tag in the HTML and change the value of `tmapp.fixed_file`
+In the HTML file [index.html](https://github.com/TissUUmaps/TissUUmapsCore/blob/master/index.html) you just need to tell TissUUmaps where your image is. To do this, check the last script tag in the HTML and change the value of `tmapp.fixed_file`
 
 ```HTML
 <script>
