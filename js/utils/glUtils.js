@@ -484,6 +484,13 @@ glUtils.loadMarkers = function(uid) {
 
         // Upload chunks of vertex data to buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
+        if (offset == 0) {
+            // If the number of sectors used is changed, we have to reallocate the buffer
+            const newBufferSize = numPoints * numSectors * NUM_BYTES_PER_MARKER;
+            const oldBufferSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
+            if (newBufferSize != oldBufferSize)
+                gl.bufferData(gl.ARRAY_BUFFER, newBufferSize, gl.STATIC_DRAW);
+        }
         gl.bufferSubData(gl.ARRAY_BUFFER, (POINT_OFFSET + offset * 4) * numSectors * 4, bytedata_point);
         gl.bufferSubData(gl.ARRAY_BUFFER, (INDEX_OFFSET + offset * 1) * numSectors * 4, bytedata_index);
         gl.bufferSubData(gl.ARRAY_BUFFER, (SCALE_OFFSET + offset * 1) * numSectors * 4, bytedata_scale);
