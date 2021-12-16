@@ -405,6 +405,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
             }
             updateProgressBar("load");
             console.timeEnd("Load CSV");
+            dataUtils._quadtreesLastInputs = {};  // Clear to make sure quadtrees are generated
             dataUtils.processRawData(data_id, rawdata);
         }
     });
