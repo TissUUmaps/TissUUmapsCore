@@ -601,3 +601,28 @@ projectUtils.applySettings = function (settings) {
     }
 }
 
+/** Adding marker legend in the upper left corner */
+projectUtils.addLegend = function (htmlContent) {
+    if (! htmlContent) {
+        if (document.getElementById("markerLegend")) {
+            document.getElementById("markerLegend").style.display= "none";
+        }
+        return;
+    }
+    var op = tmapp["object_prefix"];
+    if (document.getElementById("markerLegend") == undefined) {
+        var elt = document.createElement('div');
+        elt.className = "px-1 mx-1 viewer-layer"
+        elt.id = "markerLegend"
+        elt.style.zIndex = "13";
+        elt.style.left = "10px";
+        elt.style.top = "10px";
+        elt.style.padding = "5px";
+        elt.style.overflowY = "auto";
+        elt.style.maxHeight = "Calc(100vh - 245px)";
+        tmapp[tmapp["object_prefix"] + "_viewer"].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
+    }
+    elt = document.getElementById("markerLegend");
+    elt.style.display="block";
+    elt.innerHTML = htmlContent;
+}
