@@ -2073,7 +2073,7 @@ interfaceUtils.createDownloadDropdown = function(downloadRow, innerText, callbac
 
     downloadRow.appendChild(row);
 
-    $(".chosen-select_" + random_chosen_id).chosen({disable_search_threshold: 10, search_contains: true});
+    $(".chosen-select_" + random_chosen_id).chosen({disable_search_threshold: 10, search_contains: true, width: "100%"});
     $(".chosen-select_" + random_chosen_id).on('change', function(evt, params) {
         callback(evt, params);
     });
