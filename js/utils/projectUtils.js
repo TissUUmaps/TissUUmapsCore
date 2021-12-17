@@ -517,8 +517,8 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
         markerFile.expectedRadios.cb_gr_rand = false;
         markerFile.expectedRadios.cb_gr_key = true;
         for (setting of markerFile.settings) {
-            if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
-                markerFile.expectedHeader.scale_factor = setting.value;
+            //if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
+            //    markerFile.expectedHeader.scale_factor = setting.value;
             if (setting.module == "markerUtils" && setting.function == "_selectedShape"){
                 dictSymbol = {6:6}
                 if (dictSymbol[setting.value]) setting.value = dictSymbol[setting.value];
