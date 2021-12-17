@@ -444,7 +444,14 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
 */
 dataUtils.XHRCSV = function(data_id, options) {
     console.log(data_id, options, options.path, options["path"]);
-    dataUtils.readCSV(data_id, options["path"], options);
+    var csvFile = options["path"]
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const path = urlParams.get('path')
+    if (path != null) {
+        csvFile = path + "/" + csvFile;
+    }
+    dataUtils.readCSV(data_id, csvFile, options);
 }
 
 /**
