@@ -357,7 +357,8 @@ projectUtils.loadProjectFileFromServer = function(path) {
             if (tab.visible === false) {document.getElementById("title-tab-" + tab.name).style.display="none"}
         });
     }*/
-    if (state.regions) {
+
+    if (state.regions && Object.keys(state.regions).length > 0) {
         regionUtils.JSONValToRegions(state.regions);
     }
     if (state.regionFile) {
