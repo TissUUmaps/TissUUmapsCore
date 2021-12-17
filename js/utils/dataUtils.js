@@ -175,14 +175,14 @@ dataUtils.updateViewOptions = function(data_id){
         if (minX <0 || maxX < 500) {
             let arr = data_obj["_processeddata"][data_obj["_X"]];
             for (let i = 0; i < arr.length; ++i) {
-                arr[i] = 1200 * (arr[i] - minX) / (maxX - minX);
+                arr[i] = 5000 * (arr[i] - minX) / (maxX - minX);
             }
             maxX = getMax(arr);
         }
         if (minY <0 || maxY < 500) {
             let arr = data_obj["_processeddata"][data_obj["_Y"]];
             for (let i = 0; i < arr.length; ++i) {
-                arr[i] = 1200 * (arr[i] - minY) / (maxY - minY);
+                arr[i] = 5000 * (arr[i] - minY) / (maxY - minY);
             }
             maxY = getMax(arr);
         }
