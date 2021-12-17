@@ -570,14 +570,14 @@ interfaceUtils.generateDataTabUI = function(options){
         menurow=interfaceUtils._mGenUIFuncs.rowForMarkerUI();
 
         togglerow=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"row"}});
-        divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light btn-sm mx-3"}});
+        var divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light btn-sm mx-3"}});
         divpane_settings_toggle.innerHTML = "<i class='bi bi-sliders'></i>";
         divpane_settings_toggle.addEventListener("click",function(event) {
-            divpane_settings = interfaceUtils.getElementById(generated+"_marker-tab-settings")
+            var divpane_settings = interfaceUtils.getElementById(generated+"_marker-tab-settings")
             divpane_settings.classList.remove("d-none");
             divpane_settings_toggle.classList.add("d-none");
         })
-        divpane_settings = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings"});
+        var divpane_settings = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings"});
         divpane_settings.appendChild(accordion.divaccordion);
         divpane_settings.appendChild(buttonrow);
         togglerow.append(divpane_settings_toggle)
