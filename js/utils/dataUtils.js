@@ -344,13 +344,40 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
     progressParent.classList.remove("d-none");
     let progressBar=interfaceUtils.getElementById(data_id+"_csv_progress");
     let fakeProgress = 0;
-
-    let updateProgressBar = function(op) {
+    function getFileSize(url)
+    {
+      var fileSize = '';
+      var http = new XMLHttpRequest();
+      http.open('HEAD', url, false); // false = Synchronous
+  
+      http.send(null); // it will stop here until this http request is complete
+  
+      // when we are here, we already have a response, b/c we used Synchronous XHR
+  
+      if (http.status === 200) {
+          fileSize = http.getResponseHeader('content-length');
+          console.log('fileSize = ' + fileSize);
+      }
+  
+      return fileSize;
+    }
+    var totalSize = undefined;
+    if (options != undefined) {
+        totalSize = getFileSize(thecsv);
+    }
+    let updateProgressBar = function(op, progress) {
         if (op == "progress") {
-            fakeProgress += 1;
-            let perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/100.)));
-            perc=perc.toString()+"%";
-            progressBar.style.width = perc;
+            if (totalSize == undefined) {
+                fakeProgress += 1;
+                let perc=Math.min(100, 100*(1-Math.exp(-fakeProgress/100.)));
+                perc=perc.toString()+"%";
+                progressBar.style.width = perc;
+            }
+            else {
+                var perc= Math.round(progress / totalSize * 100);
+                perc=perc.toString()+"%";
+                progressBar.style.width = perc;
+            }
         }
         if (op == "load") {
             // Hide progress bar
@@ -390,7 +417,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
                                                               : new Float64Array(rawdata.tmp[i]));
                     }
                     rawdata.tmp = rawdata.columns.map(x => []);  // Clear buffers
-                    updateProgressBar("progress");
+                    updateProgressBar("progress", row.meta.cursor);
                 }
             }
         },
