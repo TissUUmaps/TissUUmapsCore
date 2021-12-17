@@ -393,7 +393,7 @@ overlayUtils.saveSVG=function(){
  */
 overlayUtils.savePNG=function() {
     // Create an empty canvas element
-    $("#loadingModal").show();
+    var loading=interfaceUtils.loadingModal();
     var canvas = document.createElement("canvas");
     var ctx_osd = document.querySelector(".openseadragon-canvas canvas").getContext("2d");
     var ctx_webgl = document.querySelector("#gl_canvas").getContext("webgl");
@@ -423,7 +423,7 @@ overlayUtils.savePNG=function() {
         a.href = png; //Image Base64 Goes here
         a.download = "TissUUmaps_capture.png"; //File name Here
         a.click(); //Downloaded file
-        $("#loadingModal").hide();
+        setTimeout(function(){$(loading).modal("hide");},500);
         DOMURL.revokeObjectURL(png);
     };
     img.src = url;
