@@ -385,12 +385,12 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     if (state.regionFiles) {
         state.regionFiles.forEach(function(regionFile) {
-            interfaceUtils.createDownloadButtonRegions(
-                regionFile.title,
-                regionFile.path,
-                regionFile.comment,
-                regionFile.autoLoad
-            );
+            if( Object.prototype.toString.call( regionFile.path ) === '[object Array]' ) {
+                interfaceUtils.createDownloadDropdownRegions(regionFile);
+            }
+            else {
+                interfaceUtils.createDownloadButtonRegions(regionFile);
+            }
         });
     }
     if (state.filename) {
@@ -571,3 +571,20 @@ projectUtils.commonPath = function(strs) {
     prefix = prefix.substring(0, prefix.lastIndexOf('/')+1);
     return prefix
 }
+
+/** Applying settings */
+projectUtils.applySettings = function (settings) {
+    if (settings) {
+        settings.forEach(function(setting, i) {
+            if (window[setting.module]) {
+                if (typeof window[setting.module][setting.function]  === 'function') {
+                    window[setting.module][setting.function](setting.value);
+                }
+                else {
+                    window[setting.module][setting.function] = setting.value;
+                }
+            }
+        });
+    }
+}
+
