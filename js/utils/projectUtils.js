@@ -9,7 +9,7 @@
  * @version projectUtils 2.0
  * @classdesc The root namespace for projectUtils.
  */
- projectUtils = {
+var projectUtils = {
      _activeState:{},
      _hideCSVImport: false,
      _settings:[
@@ -45,7 +45,7 @@
  projectUtils.saveProject = function(urlProject) {
     interfaceUtils.prompt("Save project under the name:","NewProject")
     .then((filename) => {
-        state = projectUtils.getActiveProject();
+        var state = projectUtils.getActiveProject();
         state.filename = filename;
 
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
@@ -173,6 +173,17 @@ projectUtils.getActiveProject = function () {
     interfaceUtils.generateModal(title, content, buttons);
  }
 
+
+projectUtils.updateMarkerButton = function(dataset) {
+    var data_obj = dataUtils.data[dataset];
+    console.log("projectUtils.updateMarkerButton", data_obj);
+    var markerFile = projectUtils._activeState.markerFiles[data_obj["fromButton"]];
+    var headers = interfaceUtils._mGenUIFuncs.getTabDropDowns(dataset);
+    markerFile.expectedHeader = Object.assign({}, ...Object.keys(headers).map((k) => ({[k]: headers[k].value})));
+    var radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(dataset);
+    markerFile.expectedRadios = Object.assign({}, ...Object.keys(radios).map((k) => ({[k]: radios[k].checked})));
+    console.log("projectUtils.updateMarkerButton markerFile", markerFile);
+}
 
 projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment) {
     buttonsDict = {};
@@ -358,7 +369,8 @@ projectUtils.loadProjectFileFromServer = function(path) {
         filterUtils._compositeMode = state.compositeMode;
     }
     if (state.markerFiles) {
-        state.markerFiles.forEach(function(markerFile) {
+        state.markerFiles.forEach(function(markerFile, buttonIndex) {
+            markerFile["fromButton"] = buttonIndex;
             if (markerFile.expectedCSV) {
                 projectUtils.convertOldMarkerFile(markerFile);
                 state.hideTabs = true;

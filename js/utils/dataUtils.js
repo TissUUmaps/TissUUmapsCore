@@ -272,6 +272,10 @@ dataUtils.updateViewOptions = function(data_id){
     if (interfaceUtils.getElementById("ISS_globalmarkersize"))
         interfaceUtils.getElementById("ISS_globalmarkersize").classList.remove("d-none");
 
+    if (data_obj["fromButton"] !== undefined) {
+        projectUtils.updateMarkerButton(data_id);
+    }
+
     glUtils.loadMarkers(data_id);
     glUtils.draw();
 }
@@ -330,6 +334,7 @@ dataUtils.readCSV = function(data_id, thecsv, options) {
     if (options != undefined) {
         data_obj["expectedHeader"] = options.expectedHeader;
         data_obj["expectedRadios"] = options.expectedRadios;
+        data_obj["fromButton"] = options.fromButton;
         // Hide download button?
         let panel = interfaceUtils.getElementById(data_id+"_input_csv_col");
         panel.classList.add("d-none");
