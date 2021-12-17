@@ -441,6 +441,11 @@ projectUtils.loadProjectFileFromServer = function(path) {
     if (state.hideTabs) {
         document.getElementById("level-1-tabs").classList.add("d-none");
     }
+    if (state.menuButtons) {
+        state.menuButtons.forEach(function(menuButton, i) {
+            interfaceUtils.addMenuItem([menuButton.text], function(){ window.open(menuButton.url, '_self').focus();});
+        });
+    }
     /*if (projectUtils._hideCSVImport) {
         document.getElementById("ISS_data_panel").style.display="none";
     }*/
