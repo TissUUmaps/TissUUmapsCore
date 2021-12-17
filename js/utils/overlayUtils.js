@@ -440,7 +440,6 @@ overlayUtils.savePNG=function() {
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         var png = canvas.toDataURL("image/png");
-        console.log(png.replace(/^data:image\/(png|jpg);base64,/, ""));
     
         var a = document.createElement("a"); //Create <a>
         a.href = png; //Image Base64 Goes here
@@ -450,5 +449,4 @@ overlayUtils.savePNG=function() {
         DOMURL.revokeObjectURL(png);
     };
     img.src = url;
-    console.log(url);
 }
