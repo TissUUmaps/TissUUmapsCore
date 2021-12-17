@@ -1009,7 +1009,7 @@ regionUtils.analyzeRegion = function (regionid) {
         console.log(dataset, allkeys);
         for (var codeIndex in allkeys) {
             var code = allkeys[codeIndex];
-            //console.log(code, dataUtils.data[dataset], dataUtils.data[dataset]["_groupgarden"][code]);
+
             var pointsInside=regionUtils.searchTreeForPointsInRegion(dataUtils.data[dataset]["_groupgarden"][code],
                 regionUtils._regions[regionid]._gxmin,regionUtils._regions[regionid]._gymin,
                 regionUtils._regions[regionid]._gxmax,regionUtils._regions[regionid]._gymax,
