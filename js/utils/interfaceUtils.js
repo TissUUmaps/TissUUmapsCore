@@ -1538,6 +1538,10 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
 
     //I do this to know if I have name selected, and also to know where to draw the 
     //color from
+    var groupUI=HTMLElementUtils.createElement({"kind":"div"});
+    var filter=HTMLElementUtils.createElement({"kind":"input", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "placeholder":"Filter markers"}});
+
+    groupUI.appendChild(filter)
 
     var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped marker_table"}});
     var thead=HTMLElementUtils.createElement({"kind":"thead"});
@@ -1636,9 +1640,10 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         thead2.appendChild(tr);
     }
 
-    var count=0;
+    var countShape=0;
+    var countColor=0;
     var favouriteShapes = [6,0,2,1,3,4,10,5]
-    for(i in data_obj["_groupgarden"]){
+    for(i of Object.keys(data_obj["_groupgarden"]).sort()){
 
         var tree = data_obj["_groupgarden"][i]
         
@@ -1696,9 +1701,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             if(_selectedOptions["shape_fixed"]){
                 shapeinput2.value=_selectedDropDown["shape_fixed"].value;
             }else if(_selectedOptions["shape_gr_rand"]){
-                shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                count+=1;
-                count=count % favouriteShapes.length;
+                shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                countShape+=1;
+                countShape=countShape % favouriteShapes.length;
             }else if(_selectedOptions["shape_gr_dict"]){
                 try {
                     val = JSON.parse(_selectedDropDown["shape_gr_dict"].value)[tree["treeID"]];
@@ -1706,15 +1711,15 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                         shapeinput2.value=val;
                     }
                     else {
-                        shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                        count+=1;
-                        count=count % favouriteShapes.length;
+                        shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                        countShape+=1;
+                        countShape=countShape % favouriteShapes.length;
                     }
                 }
                 catch (err){
-                    shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                    count+=1;
-                    count=count % favouriteShapes.length;
+                    shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                    countShape+=1;
+                    countShape=countShape % favouriteShapes.length;
                 }
             }
             shapeinput2.addEventListener("change",(event)=>{
@@ -1732,7 +1737,16 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                 thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
             }else if(_selectedOptions["cb_gr_dict"]){
                 try {
-                    thecolor=JSON.parse(_selectedDropDown["cb_gr_dict"].value)[tree["treeID"]];
+                    colorObject = JSON.parse(_selectedDropDown["cb_gr_dict"].value)
+                    console.log("colorObject", colorObject, Array.isArray(colorObject),typeof colorObject, typeof colorObject === "object")
+                    if (Array.isArray(colorObject)) {
+                        console.log(i, colorObject[countColor % colorObject.length])
+                        thecolor=colorObject[countColor % colorObject.length];
+                        countColor += 1;
+                    }
+                    else if (typeof colorObject === "object") {
+                        thecolor=colorObject[tree["treeID"]];
+                    }
                     if (thecolor === undefined) {
                         thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
                     }
@@ -1799,8 +1813,27 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     table.appendChild(thead);
     table.appendChild(thead2);
     table.appendChild(tbody);
+    groupUI.appendChild(table);
+    filter.addEventListener("input",function(event) {
+        const trs = table.querySelectorAll('tbody tr')
+        const filter = this.value
+        const regex = new RegExp(filter, 'i')
+        const isFoundInTds = td => regex.test(td.innerText)
+        const isFound = childrenArr => childrenArr.some(isFoundInTds)
+        const setTrStyleDisplay = ({ style, children }) => {
+            style.display = isFound([
+            ...children // <-- All columns
+            ]) ? '' : 'none' 
+        }
+        trs.forEach(setTrStyleDisplay)
+    })
 
-    return table;
+    sorttable.makeSortable(table);
+    if(data_obj["_gb_col"]){
+        var myTH = table.getElementsByTagName("th")[1];
+        sorttable.innerSortFunction.apply(myTH, []);
+    }
+    return groupUI;
 }
 
 interfaceUtils.updateColorDict = function(uid) {
