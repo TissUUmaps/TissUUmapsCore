@@ -9,7 +9,7 @@
  * @version projectUtils 2.0
  * @classdesc The root namespace for projectUtils.
  */
- projectUtils = {
+var projectUtils = {
      _activeState:{},
      _hideCSVImport: false,
      _settings:[
@@ -45,7 +45,7 @@
  projectUtils.saveProject = function(urlProject) {
     interfaceUtils.prompt("Save project under the name:","NewProject")
     .then((filename) => {
-        state = projectUtils.getActiveProject();
+        var state = projectUtils.getActiveProject();
         state.filename = filename;
 
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
@@ -173,6 +173,17 @@ projectUtils.getActiveProject = function () {
     interfaceUtils.generateModal(title, content, buttons);
  }
 
+
+projectUtils.updateMarkerButton = function(dataset) {
+    var data_obj = dataUtils.data[dataset];
+    console.log("projectUtils.updateMarkerButton", data_obj);
+    var markerFile = projectUtils._activeState.markerFiles[data_obj["fromButton"]];
+    var headers = interfaceUtils._mGenUIFuncs.getTabDropDowns(dataset);
+    markerFile.expectedHeader = Object.assign({}, ...Object.keys(headers).map((k) => ({[k]: headers[k].value})));
+    var radios = interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks(dataset);
+    markerFile.expectedRadios = Object.assign({}, ...Object.keys(radios).map((k) => ({[k]: radios[k].checked})));
+    console.log("projectUtils.updateMarkerButton markerFile", markerFile);
+}
 
 projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment) {
     buttonsDict = {};
@@ -346,11 +357,17 @@ projectUtils.loadProjectFileFromServer = function(path) {
             if (tab.visible === false) {document.getElementById("title-tab-" + tab.name).style.display="none"}
         });
     }*/
-    if (state.regions) {
+
+    if (state.regions && Object.keys(state.regions).length > 0) {
         regionUtils.JSONValToRegions(state.regions);
     }
     if (state.regionFile) {
-        regionUtils.JSONToRegions(state.regionFile);
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const path = urlParams.get('path')
+        if (path != null) {
+            regionUtils.JSONToRegions(path + "/" + state.regionFile);
+        }
     }
     projectUtils._activeState = state;
     tmapp.fixed_file = "";
@@ -358,7 +375,8 @@ projectUtils.loadProjectFileFromServer = function(path) {
         filterUtils._compositeMode = state.compositeMode;
     }
     if (state.markerFiles) {
-        state.markerFiles.forEach(function(markerFile) {
+        state.markerFiles.forEach(function(markerFile, buttonIndex) {
+            markerFile["fromButton"] = buttonIndex;
             if (markerFile.expectedCSV) {
                 projectUtils.convertOldMarkerFile(markerFile);
                 state.hideTabs = true;
@@ -373,12 +391,12 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     if (state.regionFiles) {
         state.regionFiles.forEach(function(regionFile) {
-            interfaceUtils.createDownloadButtonRegions(
-                regionFile.title,
-                regionFile.path,
-                regionFile.comment,
-                regionFile.autoLoad
-            );
+            if( Object.prototype.toString.call( regionFile.path ) === '[object Array]' ) {
+                interfaceUtils.createDownloadDropdownRegions(regionFile);
+            }
+            else {
+                interfaceUtils.createDownloadButtonRegions(regionFile);
+            }
         });
     }
     if (state.filename) {
@@ -427,6 +445,11 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     if (state.hideTabs) {
         document.getElementById("level-1-tabs").classList.add("d-none");
+    }
+    if (state.menuButtons) {
+        state.menuButtons.forEach(function(menuButton, i) {
+            interfaceUtils.addMenuItem([menuButton.text], function(){ window.open(menuButton.url, '_self').focus();});
+        });
     }
     /*if (projectUtils._hideCSVImport) {
         document.getElementById("ISS_data_panel").style.display="none";
@@ -499,8 +522,8 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
         markerFile.expectedRadios.cb_gr_rand = false;
         markerFile.expectedRadios.cb_gr_key = true;
         for (setting of markerFile.settings) {
-            if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
-                markerFile.expectedHeader.scale_factor = setting.value;
+            //if (setting.module == "glUtils" && setting.function == "_globalMarkerScale")
+            //    markerFile.expectedHeader.scale_factor = setting.value;
             if (setting.module == "markerUtils" && setting.function == "_selectedShape"){
                 dictSymbol = {6:6}
                 if (dictSymbol[setting.value]) setting.value = dictSymbol[setting.value];
@@ -513,6 +536,13 @@ projectUtils.convertOldMarkerFile = function(markerFile) {
                 }
             }
             if (setting.module == "markerUtils" && setting.function == "_colorsperkey") {
+                markerFile.expectedRadios.cb_gr = true;
+                markerFile.expectedRadios.cb_gr_rand = false;
+                markerFile.expectedRadios.cb_gr_key = false;
+                markerFile.expectedRadios.cb_gr_dict = true;
+                markerFile.expectedHeader.cb_gr_dict = JSON.stringify(setting.value);
+            }
+            if (setting.module == "HTMLElementUtils" && setting.function == "_colorsperiter") {
                 markerFile.expectedRadios.cb_gr = true;
                 markerFile.expectedRadios.cb_gr_rand = false;
                 markerFile.expectedRadios.cb_gr_key = false;
@@ -558,4 +588,46 @@ projectUtils.commonPath = function(strs) {
     }
     prefix = prefix.substring(0, prefix.lastIndexOf('/')+1);
     return prefix
+}
+
+/** Applying settings */
+projectUtils.applySettings = function (settings) {
+    if (settings) {
+        settings.forEach(function(setting, i) {
+            if (window[setting.module]) {
+                if (typeof window[setting.module][setting.function]  === 'function') {
+                    window[setting.module][setting.function](setting.value);
+                }
+                else {
+                    window[setting.module][setting.function] = setting.value;
+                }
+            }
+        });
+    }
+}
+
+/** Adding marker legend in the upper left corner */
+projectUtils.addLegend = function (htmlContent) {
+    if (! htmlContent) {
+        if (document.getElementById("markerLegend")) {
+            document.getElementById("markerLegend").style.display= "none";
+        }
+        return;
+    }
+    var op = tmapp["object_prefix"];
+    if (document.getElementById("markerLegend") == undefined) {
+        var elt = document.createElement('div');
+        elt.className = "px-1 mx-1 viewer-layer"
+        elt.id = "markerLegend"
+        elt.style.zIndex = "13";
+        elt.style.left = "10px";
+        elt.style.top = "10px";
+        elt.style.padding = "5px";
+        elt.style.overflowY = "auto";
+        elt.style.maxHeight = "Calc(100vh - 245px)";
+        tmapp[tmapp["object_prefix"] + "_viewer"].addControl(elt,{anchor: OpenSeadragon.ControlAnchor.TOP_LEFT});
+    }
+    elt = document.getElementById("markerLegend");
+    elt.style.display="block";
+    elt.innerHTML = htmlContent;
 }

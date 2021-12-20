@@ -570,14 +570,14 @@ interfaceUtils.generateDataTabUI = function(options){
         menurow=interfaceUtils._mGenUIFuncs.rowForMarkerUI();
 
         togglerow=HTMLElementUtils.createElement({"kind":"div", "extraAttributes":{"class":"row"}});
-        divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light btn-sm mx-3"}});
+        var divpane_settings_toggle = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings-toggle", "extraAttributes":{"class":"d-none w-auto ms-auto btn btn-light btn-sm mx-3"}});
         divpane_settings_toggle.innerHTML = "<i class='bi bi-sliders'></i>";
         divpane_settings_toggle.addEventListener("click",function(event) {
-            divpane_settings = interfaceUtils.getElementById(generated+"_marker-tab-settings")
+            var divpane_settings = interfaceUtils.getElementById(generated+"_marker-tab-settings")
             divpane_settings.classList.remove("d-none");
             divpane_settings_toggle.classList.add("d-none");
         })
-        divpane_settings = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings"});
+        var divpane_settings = HTMLElementUtils.createElement({"kind":"div", "id":generated+"_marker-tab-settings"});
         divpane_settings.appendChild(accordion.divaccordion);
         divpane_settings.appendChild(buttonrow);
         togglerow.append(divpane_settings_toggle)
@@ -1538,6 +1538,10 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
 
     //I do this to know if I have name selected, and also to know where to draw the 
     //color from
+    var groupUI=HTMLElementUtils.createElement({"kind":"div"});
+    var filter=HTMLElementUtils.createElement({"kind":"input", "extraAttributes":{ "class":"form-text-input form-control", "type":"text", "placeholder":"Filter markers"}});
+
+    groupUI.appendChild(filter)
 
     var table=HTMLElementUtils.createElement({"kind":"table","extraAttributes":{"class":"table table-striped marker_table"}});
     var thead=HTMLElementUtils.createElement({"kind":"thead"});
@@ -1619,7 +1623,8 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         }
 
         var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_all_check","class":"cursor-pointer"}});
-        label17.innerText=data_obj["_processeddata"].length;    
+        //label17.innerText=data_obj["_processeddata"].length;    
+        label17.innerText=data_obj["_processeddata"][data_obj["_X"]].length;  // FIXME
         td17.appendChild(label17);        
         tr.appendChild(td17);
 
@@ -1635,9 +1640,10 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         thead2.appendChild(tr);
     }
 
-    var count=0;
+    var countShape=0;
+    var countColor=0;
     var favouriteShapes = [6,0,2,1,3,4,10,5]
-    for(i in data_obj["_groupgarden"]){
+    for(i of Object.keys(data_obj["_groupgarden"]).sort()){
 
         var tree = data_obj["_groupgarden"][i]
         
@@ -1682,7 +1688,8 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         }
 
         var label17=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
-        label17.innerText=tree.size();    
+        //label17.innerText=tree.size();    
+        label17.innerText=dataUtils._quadtreeSize(tree);
         td17.appendChild(label17);        
         tr.appendChild(td17);
 
@@ -1694,9 +1701,9 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             if(_selectedOptions["shape_fixed"]){
                 shapeinput2.value=_selectedDropDown["shape_fixed"].value;
             }else if(_selectedOptions["shape_gr_rand"]){
-                shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                count+=1;
-                count=count % favouriteShapes.length;
+                shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                countShape+=1;
+                countShape=countShape % favouriteShapes.length;
             }else if(_selectedOptions["shape_gr_dict"]){
                 try {
                     val = JSON.parse(_selectedDropDown["shape_gr_dict"].value)[tree["treeID"]];
@@ -1704,15 +1711,15 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                         shapeinput2.value=val;
                     }
                     else {
-                        shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                        count+=1;
-                        count=count % favouriteShapes.length;
+                        shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                        countShape+=1;
+                        countShape=countShape % favouriteShapes.length;
                     }
                 }
                 catch (err){
-                    shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[count]];
-                    count+=1;
-                    count=count % favouriteShapes.length;
+                    shapeinput2.value=markerUtils._symbolStrings[favouriteShapes[countShape]];
+                    countShape+=1;
+                    countShape=countShape % favouriteShapes.length;
                 }
             }
             shapeinput2.addEventListener("change",(event)=>{
@@ -1730,7 +1737,16 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                 thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
             }else if(_selectedOptions["cb_gr_dict"]){
                 try {
-                    thecolor=JSON.parse(_selectedDropDown["cb_gr_dict"].value)[tree["treeID"]];
+                    colorObject = JSON.parse(_selectedDropDown["cb_gr_dict"].value)
+                    console.log("colorObject", colorObject, Array.isArray(colorObject),typeof colorObject, typeof colorObject === "object")
+                    if (Array.isArray(colorObject)) {
+                        console.log(i, colorObject[countColor % colorObject.length])
+                        thecolor=colorObject[countColor % colorObject.length];
+                        countColor += 1;
+                    }
+                    else if (typeof colorObject === "object") {
+                        thecolor=colorObject[tree["treeID"]];
+                    }
                     if (thecolor === undefined) {
                         thecolor=HTMLElementUtils.determinsticHTMLColor(escapedID);
                     }
@@ -1797,8 +1813,27 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
     table.appendChild(thead);
     table.appendChild(thead2);
     table.appendChild(tbody);
+    groupUI.appendChild(table);
+    filter.addEventListener("input",function(event) {
+        const trs = table.querySelectorAll('tbody tr')
+        const filter = this.value
+        const regex = new RegExp(filter, 'i')
+        const isFoundInTds = td => regex.test(td.innerText)
+        const isFound = childrenArr => childrenArr.some(isFoundInTds)
+        const setTrStyleDisplay = ({ style, children }) => {
+            style.display = isFound([
+            ...children // <-- All columns
+            ]) ? '' : 'none' 
+        }
+        trs.forEach(setTrStyleDisplay)
+    })
 
-    return table;
+    sorttable.makeSortable(table);
+    if(data_obj["_gb_col"]){
+        var myTH = table.getElementsByTagName("th")[1];
+        sorttable.innerSortFunction.apply(myTH, []);
+    }
+    return groupUI;
 }
 
 interfaceUtils.updateColorDict = function(uid) {
@@ -2038,30 +2073,27 @@ interfaceUtils.createDownloadDropdown = function(downloadRow, innerText, callbac
 
     downloadRow.appendChild(row);
 
-    $(".chosen-select_" + random_chosen_id).chosen({disable_search_threshold: 10, search_contains: true});
+    $(".chosen-select_" + random_chosen_id).chosen({disable_search_threshold: 10, search_contains: true, width: "100%"});
     $(".chosen-select_" + random_chosen_id).on('change', function(evt, params) {
         callback(evt, params);
     });
     return row;
 }
 
-interfaceUtils.createDownloadDropdownMarkers = function(options, settings) {
+interfaceUtils.createDownloadDropdownMarkers = function(options) {
     var downloadRow = document.getElementById("divMarkersDownloadButtons");
     interfaceUtils._mGenUIFuncs.generateUUID();
     if (!options.uid)
         options.uid=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     var callback = function(e, params){
-        /*if (settings) {
-            settings.forEach(function(setting, i) {
-                window[setting.module][setting.function] = setting.value;
-            });
-        }*/
+        projectUtils.applySettings(options.settings);
         var dataURL = params.selected;
         if (dataURL == "") return;
         optionsCopy = JSON.parse(JSON.stringify(options));
         optionsCopy["path"] = dataURL;
         interfaceUtils.generateDataTabUI(optionsCopy);
     }
+    var dropdownOptions;
     if (options.autoLoad) {
         dropdownOptions = [];
     }
@@ -2112,11 +2144,7 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
     if (!options.uid)
         options.uid=interfaceUtils._mGenUIFuncs.ctx.aUUID;
     var callback = function(e){
-        /*if (settings) {
-            settings.forEach(function(setting, i) {
-                window[setting.module][setting.function] = setting.value;
-            });
-        }*/
+        projectUtils.applySettings(options.settings);
         interfaceUtils.generateDataTabUI(options);
     }
     var buttonRow = interfaceUtils.createDownloadButton(downloadRow, options.title, callback, options.comment);
@@ -2126,18 +2154,43 @@ interfaceUtils.createDownloadButtonMarkers = function(options) {
     }
 }
 
-interfaceUtils.createDownloadButtonRegions = function(innerText, dataURL, comment, autoLoad, settings) {
+interfaceUtils.createDownloadDropdownRegions = function(options) {
     var downloadRow = document.getElementById("divRegionsDownloadButtons");
-    var callback = function(e){
-        if (settings) {
-            settings.forEach(function(setting, i) {
-                window[setting.module][setting.function] = setting.value;
-            });
-        }
+    var callback = function(e, params){
+        projectUtils.applySettings(options.settings);
+        var dataURL = params.selected;
+        if (dataURL == "") return;
         regionUtils.JSONToRegions(dataURL)
     }
-    var buttonRow = interfaceUtils.createDownloadButton(downloadRow, innerText, callback, comment);
-    if (autoLoad) {
+    var dropdownOptions;
+    if (options.autoLoad) {
+        dropdownOptions = [];
+    }
+    else {
+        dropdownOptions = [{"value":"","text":"Select from list"}];
+    }
+    options["path"].forEach (function (dataURL) {
+        dropdownOptions.push({
+            "value": dataURL,
+            "text": dataURL.split('/').reverse()[0].replace(/_/g, '').replace('.json', '')
+        })
+            });
+    interfaceUtils.createDownloadDropdown(downloadRow, options.title, callback, options.comment, dropdownOptions);
+    //var label = document.getElementById("label_ISS_csv");
+    if (options.autoLoad) {
+        setTimeout(function(){callback(null, {'selected':options["path"][0]})},500);
+        }
+    //else { label.innerHTML = "Or import gene expression from CSV file:"; }
+    }
+
+interfaceUtils.createDownloadButtonRegions = function(options) {
+    var downloadRow = document.getElementById("divRegionsDownloadButtons");
+    var callback = function(e){
+        projectUtils.applySettings(options.settings);
+        regionUtils.JSONToRegions(options.path)
+    }
+    var buttonRow = interfaceUtils.createDownloadButton(downloadRow, options.title, callback, options.comment);
+    if (options.autoLoad) {
         setTimeout(function(){callback(null)},500);
         buttonRow.style.display="none";
     }
@@ -2160,7 +2213,15 @@ interfaceUtils.addMenuItem = function(itemTree, callback, before) {
             else
                 rootElement.append(liItem);
             
-            if (i == 0) {
+            if (i == 0 && i == itemTree.length -1) {
+                aElement = HTMLElementUtils.createElement({"kind":"a", "id":"a_"+itemID, "extraAttributes":{"class":"nav-link active","href":"#"}})
+                liItem.appendChild(aElement);
+                aElement.addEventListener("click",function (event) {
+                    callback();
+                });
+                spanMore = "";
+            }
+            else if (i == 0) {
                 aElement = HTMLElementUtils.createElement({"kind":"a", "id":"a_"+itemID, "extraAttributes":{"class":"nav-link dropdown-toggle active","href":"#", "data-bs-toggle":"dropdown", "aria-haspopup":"true", "aria-expanded":"false"}})
                 liItem.appendChild(aElement);
                 ulItem = HTMLElementUtils.createElement({"kind":"ul", "id":itemID, "extraAttributes":{"class":"dropdown-menu dropdown-submenu"}})

@@ -243,12 +243,24 @@ overlayUtils.addLayerFromSelect = function() {
 /**
  * This method is used to add a layer */
 overlayUtils.addLayer = function(layerName, tileSource, i, visible) {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const path = urlParams.get('path')
+    if (path != null) {
+        tileSource = path + "/" + tileSource
+    }
     var op = tmapp["object_prefix"];
     var vname = op + "_viewer";
     var opacity = 1.0;
     if (i >= 0 && !visible) {
         opacity = 0.0;
     }
+    var showModal = true;
+    var loadingModal = null;
+    setTimeout(function(){
+        if (showModal)
+            loadingModal = interfaceUtils.loadingModal("Converting image, please wait...");
+    },800);
     tmapp[vname].addTiledImage({
         index: i + 1,
         tileSource: tmapp._url_suffix + tileSource,
@@ -257,6 +269,17 @@ overlayUtils.addLayer = function(layerName, tileSource, i, visible) {
             layer0X = tmapp[op + "_viewer"].world.getItemAt(0).getContentSize().x;
             layerNX = tmapp[op + "_viewer"].world.getItemAt(tmapp[op + "_viewer"].world.getItemCount()-1).getContentSize().x;
             tmapp[op + "_viewer"].world.getItemAt(tmapp[op + "_viewer"].world.getItemCount()-1).setWidth(layerNX/layer0X);
+            if (loadingModal) {
+                setTimeout(function(){$(loadingModal).modal("hide");}, 500);
+            }
+            showModal = false;
+        },
+        error: function(i) {
+            if (loadingModal) {
+                setTimeout(function(){$(loadingModal).modal("hide");}, 500);
+            }
+            interfaceUtils.alert("Impossible to load file.")
+            showModal = false;
         } 
     });
 }
@@ -393,7 +416,7 @@ overlayUtils.saveSVG=function(){
  */
 overlayUtils.savePNG=function() {
     // Create an empty canvas element
-    $("#loadingModal").show();
+    var loading=interfaceUtils.loadingModal();
     var canvas = document.createElement("canvas");
     var ctx_osd = document.querySelector(".openseadragon-canvas canvas").getContext("2d");
     var ctx_webgl = document.querySelector("#gl_canvas").getContext("webgl");
@@ -417,15 +440,13 @@ overlayUtils.savePNG=function() {
     img.onload = function() {
         ctx.drawImage(img, 0, 0);
         var png = canvas.toDataURL("image/png");
-        console.log(png.replace(/^data:image\/(png|jpg);base64,/, ""));
     
         var a = document.createElement("a"); //Create <a>
         a.href = png; //Image Base64 Goes here
         a.download = "TissUUmaps_capture.png"; //File name Here
         a.click(); //Downloaded file
-        $("#loadingModal").hide();
+        setTimeout(function(){$(loading).modal("hide");},500);
         DOMURL.revokeObjectURL(png);
     };
     img.src = url;
-    console.log(url);
 }
