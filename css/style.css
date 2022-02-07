@@ -10168,10 +10168,10 @@ html {
   display: inline-block; }
 
 .openseadragon-canvas svg {
-  z-index: 11; }
+  z-index: 13; }
 
 .navigator {
-  z-index: 12; }
+  z-index: 14; }
 
 #ISS_globalmarkersize {
   position: absolute;
