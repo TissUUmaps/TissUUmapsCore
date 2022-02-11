@@ -1666,7 +1666,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         check0.checked = true; 
         td0.appendChild(check0);
         
-        var check1=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_hidden","extraAttributes":{"class":"form-check-input marker-hidden d-none","type":"checkbox" }});
+        var check1=HTMLElementUtils.createElement({"kind":"input", "id":uid+"_"+escapedID+"_hidden","extraAttributes":{"class":"form-check-input marker-hidden d-none "+uid+"-marker-hidden","type":"checkbox" }});
         check1.checked = false; 
         td0.appendChild(check1);
         
@@ -1692,7 +1692,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
             td2 = HTMLElementUtils.createElement({"kind":"td"});
             var shapeoptions=[];
             markerUtils._symbolStrings.forEach((sho,index)=>{ shapeoptions.push({"text":markerUtils._symbolUnicodes[index],"value":sho}) })
-            shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
+            shapeinput2=HTMLElementUtils.selectTypeDropDown({ "id":uid+"_"+escapedID+"_shape","class":"form-select form-select-sm "+uid+"-marker-shape","options":shapeoptions,"extraAttributes":{"aria-label":".form-select-sm"}})
             if(_selectedOptions["shape_fixed"]){
                 shapeinput2.value=_selectedDropDown["shape_fixed"].value;
             }else if(_selectedOptions["shape_gr_rand"]){
@@ -1749,7 +1749,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
                 }
             }
             thecolor = thecolor.toLowerCase();  // Should be lowercase for color inputs
-            var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "extraAttributes": {"value": thecolor}});
+            var colorinput3 = HTMLElementUtils.inputTypeColor({"id": uid+"_"+escapedID+"_color", "class":uid+"-marker-color", "extraAttributes": {"value": thecolor}});
             tr.appendChild(td3);
             td3.appendChild(colorinput3);
             // fix for Safari
