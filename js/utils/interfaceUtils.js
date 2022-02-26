@@ -653,9 +653,9 @@ interfaceUtils._mGenUIFuncs.hideShow=function(event,array,options){
         domelement=interfaceUtils.getElementById(newdomid);
         if(domelement){
             if(options.includes(index)){
-                domelement.removeAttribute("style");
+                domelement.classList.remove("d-none");
             }else{
-                domelement.setAttribute("style",'visibility:hidden;display:none;');
+                domelement.classList.add("d-none");
             }
         }
     });
@@ -1035,11 +1035,11 @@ interfaceUtils._mGenUIFuncs.generateColorByAccordion2= function(){
                 inputtextcbgrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_cb-bygroup-dict-val","extraAttributes":{ "class":"form-text-input", "type":"text", "placeholder":"{'key1':''#FFFFFF',...}"}});
                 inputtextcbgrdict.disabled=true
 
-        divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+        divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_cb-col-options","extraAttributes":{"class": "renderOptionContainer d-none"}});
             selectcbcol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_cb-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
             labelcbcol=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_cb_col-colname-label","extraAttributes":{"for":generated+"_cb-col-value"} });
             labelcbcol.innerText="Select color column";
-        divoptionscmap=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_cb-cmap-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+        divoptionscmap=HTMLElementUtils.createElement({"kind":"div", "id":generated+"_cb-cmap-options","extraAttributes":{"class": "renderOptionContainer d-none"}});
             labelcbcmapvalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_cb-cmap-label","extraAttributes":{"for":generated+"_cb-cmap-value"}});
             labelcbcmapvalue.innerText="Color map (only if color column is numeral)";
             cmapoptions=[{"text":"None","value":""}];
@@ -1268,12 +1268,12 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
                     inputtextshapegrdict=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_shape-bygroup-dict-val","extraAttributes":{ "class":"form-text-input", "type":"text", "placeholder":"{'key1':''#FFFFFF',...}"}});
                     inputtextshapegrdict.disabled=true
     
-            divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-col-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+            divoptionscol=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-col-options","extraAttributes":{"class": "renderOptionContainer d-none"}});
                 selectshapecol=HTMLElementUtils.createElement({"kind":"select","id":generated+"_shape-col-value","extraAttributes":{"class":"form-select form-select-sm","aria-label":".form-select-sm"}});
                 labelshapecol=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_shape_col-colname-label","extraAttributes":{"for":generated+"_shape-col-value"} });
                 labelshapecol.innerText="Select shape column";
             
-            divoptionsfixed=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-fixed-options","extraAttributes":{"class": "renderOptionContainer","style":"visibility:hidden;display:none;"}});
+            divoptionsfixed=HTMLElementUtils.createElement({"kind":"div","id":generated+"_shape-fixed-options","extraAttributes":{"class": "renderOptionContainer d-none"}});
                 labelfixedshapevalue=HTMLElementUtils.createElement({"kind":"label","id":generated+"_shape-fixed-label","extraAttributes":{"for":generated+"_shape-fixed-value"}});
                 labelfixedshapevalue.innerText="Select shape";
                 shapeoptions=[];
