@@ -281,14 +281,15 @@ interfaceUtils.setAttributeForElement=function(domid,attr, value){
 }
 /** 
 * @param {String} domid The id of the element
+* @param {Boolean} debug Print warnings if true
 * @return {HTMLelement | null} HTMl element
 * Get the an element and warn if none exists */
-interfaceUtils.getElementById=function(domid){
+interfaceUtils.getElementById=function(domid, debug=true){
     var elem= document.getElementById(domid);
     if(elem){
         return elem;
     }else{
-        console.log("Element with id "+domid+" doesn't exist");
+        if (debug) console.log("Element with id "+domid+" doesn't exist");
         return null;
     }
 }
@@ -1917,9 +1918,9 @@ interfaceUtils._mGenUIFuncs.getGroupInputs = function(uid, key) {
         if (hasGroupUI) {
             inputs["visible"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_check").checked;
             inputs["hidden"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_hidden").checked;
-            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_shape"))
+            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_shape", false))
                 inputs["shape"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_shape").value;
-            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_color"))
+            if (interfaceUtils.getElementById(uid + "_" + escapedID + "_color", false))
                 inputs["color"] = interfaceUtils.getElementById(uid + "_" + escapedID + "_color").value;
         }
     }
