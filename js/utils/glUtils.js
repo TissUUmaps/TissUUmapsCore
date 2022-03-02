@@ -66,6 +66,7 @@ glUtils._markersVS = `
     attribute float a_index;
     attribute float a_scale;
     attribute float a_shape;
+    attribute float a_opacity;
 
     varying vec4 v_color;
     varying vec2 v_shapeOrigin;
@@ -128,7 +129,7 @@ glUtils._markersVS = `
         v_shapeSize = gl_PointSize;
 
         // Discard point here in vertex shader if marker is hidden
-        v_color.a = v_color.a > 0.0 ? u_markerOpacity : 0.0;
+        v_color.a = v_color.a > 0.0 ? a_opacity * u_markerOpacity : 0.0;
         if (v_color.a == 0.0) DISCARD_VERTEX;
     }
 `;
@@ -198,6 +199,7 @@ glUtils._pickingVS = `
     uniform vec2 u_pickingLocation;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
+    uniform float u_markerOpacity;
     uniform bool u_usePiechartFromMarker;
     uniform bool u_useShapeFromMarker;
     uniform int u_op;
@@ -207,6 +209,7 @@ glUtils._pickingVS = `
     attribute vec4 a_position;
     attribute float a_index;
     attribute float a_scale;
+    attribute float a_opacity;
 
     varying vec4 v_color;
 
@@ -269,6 +272,9 @@ glUtils._pickingVS = `
             uv = (uv - 0.5) * UV_SCALE + 0.5;
             uv = (uv + shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
             if (texture2D(u_shapeAtlas, uv).r < 0.5) DISCARD_VERTEX;
+
+            // Also do a quick alpha-test to avoid picking non-visible markers
+            if (a_opacity * u_markerOpacity <= 0.0) DISCARD_VERTEX
 
             // Output marker index encoded as hexadecimal color
             v_color.rgb = hex_to_rgb(a_index + float(u_op));
@@ -405,12 +411,13 @@ glUtils.loadMarkers = function(uid) {
     const markerOpacity = dataUtils.data[uid]["_opacity"];
 
     // Additional info about the vertex format
-    const NUM_COMPONENTS_PER_MARKER = 7;
+    const NUM_COMPONENTS_PER_MARKER = 8;
     const NUM_BYTES_PER_MARKER = NUM_COMPONENTS_PER_MARKER * 4;
     const POINT_OFFSET = numPoints * 0,
           INDEX_OFFSET = numPoints * 4,
           SCALE_OFFSET = numPoints * 5,
           SHAPE_OFFSET = numPoints * 6;
+          OPACITY_OFFSET = numPoints * 7;
 
     // Extract and upload vertex data for markers. For datasets with tens of of
     // millions of points, the vertex data can be quite large, so we upload the
@@ -426,6 +433,7 @@ glUtils.loadMarkers = function(uid) {
         let bytedata_index = new Float32Array(chunkSize * 1);
         let bytedata_scale = new Float32Array(chunkSize * 1);
         let bytedata_shape = new Float32Array(chunkSize * 1);
+        let bytedata_opacity = new Float32Array(chunkSize * 1);
 
         if (usePiechartFromMarker) {
             // For piecharts, we need to create one marker per piechart sector,
@@ -435,6 +443,7 @@ glUtils.loadMarkers = function(uid) {
             bytedata_index = new Float32Array(chunkSize * numSectors * 1);
             bytedata_scale = new Float32Array(chunkSize * numSectors * 1);
             bytedata_shape = new Float32Array(chunkSize * numSectors * 1);
+            bytedata_opacity = new Float32Array(chunkSize * numSectors * 1);
 
             for (let i = 0; i < chunkSize; ++i) {
                 const markerIndex = i + offset;
@@ -456,6 +465,7 @@ glUtils.loadMarkers = function(uid) {
                     bytedata_shape[k] =
                         Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
                         Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
+                    bytedata_opacity[k] = 1.0;  // TODO: Opacity value is hardcoded for now
                 }
             }
         } else {
@@ -484,6 +494,7 @@ glUtils.loadMarkers = function(uid) {
                                                                  : Number("0x" + hexColor.substring(1,7));
                 bytedata_index[i] = markerIndex;  // Store index needed for picking
                 bytedata_scale[i] = useScaleFromMarker ? markerData[scalePropertyName][markerIndex] : 1.0;
+                bytedata_opacity[i] = 1.0;  // TODO: Opacity value is hardcoded for now
             }
         }
 
@@ -513,6 +524,7 @@ glUtils.loadMarkers = function(uid) {
         gl.bufferSubData(gl.ARRAY_BUFFER, (INDEX_OFFSET + offset * 1) * numSectors * 4, bytedata_index);
         gl.bufferSubData(gl.ARRAY_BUFFER, (SCALE_OFFSET + offset * 1) * numSectors * 4, bytedata_scale);
         gl.bufferSubData(gl.ARRAY_BUFFER, (SHAPE_OFFSET + offset * 1) * numSectors * 4, bytedata_shape);
+        gl.bufferSubData(gl.ARRAY_BUFFER, (OPACITY_OFFSET + offset * 1) * numSectors * 4, bytedata_opacity);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
     console.timeEnd("Generate vertex data");
@@ -854,6 +866,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     const INDEX = gl.getAttribLocation(program, "a_index");
     const SCALE = gl.getAttribLocation(program, "a_scale");
     const SECTOR = gl.getAttribLocation(program, "a_shape");
+    const OPACITY = gl.getAttribLocation(program, "a_opacity");
 
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
@@ -878,6 +891,8 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
             gl.enableVertexAttribArray(SECTOR);
             gl.vertexAttribPointer(SECTOR, 1, gl.FLOAT, false, 0, numPoints * 24);
         }
+        gl.enableVertexAttribArray(OPACITY);
+        gl.vertexAttribPointer(OPACITY, 1, gl.FLOAT, false, 0, numPoints * 28);
 
         gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale * glUtils._markerScaleFactor[uid]);
         gl.uniform2fv(gl.getUniformLocation(program, "u_markerScalarRange"), glUtils._markerScalarRange[uid]);
@@ -926,6 +941,7 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     const POSITION = gl.getAttribLocation(program, "a_position");
     const INDEX = gl.getAttribLocation(program, "a_index");
     const SCALE = gl.getAttribLocation(program, "a_scale");
+    const OPACITY = gl.getAttribLocation(program, "a_opacity");
 
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
@@ -949,10 +965,13 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
         gl.enableVertexAttribArray(SCALE);
         gl.vertexAttribPointer(SCALE, 1, gl.FLOAT, false, 0, numPoints * 20);
         // Note: sectors for piecharts are currently not used in the picking
+        gl.enableVertexAttribArray(OPACITY);
+        gl.vertexAttribPointer(OPACITY, 1, gl.FLOAT, false, 0, numPoints * 28);
 
         gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale * glUtils._markerScaleFactor[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_usePiechartFromMarker"), glUtils._usePiechartFromMarker[uid]);
         gl.uniform1i(gl.getUniformLocation(program, "u_useShapeFromMarker"), glUtils._useShapeFromMarker[uid]);
+        gl.uniform1f(gl.getUniformLocation(program, "u_markerOpacity"), glUtils._markerOpacity[uid]);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, glUtils._textures[uid + "_colorLUT"]);
         gl.uniform1i(gl.getUniformLocation(program, "u_colorLUT"), 0);
