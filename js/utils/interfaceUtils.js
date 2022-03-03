@@ -752,6 +752,7 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
     allinputs["shape_col"]=interfaceUtils.getElementById(uid+"_shape-col-value");
     allinputs["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed-value");
     allinputs["shape_gr_dict"]=interfaceUtils.getElementById(uid+"_shape-bygroup-dict-val");
+    allinputs["opacity_col"]=interfaceUtils.getElementById(uid+"_opacity-col");
     allinputs["opacity"]=interfaceUtils.getElementById(uid+"_opacity");
     allinputs["tooltip_fmt"]=interfaceUtils.getElementById(uid+"_tooltip_fmt");
     
@@ -781,7 +782,7 @@ interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
     allradios["shape_gr_dict"]=interfaceUtils.getElementById(uid+"_shape-bygroup-dict");
     allradios["shape_col"]=interfaceUtils.getElementById(uid+"_shape-bypoint");
     allradios["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed");
-    
+    allradios["opacity_check"]=interfaceUtils.getElementById(uid+"_use-opacity");
     
     
     return allradios;
@@ -1412,6 +1413,24 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
             label0002=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_opacity"}});
             label0002.innerHTML="Opacity value:&nbsp;";
             inputsizefactor=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_opacity","extraAttributes":{ "class":"form-text-input", "type":"number", "value":1, "step":0.05, "min":0, "max":1}});
+            divformcheck000=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputcheck0000=HTMLElementUtils.createElement({"kind":"input", "id":generated+"_use-opacity","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label0001=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_use-opacity-label", "extraAttributes":{ "for":generated+"_use-opacity" }});
+                label0001.innerText="Use different opacity per marker"
+
+        col01=HTMLElementUtils.createColumn({"width":6});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_opacity-col-label", "extraAttributes":{ "for":generated+"_opacity-col" }});
+            label010.innerText="Opacity column"
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_opacity-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011.disabled=true
+
+    inputcheck0000.addEventListener("change", (event)=>{
+        var value=event.target.checked;
+        if(value)
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_opacity-col"],[0])
+        else
+            interfaceUtils._mGenUIFuncs.enableDisable(event, ["_opacity-col"],[])
+    })
             
     row0.appendChild(collab)
         collab.appendChild(labellab)
@@ -1419,6 +1438,13 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
     row0.appendChild(col00)
         col00.appendChild(label0002);
         col00.appendChild(inputsizefactor);
+        col00.appendChild(divformcheck000)
+            divformcheck000.appendChild(inputcheck0000);
+            divformcheck000.appendChild(label0001);
+
+    row0.appendChild(col01);
+        col01.appendChild(label010);
+        col01.appendChild(select011);
 
     return row0;
 }

@@ -25,6 +25,7 @@ glUtils = {
     _useColorFromMarker: {},     // {uid: boolean, ...}
     _useColorFromColormap: {},   // {uid: boolean, ...}
     _useScaleFromMarker: {},     // {uid: boolean, ...}
+    _useOpacityFromMarker: {},   // {uid: boolean, ...}
     _usePiechartFromMarker: {},  // {uid: boolean, ...}
     _useShapeFromMarker: {},     // {uid: boolean, ...}
     _colorscaleName: {},         // {uid: colorscaleName, ...}
@@ -387,7 +388,6 @@ glUtils.loadMarkers = function(uid) {
 
     const scalePropertyName = dataUtils.data[uid]["_scale_col"];
     const useScaleFromMarker = dataUtils.data[uid]["_scale_col"] != null;
-
     const markerScaleFactor = dataUtils.data[uid]["_scale_factor"];
     
     const sectorsPropertyName = dataUtils.data[uid]["_pie_col"];
@@ -407,8 +407,10 @@ glUtils.loadMarkers = function(uid) {
     const useShapeFromMarker = dataUtils.data[uid]["_shape_col"] != null;
     const numShapes = Object.keys(markerUtils._symbolStrings).length;
     let shapeIndex = 0;
-    
-    const markerOpacity = dataUtils.data[uid]["_opacity"];
+
+    const opacityPropertyName = dataUtils.data[uid]["_opacity_col"];
+    const useOpacityFromMarker = dataUtils.data[uid]["_opacity_col"] != null;
+    const markerOpacityFactor = dataUtils.data[uid]["_opacity"];
 
     // Additional info about the vertex format
     const NUM_COMPONENTS_PER_MARKER = 8;
@@ -465,7 +467,7 @@ glUtils.loadMarkers = function(uid) {
                     bytedata_shape[k] =
                         Math.floor((j < numSectors - 1 ? piechartAngles[j + 1] : 0.0) * 4095.0) +
                         Math.floor(piechartAngles[j] * 4095.0) * 4096.0;
-                    bytedata_opacity[k] = 1.0;  // TODO: Opacity value is hardcoded for now
+                    bytedata_opacity[k] = useOpacityFromMarker ? markerData[opacityPropertyName][markerIndex] : 1.0;
                 }
             }
         } else {
@@ -494,7 +496,7 @@ glUtils.loadMarkers = function(uid) {
                                                                  : Number("0x" + hexColor.substring(1,7));
                 bytedata_index[i] = markerIndex;  // Store index needed for picking
                 bytedata_scale[i] = useScaleFromMarker ? markerData[scalePropertyName][markerIndex] : 1.0;
-                bytedata_opacity[i] = 1.0;  // TODO: Opacity value is hardcoded for now
+                bytedata_opacity[i] = useOpacityFromMarker ? markerData[opacityPropertyName][markerIndex] : 1.0;
             }
         }
 
@@ -531,7 +533,7 @@ glUtils.loadMarkers = function(uid) {
 
     // Update marker info and LUT + colormap textures
     glUtils._numPoints[uid] = numPoints * numSectors;
-    glUtils._markerOpacity[uid] = markerOpacity;
+    glUtils._markerOpacity[uid] = markerOpacityFactor;
     glUtils._markerScalarRange[uid] = scalarRange;
     glUtils._markerScalarPropertyName[uid] = scalarPropertyName;
     glUtils._markerScaleFactor[uid] = markerScaleFactor;
@@ -539,6 +541,7 @@ glUtils.loadMarkers = function(uid) {
     glUtils._useColorFromMarker[uid] = useColorFromMarker;
     glUtils._useColorFromColormap[uid] = useColorFromColormap;
     glUtils._useScaleFromMarker[uid] = useScaleFromMarker;
+    glUtils._useOpacityFromMarker[uid] = useOpacityFromMarker;
     glUtils._usePiechartFromMarker[uid] = usePiechartFromMarker;
     glUtils._useShapeFromMarker[uid] = useShapeFromMarker;
     if (useColorFromColormap) {
@@ -565,7 +568,9 @@ glUtils.deleteMarkers = function(uid) {
     delete glUtils._useColorFromMarker[uid];
     delete glUtils._useColorFromColormap[uid];
     delete glUtils._useScaleFromMarker[uid];
+    delete glUtils._useOpacityFromMarker[uid];
     delete glUtils._usePiechartFromMarker[uid];
+    delete glUtils._useShapeFromMarker[uid];
     delete glUtils._colorscaleName[uid];
     delete glUtils._colorscaleData[uid];
     delete glUtils._barcodeToLUTIndex[uid];
