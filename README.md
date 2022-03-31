@@ -1,7 +1,7 @@
 TissUUmaps - UU is for Uppsala University ;) 
 ==========
 
-> :warning: **This repository hosts the core javascript / html code of the TissUUmaps application. For more information on installation, usage and demo of the TissUUmaps application, go to [https://tissuumaps.github.io/](the TissUUmaps web page) or [https://github.com/TissUUmaps/TissUUmaps](the TissUUmaps GitHub).**
+:warning: **This repository hosts the core javascript / html code of the TissUUmaps application. For more information on installation, usage and demo of the TissUUmaps application, go to [the TissUUmaps web page](https://tissuumaps.github.io/) or [the TissUUmaps GitHub](https://github.com/TissUUmaps/TissUUmaps).**
 > 
 > The information below are for TissUUmaps 1.0 and shouldn't be needed for most users.
 
