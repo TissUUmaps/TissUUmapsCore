@@ -54,3 +54,6 @@ For safety reasons, your browser and your computer need to know where data comes
 
 Once you have your pyramidal image and your HTML set then you can open it in any browser and see TissUUmaps displaying your slide. You can use the right panel to load point data and explore.
 
+## Javascript documentation
+
+You can find the javascript documentation generated using JSDoc 3.6.7 [here](https://tissuumaps.github.io/TissUUmapsCore/).
