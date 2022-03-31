@@ -1,7 +1,9 @@
 TissUUmaps - UU is for Uppsala University ;) 
 ==========
 
-![TissUUmaps banner](https://github.com/TissUUmaps/TissUUmapsCore/blob/master/misc/design/logo-github-2443-473.png)
+> :warning: **This repository hosts the core javascript / html code of the TissUUmaps application. For more information on installation, usage and demo of the TissUUmaps application, go to [https://tissuumaps.github.io/](the TissUUmaps web page) or [https://github.com/TissUUmaps/TissUUmaps](the TissUUmaps GitHub).**
+> 
+> The information below are for TissUUmaps 1.0 and shouldn't be needed for most users.
 
 TissUUmaps is a lightweight viewer that uses basic web tools to visualize gene expression data or any kind of point data on top of whole slide images.
 
@@ -51,52 +53,4 @@ For safety reasons, your browser and your computer need to know where data comes
 ## All set!
 
 Once you have your pyramidal image and your HTML set then you can open it in any browser and see TissUUmaps displaying your slide. You can use the right panel to load point data and explore.
-
-## Example
-
-We have designed an example for setting up your own TissUUmaps. The videos also comment on the general aspects of the design of TissUUmaps.
-
-<table>
-    <tr>
-        <td width="50%">
-            <a href="https://tissuumaps.research.it.uu.se/howto.html#section-whatis">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/DataInTissUUmaps.png" />
-            </a>
-        </td>        
-        <td width="50%">
-             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-setup">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/SetupTM-BCS.png" />
-            </a>
-        </td>
-    </tr>
-</table>
-
-## How to use TissUUmaps
-
-Here you can find several videos explaining how to use TissUUmaps
-
-<table>
-    <tr>
-        <td>
-             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-using">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/ViewingGeneExpressionData.png">
-           </a>
-        </td>        
-        <td>
-             <a href="https://tissuumaps.research.it.uu.se/howto.html#section-using">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/UsingRegionsExploreData.png">
-           </a>
-        </td>
-    </tr>
-     <tr>
-        <td>
-           <a href="https://tissuumaps.research.it.uu.se/howto.html#section-setup">
-            <img src="https://tissuumaps.research.it.uu.se/media/images/posters/SetupTM-BCS.png">
-           </a>
-        </td>        
-        <td width="50%">
-        </td>
-    </tr>
-    
-</table>
 
