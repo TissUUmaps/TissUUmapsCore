@@ -316,6 +316,24 @@ overlayUtils.areAllFullyLoaded = function () {
     return true;
   }
 
+overlayUtils.waitFullyLoaded = function () {
+    function sleep (time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+    return new Promise((resolve, reject) => {
+        sleep(200).then (()=>{
+            if (overlayUtils.areAllFullyLoaded()) {
+                resolve();
+            }
+            else {
+                overlayUtils.waitFullyLoaded().then(()=>{
+                    resolve();
+                });
+            }    
+        });
+    });
+}
+
 /** 
  * @param {String} layerName name of an existing d3 node
  * @param {Number} opacity desired opacity
@@ -417,37 +435,76 @@ overlayUtils.saveSVG=function(){
  * Save the current canvas as a PNG image
  */
 overlayUtils.savePNG=function() {
-    // Create an empty canvas element
-    var loading=interfaceUtils.loadingModal();
-    var canvas = document.createElement("canvas");
-    var ctx_osd = document.querySelector(".openseadragon-canvas canvas").getContext("2d");
-    var ctx_webgl = document.querySelector("#gl_canvas").getContext("webgl");
-    canvas.width = ctx_osd.canvas.width;
-    canvas.height = ctx_osd.canvas.height;
-    
-    // Copy the image contents to the canvas
-    var ctx = canvas.getContext("2d");
-    
-    ctx.drawImage(ctx_osd.canvas, 0, 0);
-    ctx.drawImage(ctx_webgl.canvas, 0, 0);
-    var dataURL = canvas.toDataURL("image/png");
-    
-    var svgString = new XMLSerializer().serializeToString(document.querySelector('.openseadragon-canvas svg'));
+    interfaceUtils.prompt("Resolution for export (1 = screen resolution):<br/><small><i>Max output size: 4096x4096 pixels</i></small><br/><br/><small>High resolution can take time to load!</small>","5","Capture viewport","number")
+    .then((resolution) => {
+        resolution = Math.min (
+            resolution,
+            4096 / tmapp.ISS_viewer.viewport.containerSize.x,
+            4096 / tmapp.ISS_viewer.viewport.containerSize.y
+        );
+        var bounds = tmapp.ISS_viewer.viewport.getBounds();
+        var loading=interfaceUtils.loadingModal();
+        // We change the size of viewport to allow for higher resolution:
+        document.getElementById("ISS_viewer").style.setProperty("visibility", "hidden");
+        document.getElementById("ISS_viewer").style.setProperty("height", "Calc("+resolution.toString()+"*100%)", "important")
+        document.getElementById("ISS_viewer").style.setProperty("width", "Calc("+resolution.toString()+"*100%)", "important")
+        tmapp.ISS_viewer.immediateRender = true
+        setTimeout(() => {
+            tmapp.ISS_viewer.viewport.fitBounds(bounds, true);
+            overlayUtils.waitFullyLoaded().then(() => {
+                overlayUtils.getCanvasPNG()
+                .then (() => {
+                    // We go back to original size:
+                    document.getElementById("ISS_viewer").style.setProperty("height", "100%", "important")
+                    document.getElementById("ISS_viewer").style.setProperty("width", "100%", "important")
+                    tmapp.ISS_viewer.immediateRender = false
+                    setTimeout(() => {
+                        tmapp.ISS_viewer.viewport.fitBounds(bounds, true);
+                        $(loading).modal("hide");
+                        document.getElementById("ISS_viewer").style.setProperty("visibility", "unset");
+                    },300);
+                })
+            });
+        },300);
+    })
+}
 
-    var DOMURL = self.URL || self.webkitURL || self;
-    var img = new Image();
-    var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
-    var url = DOMURL.createObjectURL(svg);
-    img.onload = function() {
-        ctx.drawImage(img, 0, 0);
-        var png = canvas.toDataURL("image/png");
-    
-        var a = document.createElement("a"); //Create <a>
-        a.href = png; //Image Base64 Goes here
-        a.download = "TissUUmaps_capture.png"; //File name Here
-        a.click(); //Downloaded file
-        setTimeout(function(){$(loading).modal("hide");},500);
-        DOMURL.revokeObjectURL(png);
-    };
-    img.src = url;
+/**
+ * Get the current canvas as a PNG image
+ */
+ overlayUtils.getCanvasPNG=function() {
+    return new Promise((resolve, reject) => {
+        // Create an empty canvas element
+        var canvas = document.createElement("canvas");
+        var ctx_osd = document.querySelector(".openseadragon-canvas canvas").getContext("2d");
+        var ctx_webgl = document.querySelector("#gl_canvas").getContext("webgl");
+        canvas.width = Math.max(ctx_osd.canvas.width, ctx_webgl.canvas.width);
+        canvas.height = Math.max(ctx_osd.canvas.height, ctx_webgl.canvas.height);
+        
+        // Copy the image contents to the canvas
+        var ctx = canvas.getContext("2d");
+        
+        ctx.drawImage(ctx_osd.canvas, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(ctx_webgl.canvas, 0, 0, canvas.width, canvas.height);
+        var dataURL = canvas.toDataURL("image/png");
+        
+        var svgString = new XMLSerializer().serializeToString(document.querySelector('.openseadragon-canvas svg'));
+
+        var DOMURL = self.URL || self.webkitURL || self;
+        var img = new Image();
+        var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+        var url = DOMURL.createObjectURL(svg);
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+            var png = canvas.toDataURL("image/png");
+            
+            var a = document.createElement("a"); //Create <a>
+            a.href = png; //Image Base64 Goes here
+            a.download = "TissUUmaps_capture.png"; //File name Here
+            a.click(); //Downloaded file
+            DOMURL.revokeObjectURL(png);
+            resolve();
+        };
+        img.src = url;
+    })
 }
