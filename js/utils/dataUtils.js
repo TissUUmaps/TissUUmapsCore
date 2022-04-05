@@ -281,6 +281,8 @@ dataUtils.updateViewOptions = function(data_id, force_reload_all){
     // Tooltip
     data_obj["_tooltip_fmt"]=inputs["tooltip_fmt"].value;
     
+    data_obj["_no_outline"]=(radios["_no_outline"].checked ? true : false);
+
     //this function veryfies if a tree with these features exist and doesnt recreate it
     dataUtils.makeQuadTrees(data_id);
     //print a menu in the interface for the groups
