@@ -796,7 +796,7 @@ interfaceUtils._mGenUIFuncs.getTabDropDowns = function(uid){
     allinputs["opacity_col"]=interfaceUtils.getElementById(uid+"_opacity-col");
     allinputs["opacity"]=interfaceUtils.getElementById(uid+"_opacity");
     allinputs["tooltip_fmt"]=interfaceUtils.getElementById(uid+"_tooltip_fmt");
-    
+
     return allinputs;
 }
 
@@ -824,6 +824,7 @@ interfaceUtils._mGenUIFuncs.getTabRadiosAndChecks= function(uid){
     allradios["shape_col"]=interfaceUtils.getElementById(uid+"_shape-bypoint");
     allradios["shape_fixed"]=interfaceUtils.getElementById(uid+"_shape-fixed");
     allradios["opacity_check"]=interfaceUtils.getElementById(uid+"_use-opacity");
+    allradios["_no_outline"]=interfaceUtils.getElementById(uid+"__no-outline");
     
     
     return allradios;
@@ -1234,19 +1235,23 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
             
                 
         col01=HTMLElementUtils.createColumn({"width":6});
-            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_scale-col-label", "extraAttributes":{ "for":generated+"_scale-col" }});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_scale-col-label", "extraAttributes":{ "for":generated+"_scale-col", "class":"d-none" }});
             label010.innerText="Size column"
-            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_scale-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_scale-col", "extraAttributes":{ "class":"form-select form-select-sm d-none", "aria-label":".form-select-sm"}});
             select011.disabled=true
 
     inputcheck0000.addEventListener("change", (event)=>{
         var value=event.target.checked;
         //var doms=["_gb-single","_gb-col","_gb-feature-value","_cb-colormap","_cb-bypoint","_cb-bygroup","_gb-feature-value",
         //          "_gb-col-value","_gb-col-name","_cb-cmap-value","_cb-col-value","_cb-bygroup-rand","_cb-bygroup-gene","_cb-bygroup-name" ]
-        if(value)
+        if(value) {
             interfaceUtils._mGenUIFuncs.enableDisable(event, ["_scale-col"],[0])
-        else 
+            interfaceUtils._mGenUIFuncs.hideShow(event, ["_scale-col","_scale-col-label"],[0,1])
+        }
+        else { 
             interfaceUtils._mGenUIFuncs.enableDisable(event, ["_scale-col"],[])
+            interfaceUtils._mGenUIFuncs.hideShow(event, ["_scale-col","_scale-col-label"],[])
+        }
     })
 
     row0.appendChild(collab)
@@ -1296,6 +1301,10 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
                 labelshapefixed=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"class":"form-check-label","for":generated+"_shape-fixed"}});
                 labelshapefixed.innerText="Use a fixed shape";
         
+            divformcheck4shape=HTMLElementUtils.createElement({ "kind":"div", "extraAttributes":{"class":"form-check"}});
+                inputcheck4shape=HTMLElementUtils.createElement({"kind":"input", "id":generated+"__no-outline","extraAttributes":{"class":"form-check-input","type":"checkbox" }});
+                label4shape=HTMLElementUtils.createElement({"kind":"label", "id":generated+"__no-outline-label", "extraAttributes":{ "for":generated+"__no-outline" }});
+                label4shape.innerText="Remove Outline"
         //------------------------
     
         colshape3=HTMLElementUtils.createColumn({"width":6});
@@ -1359,6 +1368,9 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
         colshape2.appendChild(divformcheck3shape);
             divformcheck3shape.appendChild(inputradio3shape);
             divformcheck3shape.appendChild(labelshapefixed);
+        colshape2.appendChild(divformcheck4shape);
+            divformcheck4shape.appendChild(inputcheck4shape);
+            divformcheck4shape.appendChild(label4shape);
     row0.appendChild(colshape3);
         colshape3.appendChild(divoptionscolgroup);    
             divoptionscolgroup.appendChild(rowrand);
@@ -1460,17 +1472,21 @@ interfaceUtils._mGenUIFuncs.generateAccordionItem2=function(){
                 label0001.innerText="Use different opacity per marker"
 
         col01=HTMLElementUtils.createColumn({"width":6});
-            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_opacity-col-label", "extraAttributes":{ "for":generated+"_opacity-col" }});
+            label010=HTMLElementUtils.createElement({"kind":"label", "id":generated+"_opacity-col-label", "extraAttributes":{ "for":generated+"_opacity-col", "class":"d-none" }});
             label010.innerText="Opacity column"
-            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_opacity-col", "extraAttributes":{ "class":"form-select form-select-sm", "aria-label":".form-select-sm"}});
+            select011=HTMLElementUtils.createElement({"kind":"select", "id":generated+"_opacity-col", "extraAttributes":{ "class":"form-select form-select-sm d-none", "aria-label":".form-select-sm"}});
             select011.disabled=true
 
     inputcheck0000.addEventListener("change", (event)=>{
         var value=event.target.checked;
-        if(value)
+        if(value) {
             interfaceUtils._mGenUIFuncs.enableDisable(event, ["_opacity-col"],[0])
-        else
+            interfaceUtils._mGenUIFuncs.hideShow(event, ["_opacity-col","_opacity-col-label"],[0,1])
+        }
+        else {
             interfaceUtils._mGenUIFuncs.enableDisable(event, ["_opacity-col"],[])
+            interfaceUtils._mGenUIFuncs.hideShow(event, ["_opacity-col","_opacity-col-label"],[])
+        }
     })
             
     row0.appendChild(collab)
@@ -1786,7 +1802,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         var label1=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
         label1.innerText=tree["treeID"];
         td1.appendChild(label1);
-        
+
         if(usename){
             var td15=HTMLElementUtils.createElement({"kind":"td"});
             var label15=HTMLElementUtils.createElement({"kind":"label","extraAttributes":{"for":uid+"_"+escapedID+"_check","class":"cursor-pointer"}});
@@ -1883,7 +1899,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         button1.lastCheckedState = check0.checked;
         td4.appendChild(button1);
         tr.appendChild(td4);
-        
+               
         eventnames = ["mouseenter"];
         eventnames.forEach(function(eventname) {
             button1.addEventListener("mouseenter",function(event) {
@@ -1936,7 +1952,7 @@ interfaceUtils._mGenUIFuncs.groupUI=function(uid){
         }
         trs.forEach(setTrStyleDisplay)
     })
-
+    
     sorttable.makeSortable(table);
     if(data_obj["_gb_col"]){
         var myTH = table.getElementsByTagName("th")[1];
@@ -2215,7 +2231,7 @@ interfaceUtils.createDownloadDropdownMarkers = function(options) {
     options["path"].forEach (function (dataURL) {
         dropdownOptions.push({
             "value": dataURL,
-            "text": dataURL.split('/').reverse()[0].replace(/_/g, '').replace('.csv', '')
+            "text": dataURL.split('/').reverse()[0].replace(/_/g, ' ').replace('.csv', '')
         })
     });
     interfaceUtils.createDownloadDropdown(downloadRow, options.title, callback, options.comment, dropdownOptions);
@@ -2286,14 +2302,14 @@ interfaceUtils.createDownloadDropdownRegions = function(options) {
             "value": dataURL,
             "text": dataURL.split('/').reverse()[0].replace(/_/g, '').replace('.json', '')
         })
-            });
+    });
     interfaceUtils.createDownloadDropdown(downloadRow, options.title, callback, options.comment, dropdownOptions);
     //var label = document.getElementById("label_ISS_csv");
     if (options.autoLoad) {
         setTimeout(function(){callback(null, {'selected':options["path"][0]})},500);
-        }
-    //else { label.innerHTML = "Or import gene expression from CSV file:"; }
     }
+    //else { label.innerHTML = "Or import gene expression from CSV file:"; }
+}
 
 interfaceUtils.createDownloadButtonRegions = function(options) {
     var downloadRow = document.getElementById("divRegionsDownloadButtons");
@@ -2429,7 +2445,7 @@ interfaceUtils.addPluginAccordion = function (pluginID, pluginName) {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Apr 04 2022 14:48:42 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Tue Apr 05 2022 14:39:18 GMT+0000 (Coordinated Universal Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
