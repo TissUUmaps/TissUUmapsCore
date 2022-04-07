@@ -324,10 +324,12 @@ overlayUtils.waitFullyLoaded = function () {
         sleep(200).then (()=>{
             if (overlayUtils.areAllFullyLoaded()) {
                 resolve();
+                return;
             }
             else {
                 overlayUtils.waitFullyLoaded().then(()=>{
                     resolve();
+                    return;
                 });
             }    
         });
