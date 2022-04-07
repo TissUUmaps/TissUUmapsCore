@@ -158,7 +158,7 @@ tmapp.options_osd = {
     constrainDuringPan: true,
     visibilityRatio: 0.85,
     showNavigationControl: false,
-    maxImageCacheCount:500,
+    maxImageCacheCount:2000,
     imageSmoothingEnabled:false,
     preserveImageSizeOnResize: true,
     gestureSettingsUnknown: {
