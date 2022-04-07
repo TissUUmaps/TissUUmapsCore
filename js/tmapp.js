@@ -174,7 +174,16 @@ tmapp.options_osd = {
     showNavigationControl: false,
     maxImageCacheCount:500,
     imageSmoothingEnabled:false,
-    preserveImageSizeOnResize: true
+    preserveImageSizeOnResize: true,
+    gestureSettingsUnknown: {
+        flickEnabled: false
+    },
+    gestureSettingsTouch: {
+        flickEnabled: false
+    },
+    gestureSettingsPen: {
+        flickEnabled: false
+    }
 }
 
 function toggleFullscreen() {
