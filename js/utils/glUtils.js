@@ -7,7 +7,7 @@ glUtils = {
     _initialized: false,
     _imageSize: [1, 1],
     _viewportRect: [0, 0, 1, 1],
-    _options: {antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true},
+    _options: {antialias: false, premultipliedAlpha: true, preserveDrawingBuffer: true},
     _markershapes: "misc/markershapes.png",
     // WebGL resources
     _programs: {},
@@ -1038,9 +1038,7 @@ glUtils.draw = function() {
     let markerScaleAdjusted = glUtils._markerScale;
     if (glUtils._useMarkerScaleFix) markerScaleAdjusted *= (gl.canvas.height / 900.0);
 
-    // Clear background to a perceptual 50% gray, as a workaround to make
-    // compositing against both light and dark image content look good
-    gl.clearColor(0.73, 0.73, 0.73, 0.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
