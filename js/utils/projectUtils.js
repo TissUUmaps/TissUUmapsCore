@@ -43,19 +43,20 @@ var projectUtils = {
 /**
  * This method is used to save the TissUUmaps state (gene expression, cell morphology, regions) */
  projectUtils.saveProject = function() {
-    var state = projectUtils.getActiveProject();
-    interfaceUtils.prompt("Save project under the name:","NewProject")
-    .then((filename) => {
-        state.filename = filename;
+    projectUtils.getActiveProject().then((state) => {
+        interfaceUtils.prompt("Save project under the name:","NewProject")
+        .then((filename) => {
+            state.filename = filename;
 
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
-        var dlAnchorElem=document.createElement("a");
-        dlAnchorElem.setAttribute("hidden","");
-        dlAnchorElem.setAttribute("href",     dataStr     );
-        dlAnchorElem.setAttribute("download", filename + ".tmap");
-        document.body.appendChild(dlAnchorElem);
-        dlAnchorElem.click();
-        document.body.removeChild(dlAnchorElem);
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
+            var dlAnchorElem=document.createElement("a");
+            dlAnchorElem.setAttribute("hidden","");
+            dlAnchorElem.setAttribute("href",     dataStr     );
+            dlAnchorElem.setAttribute("download", filename + ".tmap");
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            document.body.removeChild(dlAnchorElem);
+        })
     })
 }
 
