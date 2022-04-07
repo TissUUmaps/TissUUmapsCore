@@ -1107,8 +1107,8 @@ glUtils.resize = function() {
     const gl = canvas.getContext("webgl", glUtils._options);
 
     const op = tmapp["object_prefix"];
-    const width = tmapp[op + "_viewer"].viewport.containerSize.x;
-    const height = tmapp[op + "_viewer"].viewport.containerSize.y;
+    const width = tmapp[op + "_viewer"].viewport.containerSize.x * window.devicePixelRatio;
+    const height = tmapp[op + "_viewer"].viewport.containerSize.y * window.devicePixelRatio;
 
     glUtils._resolutionScaleActual = glUtils._resolutionScale;
     if (Math.max(width, height) * glUtils._resolutionScale >= 4096.0) {
