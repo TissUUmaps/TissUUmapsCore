@@ -373,8 +373,9 @@ glUtils._createPiechartAngles = function(sectors) {
 
 
 /**
- * @summary Load markers loaded from CSV file into vertex buffer
- *  */ 
+ * @summary Create WebGL resources and other objects for drawing marker dataset.
+ * @param {String | Number} uid Identifier referencing the marker dataset in dataUtils.
+ */
 glUtils.loadMarkers = function(uid) {
     if (!glUtils._initialized) return;
     const canvas = document.getElementById("gl_canvas");
@@ -574,6 +575,10 @@ glUtils.loadMarkers = function(uid) {
 }
 
 
+/**
+ * @summary Delete WebGL resources and other objects created for drawing marker dataset.
+ * @param {String | Number} uid Identifier referencing the marker dataset in dataUtils.
+ */
 glUtils.deleteMarkers = function(uid) {
     if (!glUtils._initialized) return;
     const canvas = document.getElementById("gl_canvas");
@@ -689,6 +694,10 @@ glUtils._updateColorLUTTexture = function(gl, uid, texture) {
 }
 
 
+/**
+ * @summary Update the color scale LUTs for all marker datasets.
+ * This function is a callback and should not normally be called directly.
+ */
 glUtils.updateColorLUTTextures = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
@@ -883,7 +892,7 @@ glUtils._loadTextureFromImageURL = function(gl, src) {
 }
 
 
-glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
+glUtils._drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     // Set up render pipeline
     const program = glUtils._programs["markers"];
     gl.useProgram(program);
@@ -962,7 +971,7 @@ glUtils.drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
 }
 
 
-glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
+glUtils._drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
     // Set up render pipeline
     const program = glUtils._programs["picking"];
     gl.useProgram(program);
@@ -1026,6 +1035,12 @@ glUtils.drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) {
 }
 
 
+/**
+ * @summary Do rendering to the WebGL canvas.
+ * Calling this function will force an update of the rendering of markers and
+ * the data used for picking (i.e. for marker selection). Only marker datasets
+ * for which glUtils.loadMarkers() have been called will be rendered.
+ */
 glUtils.draw = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
@@ -1050,14 +1065,21 @@ glUtils.draw = function() {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     if (glUtils._pickingEnabled) {
-        glUtils.drawPickingPass(gl, viewportTransform, markerScaleAdjusted);
+        glUtils._drawPickingPass(gl, viewportTransform, markerScaleAdjusted);
         glUtils._pickingEnabled = false;  // Clear flag until next click event
     }
 
-    glUtils.drawColorPass(gl, viewportTransform, markerScaleAdjusted);
+    glUtils._drawColorPass(gl, viewportTransform, markerScaleAdjusted);
 }
 
 
+/**
+ * @summary Do GPU-based picking for marker selection.
+ * This function is a callback and should not normally be called directly. The
+ * function will automatically call glUtils.draw() to update the rendering and
+ * the picking.
+ * @param {Object} event An object with click events from the canvas
+ */
 glUtils.pick = function(event) {
     if (event.quick) {
         glUtils._pickingEnabled = true;
@@ -1109,6 +1131,12 @@ glUtils.pick = function(event) {
 }
 
 
+/**
+ * @summary Callback for resizing the WebGL canvas.
+ * Calling this function will force an update of the width and height of the
+ * WebGL canvas, but will not automatically call glUtils.draw() to update the
+ * rendering.
+ */
 glUtils.resize = function() {
     const canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
@@ -1130,12 +1158,21 @@ glUtils.resize = function() {
 }
 
 
+/**
+ * @summary Callback for resizing the WebGL canvas.
+ * Works like glUtils.resize(), but will also automatically call glUtils.draw()
+ * to update the rendering.
+ */
 glUtils.resizeAndDraw = function() {
     glUtils.resize();
     glUtils.draw();
 }
 
 
+/**
+ * @summary Callback for updating marker scale when changing the global marker size GUI slider.
+ * This function is a callback and should not normally be called directly.
+ */
 glUtils.updateMarkerScale = function() {
     const globalMarkerSize = Number(document.getElementById("ISS_globalmarkersize_text").value);
     // Clamp the scale factor to avoid giant markers and slow rendering if the
@@ -1166,6 +1203,12 @@ glUtils._restoreLostContext = function(event) {
 }
 
 
+/**
+ * @summary Do initialization of the WebGL canvas.
+ * This will also load WebGL resources like shaders and textures, as well as set
+ * up events for interaction with other parts of TissUUmaps such as the
+ * OpenSeaDragon (OSD) canvas.
+ */
 glUtils.init = function() {
     if (glUtils._initialized) return;
 
