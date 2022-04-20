@@ -3,6 +3,11 @@
 * @author Fredrik Nysjo
 * @see {@link glUtils}
 */
+
+/**
+ * @namespace glUtils
+ * @property {Boolean} _initialized True when glUtils has been initialized
+ */
 glUtils = {
     _initialized: false,
     _imageSize: [1, 1],
@@ -367,7 +372,9 @@ glUtils._createPiechartAngles = function(sectors) {
 }
 
 
-// Load markers loaded from CSV file into vertex buffer
+/**
+ * @summary Load markers loaded from CSV file into vertex buffer
+ *  */ 
 glUtils.loadMarkers = function(uid) {
     if (!glUtils._initialized) return;
     const canvas = document.getElementById("gl_canvas");
