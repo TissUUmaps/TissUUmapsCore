@@ -1181,7 +1181,12 @@ glUtils.updateMarkerScale = function() {
 }
 
 
-glUtils._restoreLostContext = function(event) {
+/**
+ * @summary Callback for restoring WebGL resources after WebGL context is lost
+ * This function is a callback and should not normally be called directly. Loss
+ * of context can happen when for example the computer goes into sleep mode.
+ */
+glUtils.restoreLostContext = function(event) {
     console.log("Restoring WebGL objects after context loss");
     let canvas = document.getElementById("gl_canvas");
     const gl = canvas.getContext("webgl", glUtils._options);
@@ -1215,7 +1220,7 @@ glUtils.init = function() {
     let canvas = document.getElementById("gl_canvas");
     if (!canvas) canvas = this._createMarkerWebGLCanvas();
     canvas.addEventListener("webglcontextlost", function(e) { e.preventDefault(); }, false);
-    canvas.addEventListener("webglcontextrestored", glUtils._restoreLostContext, false);
+    canvas.addEventListener("webglcontextrestored", glUtils.restoreLostContext, false);
     const gl = canvas.getContext("webgl", glUtils._options);
 
     // Place marker canvas under the OSD canvas. Doing this also enables proper
