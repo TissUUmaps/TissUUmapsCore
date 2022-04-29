@@ -1082,9 +1082,13 @@ glUtils.draw = function() {
  */
 glUtils.pick = function(event) {
     if (event.quick) {
+        const canvas = document.getElementById("gl_canvas");
+        const gl = canvas.getContext("webgl", glUtils._options);
+
         glUtils._pickingEnabled = true;
         glUtils._pickingLocation = [event.position.x * glUtils._resolutionScaleActual,
                                     event.position.y * glUtils._resolutionScaleActual];
+        console.log(event.position, glUtils._pickingLocation, gl.canvas.width, gl.canvas.height);
         glUtils.draw();  // This will update the value of glUtils._pickedMarker
 
         const pickedMarker = glUtils._pickedMarker;
@@ -1142,10 +1146,10 @@ glUtils.resize = function() {
     const gl = canvas.getContext("webgl", glUtils._options);
 
     const op = tmapp["object_prefix"];
-    const width = tmapp[op + "_viewer"].viewport.containerSize.x * window.devicePixelRatio;
-    const height = tmapp[op + "_viewer"].viewport.containerSize.y * window.devicePixelRatio;
+    const width = tmapp[op + "_viewer"].viewport.containerSize.x;
+    const height = tmapp[op + "_viewer"].viewport.containerSize.y;
 
-    glUtils._resolutionScaleActual = glUtils._resolutionScale;
+    glUtils._resolutionScaleActual = glUtils._resolutionScale * window.devicePixelRatio;
     if (Math.max(width, height) * glUtils._resolutionScale >= 4096.0) {
         // A too large WebGL canvas can lead to misalignment between the WebGL
         // markers and the OSD image layers, so here the resolution scaling
