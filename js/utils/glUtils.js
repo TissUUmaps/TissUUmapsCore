@@ -52,6 +52,7 @@ glUtils = {
     _showMarkerInfo: true,
     _resolutionScale: 1.0,        // If this is set to below 1.0, the WebGL output will be upscaled
     _resolutionScaleActual: 1.0,  // Automatic scaling factor computed from glUtils._resolutionScale
+    _useInstancing: false,        // Use instancing and gl.TRIANGLE_STRIP to avoid size limit of gl.POINTS
     _piechartPalette: ["#fff100", "#ff8c00", "#e81123", "#ec008c", "#68217a", "#00188f", "#00bcf2", "#00b294", "#009e49", "#bad80a"]
 }
 
@@ -65,10 +66,12 @@ glUtils._markersVS = `
     uniform vec2 u_imageSize;
     uniform vec4 u_viewportRect;
     uniform mat2 u_viewportTransform;
+    uniform vec2 u_canvasSize;
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
     uniform vec2 u_markerScalarRange;
     uniform float u_markerOpacity;
+    uniform float u_maxPointSize;
     uniform bool u_useColorFromMarker;
     uniform bool u_useColorFromColormap;
     uniform bool u_usePiechartFromMarker;
@@ -84,10 +87,14 @@ glUtils._markersVS = `
     layout(location = 3) in float a_shape;
     layout(location = 4) in float a_opacity;
 
-    out vec4 v_color;
-    out vec2 v_shapeOrigin;
-    out vec2 v_shapeSector;
-    out float v_shapeSize;
+    flat out vec4 v_color;
+    flat out vec2 v_shapeOrigin;
+    flat out vec2 v_shapeSector;
+    flat out float v_shapeSize;
+
+    #ifdef USE_INSTANCING
+    out vec2 v_texCoord;
+    #endif  // USE_INSTANCING
 
     vec3 hex_to_rgb(float v)
     {
@@ -133,11 +140,20 @@ glUtils._markersVS = `
         }
 
         gl_Position = vec4(ndcPos, 0.0, 1.0);
-        gl_PointSize = max(2.0, min(256.0, a_scale * u_markerScale * u_globalMarkerScale / u_viewportRect.w));
+        gl_PointSize = a_scale * u_markerScale * u_globalMarkerScale / u_viewportRect.w;
+        gl_PointSize = clamp(gl_PointSize, 2.0, u_maxPointSize);
 
         v_shapeOrigin.x = mod((v_color.a + 0.00001) * 255.0 - 1.0, SHAPE_GRID_SIZE);
         v_shapeOrigin.y = floor(((v_color.a + 0.00001) * 255.0 - 1.0) / SHAPE_GRID_SIZE);
         v_shapeSize = gl_PointSize;
+
+    #ifdef USE_INSTANCING
+        // Marker will be drawn as a triangle strip, so need to generate
+        // texture coordinate and offset the output position depending on
+        // which of the four corners we are processing
+        v_texCoord = vec2(gl_VertexID & 1, (gl_VertexID >> 1) & 1);
+        gl_Position.xy += (v_texCoord * 2.0 - 1.0) * (gl_PointSize / u_canvasSize);
+    #endif  // USE_INSTANCING
 
         // Discard point here in vertex shader if marker is hidden
         v_color.a = v_color.a > 0.0 ? a_opacity * u_markerOpacity : 0.0;
@@ -157,10 +173,14 @@ glUtils._markersFS = `
     uniform bool u_alphaPass;
     uniform sampler2D u_shapeAtlas;
 
-    in vec4 v_color;
-    in vec2 v_shapeOrigin;
-    in vec2 v_shapeSector;
-    in float v_shapeSize;
+    flat in vec4 v_color;
+    flat in vec2 v_shapeOrigin;
+    flat in vec2 v_shapeSector;
+    flat in float v_shapeSize;
+
+    #ifdef USE_INSTANCING
+    in vec2 v_texCoord;
+    #endif  // USE_INSTANCING
 
     layout(location = 0) out vec4 rt_color;
 
@@ -188,6 +208,9 @@ glUtils._markersFS = `
     void main()
     {
         vec2 uv = (gl_PointCoord.xy - 0.5) * UV_SCALE + 0.5;
+    #ifdef USE_INSTANCING
+        uv = vec2(v_texCoord.x - 0.5, 0.5 - v_texCoord.y) * UV_SCALE + 0.5;
+    #endif  // USE_INSTANCING
         uv = (uv + v_shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
 
         // Sample shape texture in which the blue channel encodes alpha and the
@@ -228,6 +251,7 @@ glUtils._pickingVS = `
     uniform float u_markerScale;
     uniform float u_globalMarkerScale;
     uniform float u_markerOpacity;
+    uniform float u_maxPointSize;
     uniform bool u_usePiechartFromMarker;
     uniform bool u_useShapeFromMarker;
     uniform int u_op;
@@ -239,7 +263,7 @@ glUtils._pickingVS = `
     layout(location = 2) in float a_scale;
     layout(location = 4) in float a_opacity;
 
-    out vec4 v_color;
+    flat out vec4 v_color;
 
     vec3 hex_to_rgb(float v)
     {
@@ -278,7 +302,8 @@ glUtils._pickingVS = `
 
             vec2 canvasPos = (ndcPos * 0.5 + 0.5) * u_canvasSize;
             canvasPos.y = (u_canvasSize.y - canvasPos.y);  // Y-axis is inverted
-            float pointSize = max(2.0, min(256.0, a_scale * u_markerScale * u_globalMarkerScale / u_viewportRect.w));
+            float pointSize = a_scale * u_markerScale * u_globalMarkerScale / u_viewportRect.w;
+            pointSize = clamp(pointSize, 2.0, u_maxPointSize);
 
             // Do coarse inside/outside test against bounding box for marker
             vec2 uv = (canvasPos - u_pickingLocation) / pointSize + 0.5;
@@ -310,7 +335,7 @@ glUtils._pickingVS = `
 glUtils._pickingFS = `
     precision mediump float;
 
-    in vec4 v_color;
+    flat in vec4 v_color;
 
     layout(location = 0) out vec4 rt_color;
 
@@ -321,16 +346,16 @@ glUtils._pickingFS = `
 `;
 
 
-glUtils._loadShaderProgram = function(gl, vertSource, fragSource) {
+glUtils._loadShaderProgram = function(gl, vertSource, fragSource, definitions="") {
     const vertShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertShader, "#version 300 es\n" + vertSource);
+    gl.shaderSource(vertShader, "#version 300 es\n" + definitions + vertSource);
     gl.compileShader(vertShader);
     if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
         console.log("Could not compile vertex shader: " + gl.getShaderInfoLog(vertShader));
     }
 
     const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragShader, "#version 300 es\n" + fragSource);
+    gl.shaderSource(fragShader, "#version 300 es\n" + definitions + fragSource);
     gl.compileShader(fragShader);
     if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
         console.log("Could not compile fragment shader: " + gl.getShaderInfoLog(fragShader));
@@ -542,6 +567,8 @@ glUtils.loadMarkers = function(uid) {
             glUtils._buffers[uid + "_markers"] = glUtils._createMarkerBuffer(gl, numPoints * numSectors * NUM_BYTES_PER_MARKER);
         if (!(uid + "_markers" in glUtils._vaos))
             glUtils._vaos[uid + "_markers"] = gl.createVertexArray();
+        if (!(uid + "_markers_instanced" in glUtils._vaos))
+            glUtils._vaos[uid + "_markers_instanced"] = gl.createVertexArray();
         if (!(uid + "_colorLUT" in glUtils._textures))
             glUtils._textures[uid + "_colorLUT"] = glUtils._createColorLUTTexture(gl);
         if (!(uid + "_colorscale" in glUtils._textures))
@@ -578,6 +605,26 @@ glUtils.loadMarkers = function(uid) {
     gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 24);
     gl.enableVertexAttribArray(OPACITY_LOCATION);
     gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 28);
+    gl.bindVertexArray(null);
+
+    // Set up 2nd VAO (for experimental instanced drawing)
+    gl.bindVertexArray(glUtils._vaos[uid + "_markers_instanced"]);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glUtils._buffers[uid + "_markers"]);
+    gl.enableVertexAttribArray(POINT_LOCATION);
+    gl.vertexAttribPointer(POINT_LOCATION, 4, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribDivisor(POINT_LOCATION, 1);
+    gl.enableVertexAttribArray(INDEX_LOCATION);
+    gl.vertexAttribPointer(INDEX_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 16);
+    gl.vertexAttribDivisor(INDEX_LOCATION, 1);
+    gl.enableVertexAttribArray(SCALE_LOCATION);
+    gl.vertexAttribPointer(SCALE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 20);
+    gl.vertexAttribDivisor(SCALE_LOCATION, 1);
+    gl.enableVertexAttribArray(SHAPE_LOCATION);
+    gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 24);
+    gl.vertexAttribDivisor(SHAPE_LOCATION, 1);
+    gl.enableVertexAttribArray(OPACITY_LOCATION);
+    gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 28);
+    gl.vertexAttribDivisor(OPACITY_LOCATION, 1);
     gl.bindVertexArray(null);
 
     // Update marker info and LUT + colormap textures
@@ -635,9 +682,12 @@ glUtils.deleteMarkers = function(uid) {
     // Clean up WebGL resources
     gl.deleteBuffer(glUtils._buffers[uid + "_markers"]);
     gl.deleteVertexArray(glUtils._vaos[uid + "_markers"]);
+    gl.deleteVertexArray(glUtils._vaos[uid + "_markers_instanced"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorLUT"]);
     gl.deleteTexture(glUtils._textures[uid + "_colorscale"]);
     delete glUtils._buffers[uid + "_markers"];
+    delete glUtils._vaos[uid + "_markers"];
+    delete glUtils._vaos[uid + "_markers_instanced"];
     delete glUtils._textures[uid + "_colorLUT"];
     delete glUtils._textures[uid + "_colorscale"];
     // Make sure colorbar is also deleted from the 2D canvas
@@ -923,7 +973,7 @@ glUtils._loadTextureFromImageURL = function(gl, src) {
 
 glUtils._drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     // Set up render pipeline
-    const program = glUtils._programs["markers"];
+    const program = glUtils._programs[glUtils._useInstancing ? "markers_instanced" : "markers"];
     gl.useProgram(program);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -932,14 +982,16 @@ glUtils._drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
     gl.uniform2fv(gl.getUniformLocation(program, "u_imageSize"), glUtils._imageSize);
     gl.uniform4fv(gl.getUniformLocation(program, "u_viewportRect"), glUtils._viewportRect);
     gl.uniformMatrix2fv(gl.getUniformLocation(program, "u_viewportTransform"), false, viewportTransform);
+    gl.uniform2fv(gl.getUniformLocation(program, "u_canvasSize"), [gl.canvas.width, gl.canvas.height]);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
+    gl.uniform1f(gl.getUniformLocation(program, "u_maxPointSize"), glUtils._useInstancing ? 2048 : 256);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
 
     for (let [uid, numPoints] of Object.entries(glUtils._numPoints)) {
         if (numPoints == 0) continue;
-        gl.bindVertexArray(glUtils._vaos[uid + "_markers"]);
+        gl.bindVertexArray(glUtils._vaos[uid + (glUtils._useInstancing ? "_markers_instanced" : "_markers")]);
 
         // Set per-markerset uniforms
         gl.uniform1f(gl.getUniformLocation(program, "u_globalMarkerScale"), glUtils._globalMarkerScale * glUtils._markerScaleFactor[uid]);
@@ -962,14 +1014,26 @@ glUtils._drawColorPass = function(gl, viewportTransform, markerScaleAdjusted) {
         if (glUtils._usePiechartFromMarker[uid]) {
             // 1st pass: draw alpha for whole marker shapes
             gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), true);
-            gl.drawArrays(gl.POINTS, 0, numPoints);
+            if (glUtils._useInstancing) {
+                gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, numPoints);
+            } else {
+                gl.drawArrays(gl.POINTS, 0, numPoints);
+            }
             // 2nd pass: draw colors for individual piechart sectors
             gl.uniform1i(gl.getUniformLocation(program, "u_alphaPass"), false);
             gl.colorMask(true, true, true, false);
-            gl.drawArrays(gl.POINTS, 0, numPoints);
+            if (glUtils._useInstancing) {
+                gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, numPoints);
+            } else {
+                gl.drawArrays(gl.POINTS, 0, numPoints);
+            }
             gl.colorMask(true, true, true, true);
         } else {
-            gl.drawArrays(gl.POINTS, 0, numPoints);
+            if (glUtils._useInstancing) {
+                gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, numPoints);
+            } else {
+                gl.drawArrays(gl.POINTS, 0, numPoints);
+            }
         }
     }
 
@@ -993,6 +1057,7 @@ glUtils._drawPickingPass = function(gl, viewportTransform, markerScaleAdjusted) 
     gl.uniform2fv(gl.getUniformLocation(program, "u_canvasSize"), [gl.canvas.width, gl.canvas.height]);
     gl.uniform2fv(gl.getUniformLocation(program, "u_pickingLocation"), glUtils._pickingLocation);
     gl.uniform1f(gl.getUniformLocation(program, "u_markerScale"), markerScaleAdjusted);
+    gl.uniform1f(gl.getUniformLocation(program, "u_maxPointSize"), glUtils._useInstancing ? 2048 : 256);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, glUtils._textures["shapeAtlas"]);
     gl.uniform1i(gl.getUniformLocation(program, "u_shapeAtlas"), 2);
@@ -1189,6 +1254,7 @@ glUtils.restoreLostContext = function(event) {
 
     // Restore shared WebGL objects
     glUtils._programs["markers"] = glUtils._loadShaderProgram(gl, glUtils._markersVS, glUtils._markersFS);
+    glUtils._programs["markers_instanced"] = glUtils._loadShaderProgram(gl, glUtils._markersVS, glUtils._markersFS, "#define USE_INSTANCING\n");
     glUtils._programs["picking"] = glUtils._loadShaderProgram(gl, glUtils._pickingVS, glUtils._pickingFS);
     glUtils._textures["shapeAtlas"] = glUtils._loadTextureFromImageURL(gl, glUtils._markershapes);
 
@@ -1226,6 +1292,7 @@ glUtils.init = function() {
     osd.appendChild(canvas);
 
     this._programs["markers"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS);
+    this._programs["markers_instanced"] = this._loadShaderProgram(gl, this._markersVS, this._markersFS, "#define USE_INSTANCING\n");
     this._programs["picking"] = this._loadShaderProgram(gl, this._pickingVS, this._pickingFS);
     this._textures["shapeAtlas"] = this._loadTextureFromImageURL(gl, glUtils._markershapes);
 
