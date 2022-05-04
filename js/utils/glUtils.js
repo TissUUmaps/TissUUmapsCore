@@ -598,13 +598,13 @@ glUtils.loadMarkers = function(uid) {
     gl.enableVertexAttribArray(POINT_LOCATION);
     gl.vertexAttribPointer(POINT_LOCATION, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(INDEX_LOCATION);
-    gl.vertexAttribPointer(INDEX_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 16);
+    gl.vertexAttribPointer(INDEX_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 16);
     gl.enableVertexAttribArray(SCALE_LOCATION);
-    gl.vertexAttribPointer(SCALE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 20);
+    gl.vertexAttribPointer(SCALE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 20);
     gl.enableVertexAttribArray(SHAPE_LOCATION);
-    gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 24);
+    gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 24);
     gl.enableVertexAttribArray(OPACITY_LOCATION);
-    gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 28);
+    gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 28);
     gl.bindVertexArray(null);
 
     // Set up 2nd VAO (for experimental instanced drawing)
@@ -614,16 +614,16 @@ glUtils.loadMarkers = function(uid) {
     gl.vertexAttribPointer(POINT_LOCATION, 4, gl.FLOAT, false, 0, 0);
     gl.vertexAttribDivisor(POINT_LOCATION, 1);
     gl.enableVertexAttribArray(INDEX_LOCATION);
-    gl.vertexAttribPointer(INDEX_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 16);
+    gl.vertexAttribPointer(INDEX_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 16);
     gl.vertexAttribDivisor(INDEX_LOCATION, 1);
     gl.enableVertexAttribArray(SCALE_LOCATION);
-    gl.vertexAttribPointer(SCALE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 20);
+    gl.vertexAttribPointer(SCALE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 20);
     gl.vertexAttribDivisor(SCALE_LOCATION, 1);
     gl.enableVertexAttribArray(SHAPE_LOCATION);
-    gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 24);
+    gl.vertexAttribPointer(SHAPE_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 24);
     gl.vertexAttribDivisor(SHAPE_LOCATION, 1);
     gl.enableVertexAttribArray(OPACITY_LOCATION);
-    gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * 28);
+    gl.vertexAttribPointer(OPACITY_LOCATION, 1, gl.FLOAT, false, 0, numPoints * numSectors * 28);
     gl.vertexAttribDivisor(OPACITY_LOCATION, 1);
     gl.bindVertexArray(null);
 
