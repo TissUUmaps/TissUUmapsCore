@@ -153,6 +153,7 @@ glUtils._markersVS = `
         // which of the four corners we are processing
         v_texCoord = vec2(gl_VertexID & 1, (gl_VertexID >> 1) & 1);
         gl_Position.xy += (v_texCoord * 2.0 - 1.0) * (gl_PointSize / u_canvasSize);
+        v_texCoord.y = 1.0 - v_texCoord.y;  // Flip Y-axis to match gl_PointCoord behaviour
     #endif  // USE_INSTANCING
 
         // Discard point here in vertex shader if marker is hidden
@@ -207,9 +208,10 @@ glUtils._markersFS = `
 
     void main()
     {
-        vec2 uv = (gl_PointCoord.xy - 0.5) * UV_SCALE + 0.5;
     #ifdef USE_INSTANCING
-        uv = vec2(v_texCoord.x - 0.5, 0.5 - v_texCoord.y) * UV_SCALE + 0.5;
+        vec2 uv = (v_texCoord - 0.5) * UV_SCALE + 0.5;
+    #else
+        vec2 uv = (gl_PointCoord - 0.5) * UV_SCALE + 0.5;
     #endif  // USE_INSTANCING
         uv = (uv + v_shapeOrigin) * (1.0 / SHAPE_GRID_SIZE);
 
@@ -225,7 +227,11 @@ glUtils._markersFS = `
 
         if (u_usePiechartFromMarker && !u_alphaPass) {
             float delta = 0.25 / v_shapeSize;
+        #ifdef USE_INSTANCING
+            shapeColor.a *= sectorToAlphaAA(v_shapeSector, v_texCoord, delta);
+        #else
             shapeColor.a *= sectorToAlphaAA(v_shapeSector, gl_PointCoord, delta);
+        #endif  // USE_INSTANCING
         }
 
         rt_color = shapeColor * v_color;
