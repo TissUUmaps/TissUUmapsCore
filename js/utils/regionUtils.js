@@ -314,11 +314,11 @@ regionUtils.pointsToPath = function (points) {
         subregions.forEach(function (polygons) {
             var first = true
             polygons.forEach(function (point) {
-                if (first) {path += " M ";first = false;}
-                else {path += " L "}
+                if (first) {path += "M";first = false;}
+                else {path += "L"}
                 path += point.x + " " + point.y;
             });
-            path += " Z"
+            path += "Z"
         });
     });
     return path;
