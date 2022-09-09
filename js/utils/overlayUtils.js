@@ -275,6 +275,9 @@ overlayUtils.addLayer = function(layerName, tileSource, i, visible) {
                 setTimeout(function(){$(loadingModal).modal("hide");}, 500);
             }
             showModal = false;
+            if (filterUtils._compositeMode == "collection") {
+                filterUtils.setCompositeOperation();
+            }
         },
         error: function(i) {
             if (loadingModal) {
