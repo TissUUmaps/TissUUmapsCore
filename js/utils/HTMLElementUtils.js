@@ -53,6 +53,12 @@ HTMLElementUtils.inputTypeColor = function (params) {
             color.setAttribute(attr, extraAttributes[attr]);
         }
     }
+    var eventListeners = params.eventListeners || null;
+    if (eventListeners) {
+        for (var message in eventListeners) {
+            color.addEventListener(message, eventListeners[message]);
+        }
+    }
     return color;
 }
 
@@ -295,9 +301,7 @@ HTMLElementUtils.determinsticHTMLColor = function (key) {
     var U = 0; var V = 0; var y = 128;
 
     if (!isNaN(parseInt(key))) {
-        console.log("b",key);
         key = parseInt(key,10).toString(4).split("").reverse().join("");
-        console.log("a",key);
     }
     
     var maincolor = key.charAt(0).toLowerCase();

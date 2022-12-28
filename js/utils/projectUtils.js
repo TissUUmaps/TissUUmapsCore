@@ -108,6 +108,9 @@ projectUtils.getActiveProject = function () {
         if (!csvFile) {
             if (dataUtils.data[dataset]) {
                 csvFile = dataUtils.data[dataset]["_csv_path"];
+                if (!(typeof csvFile === 'string' || csvFile instanceof String)) {
+                    csvFile = csvFile.name;
+                }
             }
             else {
                 interfaceUtils.alert("Select a csv file first!");
@@ -219,18 +222,49 @@ projectUtils.updateMarkerButton = function(dataset) {
     markerFile.expectedRadios = Object.assign({}, ...Object.keys(radios).map((k) => ({[k]: radios[k].checked})));
 }
 
-projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment) {
-    buttonsDict = {};
+projectUtils.removeTabFromProject = function (dataset) {
+    if (dataUtils.data[dataset].fromButton !== undefined) {
+        let stateMarkerFile = projectUtils._activeState.markerFiles[dataUtils.data[dataset].fromButton];
+        if (stateMarkerFile.autoLoad) {
+            projectUtils._activeState.markerFiles.splice(dataUtils.data[dataset].fromButton,1);
+            // Reduce fromButton value for all datasets and buttons with larger fromButton value: 
+            for (data_obj_uid in dataUtils.data) {
+                let data_obj = dataUtils.data[data_obj_uid];
+                if (data_obj.fromButton){
+                    if (data_obj.fromButton > dataUtils.data[dataset].fromButton){
+                        data_obj.fromButton -= 1;
+                    }
+                }
+            }
+            for (markerFile of projectUtils._activeState.markerFiles) {
+                if (markerFile.fromButton){
+                    if (markerFile.fromButton > dataUtils.data[dataset].fromButton){
+                        markerFile.fromButton -= 1;
+                    }
+                }
+            }
+        }
+    }
+}
 
+projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment, autoLoad) {
     if (!csvFile)
         return;
+    
+    if (autoLoad === undefined)
+        autoLoad = false;
+    
+    if (!autoLoad && projectUtils._activeState.markerFiles) {
+        // We check if a markerFile exists with autoload, to remove it:
+        projectUtils.removeTabFromProject(dataset);
+    }
 
     markerFile = {
         "path": csvFile,
         "comment":comment,
         "title":title,
         "hideSettings":true,
-        "autoLoad":false,
+        "autoLoad":autoLoad,
         "uid":dataset
     };
     tabName = document.getElementById(dataset + "_tab-name").value;
@@ -246,11 +280,13 @@ projectUtils.makeButtonFromTabAux = function (dataset, csvFile, title, comment) 
     markerFile.fromButton = projectUtils._activeState.markerFiles.length - 1;
     dataUtils.data[dataset].fromButton = projectUtils._activeState.markerFiles.length - 1;
     
-    if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
-        interfaceUtils.createDownloadDropdownMarkers(markerFile);
-    }
-    else {
-        interfaceUtils.createDownloadButtonMarkers(markerFile);
+    if (!autoLoad) {
+        if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
+            interfaceUtils.createDownloadDropdownMarkers(markerFile);
+        }
+        else {
+            interfaceUtils.createDownloadButtonMarkers(markerFile);
+        }
     }
 }
 
@@ -312,7 +348,9 @@ projectUtils.loadProjectFileFromServer = function(path) {
     }
     */
     document.getElementById("divMarkersDownloadButtons").innerHTML = "";
-
+    if (state.backgroundColor) {
+        $(".openseadragon-canvas")[0].style.backgroundColor=state.backgroundColor;
+    }
     if (state.plugins) {
         state.plugins.forEach(function(pluginName) {
             pluginUtils.addPlugin(pluginName);
@@ -337,11 +375,12 @@ projectUtils.loadProjectFileFromServer = function(path) {
     if (state.markerFiles) {
         state.markerFiles.forEach(function(markerFile, buttonIndex) {
             markerFile["fromButton"] = buttonIndex;
+            // For compatibility reasons:
             if (markerFile.expectedCSV) {
                 projectUtils.convertOldMarkerFile(markerFile);
                 state.hideTabs = true;
             }
-            if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' ) {
+            if( Object.prototype.toString.call( markerFile.path ) === '[object Array]' || markerFile.dropdownOptions) {
                 interfaceUtils.createDownloadDropdownMarkers(markerFile);
             }
             else {
@@ -402,6 +441,11 @@ projectUtils.loadProjectFileFromServer = function(path) {
             location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT
         });
     }
+    // for backward compatibility only:
+    if (state.compositeMode == "collection") {
+        state.compositeMode = "source-over";
+        state.collectionMode = true;
+    }
     projectUtils.loadLayers(state);
     
     //tmapp[tmapp["object_prefix"] + "_viewer"].world.resetItems()
@@ -410,14 +454,7 @@ projectUtils.loadProjectFileFromServer = function(path) {
 /**
  * This method is used to load the TissUUmaps layers from state */
  projectUtils.loadLayers = function(state) {
-    tmapp.layers = [];
-    subfolder = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-    state.layers.forEach(function(layer) {
-        pathname = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-        tmapp.layers.push(
-            {name: layer.name, tileSource: layer.tileSource}
-        )
-    });
+    tmapp.layers = state.layers;
     if (state.filters) {
         filterUtils._filtersUsed = state.filters;
         $(".filterSelection").prop("checked",false);
@@ -577,7 +614,7 @@ projectUtils.applySettings = function (settings) {
         settings.forEach(function(setting, i) {
             if (window[setting.module]) {
                 if (typeof window[setting.module][setting.function]  === 'function') {
-                    window[setting.module][setting.function](setting.value);
+                    window[setting.module][setting.function].apply(this, setting.value);
                 }
                 else {
                     window[setting.module][setting.function] = setting.value;
